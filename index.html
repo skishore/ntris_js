@@ -1,1373 +1,1123 @@
 <html>
 <head>
-<script type="text/javascript" src="blockData.js"></script>
-<script type="text/javascript" src="colour.js"></script>
 <script type="text/javascript" src="jquery.js"></script>
+<script type="text/javascript" src="colour.js"></script>
+
+<script type="text/javascript" src="ntrisConstants.js"></script>
+<script type="text/javascript" src="ntrisColor.js"></script>
+<script type="text/javascript" src="ntrisDataTypes.js"></script>
+
+<script type="text/javascript" src="rawBlockData.js"></script>
+<script type="text/javascript" src="blockData.js"></script>
+
 <script>
-    var gameDiv, gameBuffer;
+  var gameDiv, gameBuffer;
 
-    // Difficulty curve constants
-    var SCOREINTERVAL = 60;
-    var MINR = 0.1;
-    var MAXR = 0.9;
-    var HALFRSCORE = 480;
+  // Variables used in key delay simulation
+  var keyDown = new Array(NUMKEYS);
+  var keyFireFrames = new Array(NUMKEYS);
+  var FIRSTKEYDELAY = 10;
+  var LATERKEYDELAY = 2;
 
-    // Block data
-    var difficultyLevels;
-    var numBlockTypes;
-    var numSymbols;
-    var numBlocks;
-    var blockData = new Array();
+  // board state, score, combo, and current key-input
+  var score, combo;
+  var boardState, gameMode;
+  var moveDir = new Array();
+  var rotated = new Array(2);
+  var dropped;
+  var held;
+  var entered;
 
-    // Color constants
-    var LAMBDA = 0.32;
+  // up-to-date block data
+  var curBlock;
+  var curBlockType;
+  var heldBlockType;
 
-    // Game loop constants
-    var MAXFRAMENUM = 840;
-    var frame = 0;
+  // store the preview list, as well as its current animation frame
+  var preview = new Array();
+  var previewAnim;
+  var previewOffset;
 
-    var MAXBLOCKSIZE = 10;
-    var NUMROWS = (24 + MAXBLOCKSIZE - 1);
-    var NUMCOLS = 12;
+  // flags which tell us how much of the board we need to redraw this frame
+  var holdUsed;
+  var boardChanged;
+  var justHeld;
+  // the old block's position - where to erase
+  var oldBlock;
 
-    // board states
-    var RESET = 0;
-    var PLAYING = 1;
-    var PAUSED = 2;
-    var GAMEOVER = 4;
-    var COUNTDOWN = 6;
-    var QUIT = -1;
+  // description of the blocks already on the board
+  var board = new Array();
+  for (var i = 0; i < NUMCOLS; i++)
+    board.push(new Array(NUMROWS));
+  var blocksInRow = new Array(NUMROWS);
+  var highestRow;
 
-    // the amount of time each "second" takes during a countdown
-    var SECOND = 54;
-    var NUMSECONDS = 3;
+  function randIndex(max) {
+    var rand = Math.random();
+    if (rand >= 1)
+      rand = 0.99;
+    return Math.floor(max * rand);
+  }
 
-    // game modes
-    var SINGLEPLAYER = 0;
-    var MULTIPLAYER = 1;
+  function load() {
+    initInputs();
+    initVectorGraphics();
+    openBlockData();
 
-    // event types
-    var PLACEBLOCK = 0;
-    var GETNEXTBLOCK = 1;
-    var QUEUEBLOCK = 2;
-    var SENDATTACK = 3;
-    var RECEIVEATTACK = 4;
-    var VICTORY = 5;
-    var RESETBOARD = 6;
-    var MAXEVENTS = 32;
+    gameMode = SINGLEPLAYER;
+    resetBoard();
+    setInterval('update()', 1000/FRAMERATE);
+  }
 
-    // illegal block flags - these record why a block is illegal
-    // given in order of priority, so first a block is tested against
-    // the edges of the board, then it is tested for overlap
-    var OK = 0;
-    var TOPEDGE = 1;
-    var RIGHTEDGE = 2;
-    var BOTTOMEDGE = 3;
-    var LEFTEDGE = 4;
-    var OVERLAP = 5;
+  function initInputs() {
+    function getPos(e) {
+      var xOffset = document.body.scrollLeft;
+      if (xOffset == 0)
+        xOffset = window.pageXOffset;
+      var yOffset = document.body.scrollTop;
+      if (yOffset == 0)
+        yOffset = window.pageYOffset;
 
-    // the number of times a block can be shoved away from an obstacle
-    var MAXSHOVEAWAYS = 2;
-    // the number of frames before a block sticks locally or globally
-    var MAXLOCALSTICKFRAMES = 24;
-    var MAXGLOBALSTICKFRAMES = 120;
-    // constants holding movement direction data
-    var MOVEUP = 0;
-    var MOVEBACK = 1;
-    var MOVERIGHT = 2;
-    var MOVEDOWN = 3;
-    var MOVELEFT = 4;
-    var MOVEDROP = 5;
-    var MOVEHOLD = 6;
-    var ENTER = 7;
-    var PAUSE = 8;
-    var ESCAPEKEY = 9;
-    var NUMKEYS = 10;
-
-    // Variables used in key delay simulation
-    var keyDown = new Array(NUMKEYS);
-    var keyFireFrames = new Array(NUMKEYS);
-    var FIRSTKEYDELAY = 10;
-    var LATERKEYDELAY = 2;
-
-    var FRAMERATE = 60;
-    // this variable records how many frames go by before gravity is applied
-    var GRAVITY = 48;
-
-    // the number of blocks we preview
-    var PREVIEW = 5;
-    // the number of frames used to animate the preview list
-    var PREVIEWANIMFRAMES = 3;
-
-    var squareWidth = 21;
-    var sideBoard = 7*squareWidth/2;
-    var boardWidth = squareWidth*NUMCOLS + sideBoard;
-    var boardHeight = squareWidth*(NUMROWS-MAXBLOCKSIZE+1);
-    var BORDER = squareWidth;
-
-    // board state, score, combo, and current key-input
-    var score, combo;
-    var boardState, gameMode;
-    var moveDir = new Array();
-    var rotated = new Array(2);
-    var dropped;
-    var held;
-    var entered;
-
-    // up-to-date block data
-    var curBlock;
-    var curBlockType;
-    var heldBlockType;
-
-    // store the preview list, as well as its current animation frame
-    var preview = new Array();
-    var previewAnim;
-    var previewOffset;
-
-    // flags which tell us how much of the board we need to redraw this frame
-    var holdUsed;
-    var boardChanged;
-    var justHeld;
-    // the old block's position - where to erase
-    var oldBlock;
-
-    // description of the blocks already on the board
-    var board = new Array();
-    for (var i = 0; i < NUMCOLS; i++)
-        board.push(new Array(NUMROWS));
-    var blocksInRow = new Array(NUMROWS);
-    var highestRow;
-
-    function randIndex(max) {
-        var rand = Math.random();
-        if (rand >= 1)
-            rand = 0.99;
-        return Math.floor(max * rand);
+      var x = e.clientX + xOffset - gameDiv.offsetLeft;
+      var y = e.clientY + yOffset - gameDiv.offsetTop;
+      var i = parseInt((x - lx)/(size + 1));
+      var j = parseInt((y - ly)/(size + 1));
+      if ((x < lx) || (i >= cols) || (y < ly) || (j >= rows)) {
+        i = -1;
+        j = -1;
+      }
+      return [i, j];
     }
 
-    function Point(x, y) {
-        this.x = x;
-        this.y = y;
-    }
+    document = $('document')[0];
+    document.onkeydown = function(e) {
+      if (!e) e = window.event;
+      e.cancelBubble = true;
+      if (e.stopPropagation) e.stopPropagation();
 
-    function Block() {
-        this.x = 0;
-        this.y = 0;
-        this.angle = 0;
-        this.numSquares = 0;
-        this.squares = new Array();
-        for (var i = 0; i < MAXBLOCKSIZE; i++)
-            this.squares[i] = new Point();
-        this.color = 'red';
-        this.shoveaways = 0;
-        this.localStickFrames = MAXLOCALSTICKFRAMES;
-        this.globalStickFrames = MAXGLOBALSTICKFRAMES;
-        this.rotates = true;
-        this.height = 0;
-        this.rowsDropped = 0;
-    }
-
-    function load() {
-        initInputs();
-        initVectorGraphics();
-        openBlockData();
-
-        gameMode = SINGLEPLAYER;
-        resetBoard();
-        setInterval('update()', 1000/FRAMERATE);
-    }
-
-    function initInputs() {
-        function getPos(e) {
-            var xOffset = document.body.scrollLeft;
-            if (xOffset == 0)
-                xOffset = window.pageXOffset;
-            var yOffset = document.body.scrollTop;
-            if (yOffset == 0)
-                yOffset = window.pageYOffset;
-
-            var x = e.clientX + xOffset - gameDiv.offsetLeft;
-            var y = e.clientY + yOffset - gameDiv.offsetTop;
-            var i = parseInt((x - lx)/(size + 1));
-            var j = parseInt((y - ly)/(size + 1));
-            if ((x < lx) || (i >= cols) || (y < ly) || (j >= rows)) {
-                i = -1;
-                j = -1;
-            }
-            return [i, j];
-        }
-
-        document = $('document')[0];
-        document.onkeydown = function(e) {
-            if (!e) e = window.event;
-            e.cancelBubble = true;
-            if (e.stopPropagation) e.stopPropagation();
-
-            var text = String.fromCharCode(e.keyCode);
-            if (e.keyCode == 37) {
-                keyDown[MOVELEFT] = true;
-            } else if ((e.keyCode == 38) || (text == 'X')) {
-                keyDown[MOVEUP] = true;
-            } else if (text == 'Z') {
-                keyDown[MOVEBACK] = true;
-            } else if (e.keyCode == 39) {
-                keyDown[MOVERIGHT] = true;
-            } else if (e.keyCode == 40) {
-                keyDown[MOVEDOWN] = true;
-            } else if (text == ' ') {
-                keyDown[MOVEDROP] = true;
-            } else if ((e.keyCode == 16) || (text == 'C')) {
-                keyDown[MOVEHOLD] = true;
-            } else if ((e.keyCode == 13) || (text == 'P')) {
-                if (entered == false) {
-                    if (boardState >= GAMEOVER) {
-                        if ((e.keyCode == 13) && (gameMode == SINGLEPLAYER))
-                            resetBoard();
-                    } else if (boardState >= PAUSED) {
-                        boardState = PLAYING;
-                        boardChanged = true;
-                        previewAnim = 1;
-                    } else if (boardState == PLAYING) {
-                        if (gameMode == SINGLEPLAYER)
-                            boardState = PAUSED;
-                    }
-                    entered = true;
-                }
-            }
-            return false;
-        }
-
-        document.onkeyup = function(e) {
-            if (!e) e = window.event;
-            e.cancelBubble = true;
-            if (e.stopPropagation) e.stopPropagation();
-
-            var text = String.fromCharCode(e.keyCode);
-            if (e.keyCode == 37) {
-                releaseKey(MOVELEFT);
-           } else if ((e.keyCode == 38) || (text == 'X')) {
-                releaseKey(MOVEUP);
-                rotated[MOVEUP] = false;
-           } else if (text == 'Z') {
-                releaseKey(MOVEBACK);
-                rotated[MOVEBACK] = false;
-            } else if (e.keyCode == 39) {
-                releaseKey(MOVERIGHT);
-            } else if (e.keyCode == 40) {
-                releaseKey(MOVEDOWN);
-            } else if (text == ' ') {
-                releaseKey(MOVEDROP);
-                dropped = false;
-            } else if ((e.keyCode == 16) || (text == 'C')) {
-                releaseKey(MOVEHOLD);
-                held = false;
-            } else if ((e.keyCode == 13) || (text == 'P')){
-                entered = false;
-            }
-            return false;
-        }
-
-        for (var i = 0; i < NUMKEYS; i++) {
-            keyDown[i] = false;
-            keyFireFrames[i] = -1;
-        }
-    }
-
-    function releaseKey(key) {
-        keyDown[key] = false;
-        if (keyFireFrames[key] < 0)
-            moveDir.push(key);
-        keyFireFrames[key] = -1;
-    }
-
-    function queryInputs() {
-        for (var i = 0; i < NUMKEYS; i++) {
-            if (keyDown[i]) {
-                if (keyFireFrames[i] < 0) {
-                    moveDir.push(i);
-                    keyFireFrames[i] = FIRSTKEYDELAY;
-                } else if (keyFireFrames[i] == 0) {
-                    moveDir.push(i);
-                    keyFireFrames[i] = LATERKEYDELAY;
-                } else {
-                    keyFireFrames[i]--;
-                }
-            }
-        }
-    }
-
-    function initVectorGraphics() {
-        gameDiv = $('#gameBuffer')[0];
-        gameBuffer = gameDiv.getContext('2d');
-
-        gameBuffer.drawLine = function(x1, y1, x2, y2) {
-            this.beginPath();
-            this.moveTo(x1, y1);
-            this.lineTo(x2, y2);
-            this.stroke();
-            this.closePath();
-        }
-        gameBuffer.fillCircle = function(x, y, r) {
-            this.beginPath();
-            this.arc(x, y, r, 0, 2*Math.PI, true);
-            this.stroke();
-            this.fill();
-            this.closePath();
-        }
-
-        gameBuffer.fillRectOffset = function(x, y, w, h) {
-            gameBuffer.fillRect(x + BORDER, y + BORDER, w, h);
-        }
-
-        gameBuffer.drawLineOffset = function(x1, y1, x2, y2) {
-            gameBuffer.drawLine(x1 + BORDER, y1 + BORDER, x2 + BORDER, y2 + BORDER);
-        }
-
-        gameBuffer.fillTextOffset = function(text, x, y) {
-            gameBuffer.fillText(text, x + BORDER, y + BORDER);
-        }
-
-        gameBuffer.font = '9pt sans-serif';
-        gameBuffer.textBaseline = 'middle';
-        gameBuffer.fillStyle = 'black';
-        gameBuffer.fillRect(0, 0, boardWidth + 2*BORDER, boardHeight + 2*BORDER);
-        gameBuffer.fillStyle = colorCode(28);
-        gameBuffer.fillRect(BORDER/2 - 1, BORDER/2 - 1, boardWidth + BORDER + 2, boardHeight + BORDER + 2);
-        gameBuffer.fillStyle = 'black';
-        gameBuffer.fillRect(BORDER/2 + 1, BORDER/2 + 1, boardWidth + BORDER - 2, boardHeight + BORDER - 2);
-    }
-
-    function openBlockData() {
-        difficultyLevels = rawBlockData[0][0];
-        numBlockTypes = rawBlockData[0].slice(1, difficultyLevels + 1);
-        numBlocks = numBlockTypes[difficultyLevels - 1];
-        numSymbols = rawBlockData[0][difficultyLevels + 1];
-
-        var data;
-        // Read data about all of the blocks
-        for (var i = 1; i < numBlocks + numSymbols + 1; i++) {
-            data = rawBlockData[i];
-            // Ignore the symbol at the beginning of a symbol block
-            if (i > numBlocks)
-                data = data.slice(1);
-
-            var block = new Block();
-            block.x = NUMCOLS/2 + data[0];
-            block.y = data[1];
-            block.numSquares = data[2];
-            for (var j = 0; j < data[2]; j++) {
-                block.squares[j].x = data[2*j + 3];
-                block.squares[j].y = data[2*j + 4];
-            }
-            block.color = colorCode(data[2*data[2] + 3]);
-            block.height = calculateBlockHeight(block);
-            blockData.push(block);
-        }
-
-        // Read data about the blocks that do not rotate
-        data = rawBlockData[numBlocks + numSymbols + 1];
-        for (var i = 1; i < data.length; i++) {
-            blockData[data[i]].rotates = false;
-        }
-    }
-
-    function colorCode(index) {
-        return mixedColor('black', mixedColor('white', rainbowCode(index), 1.6*LAMBDA), 0.4*LAMBDA);
-    }
-
-    function rainbowCode(index) {
-        switch(index) {
-           case 0:
-                return 'white';
-            case 1:
-                return '#DDDDDD';
-            case 2:
-                return '#CCCCCC';
-            case 3:
-                return '#FFFF00';
-            case 4:
-                return '#BBBBBB';
-            case 5:
-                return '#87CEEB';
-            case 6:
-                return '#FA8072';
-            case 7:
-                return '#DDA0DD';
-            case 8:
-                return '#FFD700';
-            case 9:
-                return '#DA70D6';
-            case 10: 
-                return '#98FB98';
-            case 11: 
-                return '#AAAAAA';
-            case 12: 
-                return '#4169E1';
-            case 13: 
-                return '#FF0000';
-            case 14: 
-                return '#0000FF';
-            case 15: 
-                return '#B21111';
-            case 16: 
-                return '#8B0011';
-            case 17: 
-                return '#00008B';
-            case 18: 
-                return '#FF00FF';
-            case 19: 
-                return '#800080';
-            case 20: 
-                return '#D284BC';
-            case 21: 
-                return '#FF8C00';
-            case 22: 
-                return '#20B2AA';
-            case 23: 
-                return '#B8860B';
-            case 24: 
-                return '#FF4500'; 
-            case 25:
-                return '#48D1CC';
-            case 26:
-                return '#9966CC';
-            case 27:
-                return '#FFA500';
-            case 28:
-                return '#00FF00';
-            default:
-                return '#FF0000';
-        }
-    }
-
-    function calculateBlockHeight(block) {
-        var highest = 0;
-        var lowest = 0;
-
-        for (var i = 0; i < block.numSquares; i++) {
-            if (block.squares[i].y < lowest)
-                lowest = block.squares[i].y;
-            if (block.squares[i].y > highest)
-                highest = block.squares[i].y;
-        }
-        return highest - lowest + 1;
-    }
-
-    function resetBoard() {
-        // no commands have been given yet, the hold is unused
-        rotated[0] = false;
-        rotated[1] = false;
-        dropped = false;
-        held = false;
-        entered = false;
-        holdUsed = false;
-        justHeld = false;
-
-        // to start off, the board is entirely 'black'
-        for (var y = 0; y < NUMROWS; y++) {
-            for (var x = 0; x < NUMCOLS; x++) {
-                board[x][y] = 'black';
-            }
-            blocksInRow[y] = 0;
-        }
-        highestRow = NUMROWS;
-        // the board has changed - redraw
-        boardChanged = true;
-        // start the preview without animation
-        preview = new Array();
-        previewAnim = 0;
-        previewOffset = 0;
-        // no block is held - type is -1, the null type
-        heldBlockType = -1;
-        curBlockType = -1;
-        oldBlock = new Block();
-        curBlock = null;
-        moveDir = new Array();
-
-        // reset the score and start the game
-        score = 0; combo = 0;
-        boardState = RESET;
-    }
-
-    function update() {
-        frame = (frame + 1) % MAXFRAMENUM;
-        queryInputs();
-        playTetrisGod()
-        timeStep();
-        draw();
-    }
-
-    function playTetrisGod() {
-        var type, rand, level;
-
-        while (preview.length < PREVIEW) {
-            if (gameMode == SINGLEPLAYER) {
-                level = difficultyLevel(score);
-
-                if (level > 0) {
-                    type = randIndex(numBlockTypes[level+1] - numBlockTypes[level]) + numBlockTypes[level];
-                } else {
-                    type = randIndex(numBlockTypes[0]);
-                }
-            } else {
-                if (attacks.size > 0) {
-                    attack = attacks[0];
-                    attacks.shift();
-                    type = randIndex(numBlockTypes[attack]-numBlockTypes[attack-1]) + numBlockTypes[attack-1];
-                } else {
-                    type = randIndex(numBlockTypes[0]);
-                }
-            }
-            preview.push(type);
-        }
-    }
-
-    function difficultyLevel(s) {
-        var x, p, r;
-
-        if (difficultyLevels == 1)
-            return 0;
-        // get a random p uniformly from [0, 1]
-        p = Math.random();
-        if (p < 0)
-            p++;
-        // calculate the current ratio r between the probability of different difficulties
-        x = 2.0 * (s - HALFRSCORE) / HALFRSCORE;
-        r = (MAXR - MINR) * (x / Math.sqrt(1 + x * x) + 1) / 2 + MINR;
-        // run through difficulty levels
-        for (var i = 1; i < difficultyLevels - 1; i++) {
-            x = 2.0 * (s - (SCOREINTERVAL * i)) / SCOREINTERVAL;
-            // compare p to a sigmoid which increases to 1 when score passes SCOREINTERVAL*i
-            if (p > Math.pow(r, i) * (x / Math.sqrt(1 + x * x) + 1) / 2)
-                // if p is still above this sigmoid, we are not yet at this difficulty level
-                return i - 1;
-        }   
-        return difficultyLevels - 2;
-    }
-
-    /* * * * * * * * * * * * * * * * *
-     * Tetris game logic starts here *
-     * * * * * * * * * * * * * * * * */
-
-    function timeStep() {
-        var trans = new Point(0, 0);
-        var deltaAngle = 0;
-        var moved = false;
-
-        if (boardState == RESET)
+      var text = String.fromCharCode(e.keyCode);
+      if (e.keyCode == 37) {
+        keyDown[MOVELEFT] = true;
+      } else if ((e.keyCode == 38) || (text == 'X')) {
+        keyDown[MOVEUP] = true;
+      } else if (text == 'Z') {
+        keyDown[MOVEBACK] = true;
+      } else if (e.keyCode == 39) {
+        keyDown[MOVERIGHT] = true;
+      } else if (e.keyCode == 40) {
+        keyDown[MOVEDOWN] = true;
+      } else if (text == ' ') {
+        keyDown[MOVEDROP] = true;
+      } else if ((e.keyCode == 16) || (text == 'C')) {
+        keyDown[MOVEHOLD] = true;
+      } else if ((e.keyCode == 13) || (text == 'P')) {
+        if (entered == false) {
+          if (boardState >= GAMEOVER) {
+            if ((e.keyCode == 13) && (gameMode == SINGLEPLAYER))
+              resetBoard();
+          } else if (boardState >= PAUSED) {
             boardState = PLAYING;
-        if (boardState != PLAYING)
-            return;
-
-        // don't move a non-existent block
-        if (curBlock == null) {
-            getNextBlock();
-            return;
-        }
-
-        var command;
-        for (i = 0; i < moveDir.length; i++) {
-            command = moveDir[i];
-            // record the current movement commands
-            if ((command == MOVERIGHT) || (command == MOVELEFT)) {
-                // the last command is the only one that counts
-                trans.x = MOVEDOWN - command;
-            } else if ((command == MOVEUP) || (command == MOVEBACK)) {
-                if (rotated[command - MOVEUP] == false)   {
-                    if (curBlock.rotates == true) {
-                        deltaAngle += (command == MOVEUP ? 1 : 3);
-                    } else {
-                        moved = true;
-                    }
-                    if (keyDown[command - MOVEUP])
-                        rotated[command - MOVEUP] = true;
-                }
-            } else if (command == MOVEDOWN) {
-                trans.y++;
-            } else if (command == MOVEDROP) {
-                if (dropped == false) {
-                    curBlock.y += curBlock.rowsDropped;
-                    moveDir = new Array();
-                    placeBlock(curBlock);
-                    curBlock = null;
-                    if (keyDown[MOVEDROP])
-                        dropped = true;
-                    return;
-                }
-            } else if (command == MOVEHOLD) {
-                if ((held == false) && (holdUsed == false)) {
-                    // get the next block by swapping
-                    moveDir = new Array();
-                    curBlock = null;
-                    getNextBlock(true);
-                    held = true;
-                    return;
-                }
-            }
-        }
-        // clear keys to accept new input
-        moveDir = new Array();
-
-        // account for gravity's action on the block
-        if (frame % GRAVITY == 0)
-            trans.y = 1;
-
-        if (trans.x != 0) {
-            // try to move the block right or left, if it is legal
-            curBlock.x += trans.x;
-            if (checkBlock(curBlock) != OK) {
-                // the left and right movement is obstructed - move back
-                curBlock.x -= trans.x;
-            } else {
-                // record the fact that this block moved
-                moved = true;
-            }
-        }
-
-        if (deltaAngle != 0) {
-            // try to rotate, if needed
-            curBlock.angle += deltaAngle;
-            // move left or right to make room to rotate
-            // trans.x will record how far we move
-            trans.x = 0;
-            while ((checkBlock(curBlock)%OVERLAP == LEFTEDGE) || (checkBlock(curBlock)%OVERLAP == RIGHTEDGE)) {
-                if (checkBlock(curBlock)%OVERLAP == LEFTEDGE) {
-                    // rotated off the left edge - move right to compensate
-                    curBlock.x++;
-                    trans.x++;
-                } else {
-                    // same on the right edge
-                    curBlock.x--;
-                    trans.x--;
-                }
-            }
-            // now the block has been rotated away from the edge
-            var check = checkBlock(curBlock);
-            if ((check != OK) && (check%OVERLAP != TOPEDGE)) {
-                // try to shoveaway from the obstruction, if we have shoveaways left
-                if ((curBlock.shoveaways >= MAXSHOVEAWAYS) || (shoveaway(curBlock) == false)) {
-                    curBlock.angle -= deltaAngle;
-                    curBlock.x -= trans.x;
-                } else {
-                    // we've burned a shoveaway on this block
-                    curBlock.shoveaways++;
-                    moved = true;
-                }
-            } else if (check%OVERLAP == TOPEDGE) {
-                // above the screen - try to move down after rotation
-                var deltaY = 1;
-                curBlock.y++;
-                while (checkBlock(curBlock)%OVERLAP == TOPEDGE) {
-                    deltaY++;
-                    curBlock.y++;
-                }
-                // now check if the block is in a free position
-                if (checkBlock(curBlock) ==  OK) {
-                    moved = true;
-                } else {
-                    // revert to the original angle and x position
-                    curBlock.angle -= deltaAngle;
-                    curBlock.x -= trans.x;
-                    curBlock.y -= deltaY;
-                }
-            } else {
-                // record the fact that this block rotated
-                moved = true;
-            }
-        }
-
-        // if the block moved at all, its local sticking frames are reset
-        // also, recalculate the number of squares this block can drop
-        if (moved == true) {
-            curBlock.localStickFrames = MAXLOCALSTICKFRAMES;
-            curBlock.rowsDropped = calculateRowsDropped(curBlock);
-        }
-
-        if (curBlock.rowsDropped <= 0) {
-            // block cannot drop - start to stick
-            curBlock.globalStickFrames--;
-            if (moved == false)
-                curBlock.localStickFrames--;
-        } else {
-            // the obstacle is no longer there - reset stick frames, and move down if required
-            curBlock.globalStickFrames = MAXGLOBALSTICKFRAMES;
-            curBlock.localStickFrames = MAXLOCALSTICKFRAMES;
-            curBlock.y += trans.y;
-            curBlock.rowsDropped -= trans.y;
-        }
-
-        // if the block has no stick frames left, place it down
-        if ((curBlock.globalStickFrames <= 0) || (curBlock.localStickFrames <= 0)) {
-            placeBlock(curBlock);
-            curBlock = null;
-        }
-    }
-    
-
-    // the shoveaway is a desperate attempt to rotate the block around obstacles
-    function shoveaway(block) {
-        var dir;
-
-        // don't shoveaway a non-existent block
-        if (block == null)
-            return false;
-
-        // attempt to rotate the block and possibly translate it
-        for (var i = 0; i < 3; i++) {
-            // the block can be shifted up to 2 units up in a shoveaway
-            if (checkBlock(block) == OK) {
-                return true;
-            } else {
-                // the block can also be shifted 1 unit left or right
-                // to avoid giving preference to either direction, we decide randomly which one
-                // to try first
-                dir = 1 - 2*(1); // the 2*(1) should be a 2*(rand()%2)
-                block.x += dir;
-                // if either direction works, we return the shoveaway
-                if (checkBlock(block) == OK)
-                    return true;
-                block.x -= 2*dir;
-                if (checkBlock(block) == OK)
-                    return true;
-                // otherwise, move back to center and shift up again
-                block.x += dir;
-                block.y--;
-            }
-        }
-        // at the end of the loop, the block has been moved up 3 squares - move it back down
-        // no safe position was found, so the shoveaway fails
-        block.y += 3;
-        return false;
-    }
-    
-    // place a block on the board, in its new fixed position
-    function placeBlock(block) {
-        var point = new Point();
-
-        // log this event in multiplayer games
-        if (gameMode == MULTIPLAYER) {
-            events.add(PLACEBLOCK);
-            events.add(block.x);
-            events.add(block.y);
-            events.add(block.angle);
-        }
-
-        // don't place a NULL block
-        if (block == null)
-            return;
-
-        for (var i = 0; i < block.numSquares; i++) {
-            // change square coordinates, from local coordinates into global
-            if (block.angle%2 == 0) {
-                // the block is rotated either 0 or 180 degrees
-                point.x = block.x + block.squares[i].x*(1-(block.angle%4));
-                point.y = block.y + block.squares[i].y*(1-(block.angle%4));
-            } else {
-                // the block is rotated either 90 or 270 degrees
-                point.x = block.x + block.squares[i].y*((block.angle%4)-2);
-                point.y = block.y + block.squares[i].x*(2-(block.angle%4));
-            }
-            board[point.x][point.y] = block.color;
-            blocksInRow[point.y]++;
-            if (point.y < highestRow)
-                highestRow = point.y;
             boardChanged = true;
+            previewAnim = 1;
+          } else if (boardState == PLAYING) {
+            if (gameMode == SINGLEPLAYER)
+              boardState = PAUSED;
+          }
+          entered = true;
         }
-
-        // check if any rows have to be removed
-        var rowsCleared = removeRows();
-        if ((gameMode == MULTIPLAYER) && (rowsCleared > 0)) {
-            // in a multiplayer game, log the appropriate attack and show an animation
-            events.add(SENDATTACK);
-            events.add(rowsCleared + ((combo > 1) ? 1 : 0));
-        }
+      }
+      return false;
     }
-    
-    function getNextBlock(swap) {
-        if (!swap) swap = false;
 
-        var b;
+    document.onkeyup = function(e) {
+      if (!e) e = window.event;
+      e.cancelBubble = true;
+      if (e.stopPropagation) e.stopPropagation();
 
-        // log this event in multiplayer games, except when it is called from queueBlock
-        // when curBlockType == -1, this method was called from queueBlock, which is already logged
-        if (gameMode == MULTIPLAYER) {
-            events.add(GETNEXTBLOCK);
-            events.add(swap ? 1 : 0);
-        }
+      var text = String.fromCharCode(e.keyCode);
+      if (e.keyCode == 37) {
+        releaseKey(MOVELEFT);
+       } else if ((e.keyCode == 38) || (text == 'X')) {
+        releaseKey(MOVEUP);
+        rotated[MOVEUP] = false;
+       } else if (text == 'Z') {
+        releaseKey(MOVEBACK);
+        rotated[MOVEBACK] = false;
+      } else if (e.keyCode == 39) {
+        releaseKey(MOVERIGHT);
+      } else if (e.keyCode == 40) {
+        releaseKey(MOVEDOWN);
+      } else if (text == ' ') {
+        releaseKey(MOVEDROP);
+        dropped = false;
+      } else if ((e.keyCode == 16) || (text == 'C')) {
+        releaseKey(MOVEHOLD);
+        held = false;
+      } else if ((e.keyCode == 13) || (text == 'P')){
+        entered = false;
+      }
+      return false;
+    }
 
-        if ((!swap) || (heldBlockType == -1)) {
-            // get the first element from the preview list - it is the new block
-            b = preview[0];
-            preview.shift();
+    for (var i = 0; i < NUMKEYS; i++) {
+      keyDown[i] = false;
+      keyFireFrames[i] = -1;
+    }
+  }
 
-            if (swap) {
-                heldBlockType = curBlockType;
-            }
-            // make the preview scroll to the next block
-            previewAnim = PREVIEWANIMFRAMES;
-            previewOffset = (blockData[b].height+1)*squareWidth/2;
+  function releaseKey(key) {
+    keyDown[key] = false;
+    if (keyFireFrames[key] < 0)
+      moveDir.push(key);
+    keyFireFrames[key] = -1;
+  }
+
+  function queryInputs() {
+    for (var i = 0; i < NUMKEYS; i++) {
+      if (keyDown[i]) {
+        if (keyFireFrames[i] < 0) {
+          moveDir.push(i);
+          keyFireFrames[i] = FIRSTKEYDELAY;
+        } else if (keyFireFrames[i] == 0) {
+          moveDir.push(i);
+          keyFireFrames[i] = LATERKEYDELAY;
         } else {
-            // user swapped out block - do not change the preview list
-            b = heldBlockType;
-            // hold the current block
-            heldBlockType = curBlockType;
+          keyFireFrames[i]--;
         }
+      }
+    }
+  }
 
-        // record the new block type
-        curBlockType = b;
+  function initVectorGraphics() {
+    gameDiv = $('#gameBuffer')[0];
+    gameBuffer = gameDiv.getContext('2d');
 
-        curBlock = new Block();
-        curBlock.x = blockData[b].x;
-        curBlock.y = blockData[b].y - blockData[b].height + MAXBLOCKSIZE;
-        curBlock.height = blockData[b].height;
-        curBlock.numSquares = blockData[b].numSquares;
-        oldBlock.numSquares = blockData[b].numSquares;
-        for (var i = 0; i < curBlock.numSquares; i++) {
-            curBlock.squares[i].x = blockData[b].squares[i].x;
-            curBlock.squares[i].y = blockData[b].squares[i].y;
+    gameBuffer.drawLine = function(x1, y1, x2, y2) {
+      this.beginPath();
+      this.moveTo(x1, y1);
+      this.lineTo(x2, y2);
+      this.stroke();
+      this.closePath();
+    }
+    gameBuffer.fillCircle = function(x, y, r) {
+      this.beginPath();
+      this.arc(x, y, r, 0, 2*Math.PI, true);
+      this.stroke();
+      this.fill();
+      this.closePath();
+    }
 
-            oldBlock.squares[i].x = blockData[b].squares[i].x;
-            oldBlock.squares[i].y = blockData[b].squares[i].y;
-        }
-        curBlock.color = blockData[b].color;
-        curBlock.rotates = blockData[b].rotates;
+    gameBuffer.fillRectOffset = function(x, y, w, h) {
+      gameBuffer.fillRect(x + BORDER, y + BORDER, w, h);
+    }
 
-        curBlock.rowsDropped = calculateRowsDropped(curBlock);
-        if (curBlock.rowsDropped < 0)
-            boardState = GAMEOVER;
+    gameBuffer.drawLineOffset = function(x1, y1, x2, y2) {
+      gameBuffer.drawLine(x1 + BORDER, y1 + BORDER, x2 + BORDER, y2 + BORDER);
+    }
 
-        if (swap == false) {
-            // if we just generated a new block, we can hold again
-            holdUsed = false;
+    gameBuffer.fillTextOffset = function(text, x, y) {
+      gameBuffer.fillText(text, x + BORDER, y + BORDER);
+    }
+
+    gameBuffer.font = '9pt sans-serif';
+    gameBuffer.textBaseline = 'middle';
+    gameBuffer.fillStyle = 'black';
+    gameBuffer.fillRect(0, 0, boardWidth + 2*BORDER, boardHeight + 2*BORDER);
+    gameBuffer.fillStyle = colorCode(28);
+    gameBuffer.fillRect(BORDER/2 - 1, BORDER/2 - 1, boardWidth + BORDER + 2, boardHeight + BORDER + 2);
+    gameBuffer.fillStyle = 'black';
+    gameBuffer.fillRect(BORDER/2 + 1, BORDER/2 + 1, boardWidth + BORDER - 2, boardHeight + BORDER - 2);
+  }
+
+  function resetBoard() {
+    // no commands have been given yet, the hold is unused
+    rotated[0] = false;
+    rotated[1] = false;
+    dropped = false;
+    held = false;
+    entered = false;
+    holdUsed = false;
+    justHeld = false;
+
+    // to start off, the board is entirely 'black'
+    for (var y = 0; y < NUMROWS; y++) {
+      for (var x = 0; x < NUMCOLS; x++) {
+        board[x][y] = 'black';
+      }
+      blocksInRow[y] = 0;
+    }
+    highestRow = NUMROWS;
+    // the board has changed - redraw
+    boardChanged = true;
+    // start the preview without animation
+    preview = new Array();
+    previewAnim = 0;
+    previewOffset = 0;
+    // no block is held - type is -1, the null type
+    heldBlockType = -1;
+    curBlockType = -1;
+    oldBlock = new Block();
+    curBlock = null;
+    moveDir = new Array();
+
+    // reset the score and start the game
+    score = 0; combo = 0;
+    boardState = RESET;
+  }
+
+  function update() {
+    frame = (frame + 1) % MAXFRAMENUM;
+    queryInputs();
+    playTetrisGod()
+    timeStep();
+    draw();
+  }
+
+  function playTetrisGod() {
+    var type, rand, level;
+
+    while (preview.length < PREVIEW) {
+      if (gameMode == SINGLEPLAYER) {
+        level = difficultyLevel(score);
+
+        if (level > 0) {
+          type = randIndex(numBlockTypes[level+1] - numBlockTypes[level]) + numBlockTypes[level];
         } else {
-            holdUsed = true;
-            justHeld = true;
+          type = randIndex(numBlockTypes[0]);
         }
-    }
-    
-    function checkBlock(block) {
-        var point = new Point();
-        var illegality = 0;
-        var overlapsFound = 0;
-
-        // don't check a non-existent block
-        if (block == null)
-            return OK;
-
-        // run through each square to see if the block is in a legal position
-        for (var i = 0; i < block.numSquares; i++) {
-            // change square coordinates, from local coordinates into global
-            if (block.angle%2 == 0) {
-                // the block is rotated either 0 or 180 degrees
-                point.x = block.x + block.squares[i].x*(1-(block.angle%4));
-                point.y = block.y + block.squares[i].y*(1-(block.angle%4));
-            } else {
-                // the block is rotated either 90 or 270 degrees
-                point.x = block.x + block.squares[i].y*((block.angle%4)-2);
-                point.y = block.y + block.squares[i].x*(2-(block.angle%4));
-            }
-
-            if (point.y < 0) {
-                // the highest priority errors are being off the top or bottom edge
-                if (illegality == 0)
-                    illegality = TOPEDGE;
-            } else if (point.y >= NUMROWS) {
-                // bottom edge - this can cause the block to stick
-                if (illegality == 0) illegality = BOTTOMEDGE;
-            } else if (point.x < 0) {
-                // block is off the left edge of the board
-                if (illegality == 0) illegality = LEFTEDGE;
-            } else if (point.x >= NUMCOLS) {
-                if (illegality == 0) illegality = RIGHTEDGE;
-            } else if (board[point.x][point.y] != 'black') {
-                // keep track of the number of overlaps with blocks already placed
-                overlapsFound++;
-            }
-        }
-
-        // the flag returned contains all the information found
-        // flag%OVERLAP gives any edges the block strayed over
-        // flag/OVERLAP gives the number of overlaps
-        // if flag == OK (OK = 0) then the position is legal
-        return illegality + OVERLAP*overlapsFound;
-    }    
-    
-    function calculateRowsDropped(block) {
-        if (block == null)
-            return 0;
-
-        for (var i = 0; i < NUMROWS+1; i++) {
-            // check if the block is in a legal position
-            if (checkBlock(block) == OK) {
-                // still legal - move the block down 1 unit
-                block.y++;
-            } else {
-                // the block is in illegal position - move it back, and
-                // return the number of squares it can move down legally
-                block.y -= i;
-                return i-1;
-            }
-        }
-        return NUMROWS;
-    }
-    
-    // this method is called each time a block is placed - it clears any full rows
-    function removeRows() {
-        var downShift = 0;
-
-        for (var y = NUMROWS-1; y >= highestRow; y--) {
-            if (blocksInRow[y] == NUMCOLS) {
-                // downShift keeps track of the number of cleared rows up to this point
-                downShift++;
-            } else if (downShift > 0) {
-                // down shift this row by downShift rows
-                for (var x = 0; x < NUMCOLS; x++) {
-                    board[x][y+downShift] = board[x][y];
-                    blocksInRow[y+downShift] = blocksInRow[y];
-                }
-            }
-        }
-        // if any rows were removed, add empty space to the top of the board
-        if (downShift > 0) {
-            for (var y = highestRow; y < highestRow+downShift; y++) {
-                for (var x = 0; x < NUMCOLS; x++) {
-                    board[x][y] = 'black';
-                    blocksInRow[y] = 0;
-                }
-            }
-            highestRow += downShift;
-            score += ((1<<downShift)-1);
-            combo++;
-        } else combo = 0;
-
-        return downShift;
-    }
-
-    /* * * * * * * * * * * * * * * *
-     * Drawing routines start here *
-     * * * * * * * * * * * * * * * */
-
-    function draw() {
-        if (boardState == PLAYING) {
-            if (boardChanged == true) {
-                redrawBoard();
-                boardChanged = false;
-            } else {
-                drawBoard();
-            }
-            justHeld = false;
-        } else if ((boardState >= PAUSED) && (boardState < GAMEOVER)) {
-            if (boardState == PAUSED) {
-                gameBuffer.fillStyle = 'black';
-                gameBuffer.fillRectOffset(0, 0, boardWidth, boardHeight);
-
-                gameBuffer.fillStyle = 'white';
-                gameBuffer.textAlign = 'center';
-                gameBuffer.fillTextOffset('-- Paused - press P to resume --', boardWidth/2, boardHeight/2);
-                boardState++;
-            }
-        } else if ((boardState >= GAMEOVER) && (boardState < COUNTDOWN)) {
-            if (boardState == GAMEOVER) {
-                redrawBoard(true);
-                gameBuffer.fillStyle = 'black';
-                gameBuffer.fillRectOffset(boardWidth/2 - 84, boardHeight/2 - 20, 168, 40);
-
-                gameBuffer.fillStyle = 'white';
-                gameBuffer.textAlign = 'center';
-                gameBuffer.textBaseline = 'bottom';
-                gameBuffer.fillTextOffset('-- YOU FAILED --', boardWidth/2, boardHeight/2);
-                gameBuffer.textBaseline = 'top';
-                gameBuffer.fillTextOffset('-- press enter to try again --', boardWidth/2, boardHeight/2);
-                gameBuffer.textBaseline = 'middle';
-                boardState++;
-            }
-        }
-    }
-    
-    function drawBoard() {
-        if (justHeld == true) {
-            var xOffset = oldBlock.x-blockData[heldBlockType].x;
-            var yOffset = oldBlock.y-blockData[heldBlockType].y;
-
-            drawBlock(blockData[heldBlockType], true, false, xOffset, yOffset, oldBlock.angle);
-            drawBlock(blockData[heldBlockType], true, false, xOffset, yOffset+oldBlock.rowsDropped, oldBlock.angle);
+      } else {
+        if (attacks.size > 0) {
+          attack = attacks[0];
+          attacks.shift();
+          type = randIndex(numBlockTypes[attack]-numBlockTypes[attack-1]) + numBlockTypes[attack-1];
         } else {
-            drawBlock(oldBlock, true, false, 0, 0, 0);
-            drawBlock(oldBlock, true, false, 0, oldBlock.rowsDropped, 0);
+          type = randIndex(numBlockTypes[0]);
         }
-
-        if (curBlock != null) {
-            drawBlock(curBlock, false, true, 0, curBlock.rowsDropped);
-            drawBlock(curBlock);
-
-            oldBlock.x = curBlock.x;
-            oldBlock.y = curBlock.y;
-            oldBlock.angle = curBlock.angle;
-            oldBlock.rowsDropped = curBlock.rowsDropped;
-        }
-
-        drawGUI();
+      }
+      preview.push(type);
     }
-    
-    function redrawBoard(tinted, tint) {
-        if (!tinted) var tinted = false;
-        if (!tint) var tint = 'red';
+  }
 
-        var backColor = 'black';
-        var lineColor = mixedColor('white', 'black', LAMBDA);
+  function difficultyLevel(s) {
+    var x, p, r;
+
+    if (difficultyLevels == 1)
+      return 0;
+    // get a random p uniformly from [0, 1]
+    p = Math.random();
+    if (p < 0)
+      p++;
+    // calculate the current ratio r between the probability of different difficulties
+    x = 2.0 * (s - HALFRSCORE) / HALFRSCORE;
+    r = (MAXR - MINR) * (x / Math.sqrt(1 + x * x) + 1) / 2 + MINR;
+    // run through difficulty levels
+    for (var i = 1; i < difficultyLevels - 1; i++) {
+      x = 2.0 * (s - (SCOREINTERVAL * i)) / SCOREINTERVAL;
+      // compare p to a sigmoid which increases to 1 when score passes SCOREINTERVAL*i
+      if (p > Math.pow(r, i) * (x / Math.sqrt(1 + x * x) + 1) / 2)
+        // if p is still above this sigmoid, we are not yet at this difficulty level
+        return i - 1;
+    }   
+    return difficultyLevels - 2;
+  }
+
+  /* * * * * * * * * * * * * * * * *
+   * Tetris game logic starts here *
+   * * * * * * * * * * * * * * * * */
+
+  function timeStep() {
+    var trans = new Point(0, 0);
+    var deltaAngle = 0;
+    var moved = false;
+
+    if (boardState == RESET)
+      boardState = PLAYING;
+    if (boardState != PLAYING)
+      return;
+
+    // don't move a non-existent block
+    if (curBlock == null) {
+      getNextBlock();
+      return;
+    }
+
+    var command;
+    for (i = 0; i < moveDir.length; i++) {
+      command = moveDir[i];
+      // record the current movement commands
+      if ((command == MOVERIGHT) || (command == MOVELEFT)) {
+        // the last command is the only one that counts
+        trans.x = MOVEDOWN - command;
+      } else if ((command == MOVEUP) || (command == MOVEBACK)) {
+        if (rotated[command - MOVEUP] == false)   {
+          if (curBlock.rotates == true) {
+            deltaAngle += (command == MOVEUP ? 1 : 3);
+          } else {
+            moved = true;
+          }
+          if (keyDown[command - MOVEUP])
+            rotated[command - MOVEUP] = true;
+        }
+      } else if (command == MOVEDOWN) {
+        trans.y++;
+      } else if (command == MOVEDROP) {
+        if (dropped == false) {
+          curBlock.y += curBlock.rowsDropped;
+          moveDir = new Array();
+          placeBlock(curBlock);
+          curBlock = null;
+          if (keyDown[MOVEDROP])
+            dropped = true;
+          return;
+        }
+      } else if (command == MOVEHOLD) {
+        if ((held == false) && (holdUsed == false)) {
+          // get the next block by swapping
+          moveDir = new Array();
+          curBlock = null;
+          getNextBlock(true);
+          held = true;
+          return;
+        }
+      }
+    }
+    // clear keys to accept new input
+    moveDir = new Array();
+
+    // account for gravity's action on the block
+    if (frame % GRAVITY == 0)
+      trans.y = 1;
+
+    if (trans.x != 0) {
+      // try to move the block right or left, if it is legal
+      curBlock.x += trans.x;
+      if (checkBlock(curBlock) != OK) {
+        // the left and right movement is obstructed - move back
+        curBlock.x -= trans.x;
+      } else {
+        // record the fact that this block moved
+        moved = true;
+      }
+    }
+
+    if (deltaAngle != 0) {
+      // try to rotate, if needed
+      curBlock.angle += deltaAngle;
+      // move left or right to make room to rotate
+      // trans.x will record how far we move
+      trans.x = 0;
+      while ((checkBlock(curBlock)%OVERLAP == LEFTEDGE) || (checkBlock(curBlock)%OVERLAP == RIGHTEDGE)) {
+        if (checkBlock(curBlock)%OVERLAP == LEFTEDGE) {
+          // rotated off the left edge - move right to compensate
+          curBlock.x++;
+          trans.x++;
+        } else {
+          // same on the right edge
+          curBlock.x--;
+          trans.x--;
+        }
+      }
+      // now the block has been rotated away from the edge
+      var check = checkBlock(curBlock);
+      if ((check != OK) && (check%OVERLAP != TOPEDGE)) {
+        // try to shoveaway from the obstruction, if we have shoveaways left
+        if ((curBlock.shoveaways >= MAXSHOVEAWAYS) || (shoveaway(curBlock) == false)) {
+          curBlock.angle -= deltaAngle;
+          curBlock.x -= trans.x;
+        } else {
+          // we've burned a shoveaway on this block
+          curBlock.shoveaways++;
+          moved = true;
+        }
+      } else if (check%OVERLAP == TOPEDGE) {
+        // above the screen - try to move down after rotation
+        var deltaY = 1;
+        curBlock.y++;
+        while (checkBlock(curBlock)%OVERLAP == TOPEDGE) {
+          deltaY++;
+          curBlock.y++;
+        }
+        // now check if the block is in a free position
+        if (checkBlock(curBlock) ==  OK) {
+          moved = true;
+        } else {
+          // revert to the original angle and x position
+          curBlock.angle -= deltaAngle;
+          curBlock.x -= trans.x;
+          curBlock.y -= deltaY;
+        }
+      } else {
+        // record the fact that this block rotated
+        moved = true;
+      }
+    }
+
+    // if the block moved at all, its local sticking frames are reset
+    // also, recalculate the number of squares this block can drop
+    if (moved == true) {
+      curBlock.localStickFrames = MAXLOCALSTICKFRAMES;
+      curBlock.rowsDropped = calculateRowsDropped(curBlock);
+    }
+
+    if (curBlock.rowsDropped <= 0) {
+      // block cannot drop - start to stick
+      curBlock.globalStickFrames--;
+      if (moved == false)
+        curBlock.localStickFrames--;
+    } else {
+      // the obstacle is no longer there - reset stick frames, and move down if required
+      curBlock.globalStickFrames = MAXGLOBALSTICKFRAMES;
+      curBlock.localStickFrames = MAXLOCALSTICKFRAMES;
+      curBlock.y += trans.y;
+      curBlock.rowsDropped -= trans.y;
+    }
+
+    // if the block has no stick frames left, place it down
+    if ((curBlock.globalStickFrames <= 0) || (curBlock.localStickFrames <= 0)) {
+      placeBlock(curBlock);
+      curBlock = null;
+    }
+  }
+  
+
+  // the shoveaway is a desperate attempt to rotate the block around obstacles
+  function shoveaway(block) {
+    var dir;
+
+    // don't shoveaway a non-existent block
+    if (block == null)
+      return false;
+
+    // attempt to rotate the block and possibly translate it
+    for (var i = 0; i < 3; i++) {
+      // the block can be shifted up to 2 units up in a shoveaway
+      if (checkBlock(block) == OK) {
+        return true;
+      } else {
+        // the block can also be shifted 1 unit left or right
+        // to avoid giving preference to either direction, we decide randomly which one
+        // to try first
+        dir = 1 - 2*(1); // the 2*(1) should be a 2*(rand()%2)
+        block.x += dir;
+        // if either direction works, we return the shoveaway
+        if (checkBlock(block) == OK)
+          return true;
+        block.x -= 2*dir;
+        if (checkBlock(block) == OK)
+          return true;
+        // otherwise, move back to center and shift up again
+        block.x += dir;
+        block.y--;
+      }
+    }
+    // at the end of the loop, the block has been moved up 3 squares - move it back down
+    // no safe position was found, so the shoveaway fails
+    block.y += 3;
+    return false;
+  }
+  
+  // place a block on the board, in its new fixed position
+  function placeBlock(block) {
+    var point = new Point();
+
+    // log this event in multiplayer games
+    if (gameMode == MULTIPLAYER) {
+      events.add(PLACEBLOCK);
+      events.add(block.x);
+      events.add(block.y);
+      events.add(block.angle);
+    }
+
+    // don't place a NULL block
+    if (block == null)
+      return;
+
+    for (var i = 0; i < block.numSquares; i++) {
+      // change square coordinates, from local coordinates into global
+      if (block.angle%2 == 0) {
+        // the block is rotated either 0 or 180 degrees
+        point.x = block.x + block.squares[i].x*(1-(block.angle%4));
+        point.y = block.y + block.squares[i].y*(1-(block.angle%4));
+      } else {
+        // the block is rotated either 90 or 270 degrees
+        point.x = block.x + block.squares[i].y*((block.angle%4)-2);
+        point.y = block.y + block.squares[i].x*(2-(block.angle%4));
+      }
+      board[point.x][point.y] = block.color;
+      blocksInRow[point.y]++;
+      if (point.y < highestRow)
+        highestRow = point.y;
+      boardChanged = true;
+    }
+
+    // check if any rows have to be removed
+    var rowsCleared = removeRows();
+    if ((gameMode == MULTIPLAYER) && (rowsCleared > 0)) {
+      // in a multiplayer game, log the appropriate attack and show an animation
+      events.add(SENDATTACK);
+      events.add(rowsCleared + ((combo > 1) ? 1 : 0));
+    }
+  }
+  
+  function getNextBlock(swap) {
+    if (!swap) swap = false;
+
+    var b;
+
+    // log this event in multiplayer games, except when it is called from queueBlock
+    // when curBlockType == -1, this method was called from queueBlock, which is already logged
+    if (gameMode == MULTIPLAYER) {
+      events.add(GETNEXTBLOCK);
+      events.add(swap ? 1 : 0);
+    }
+
+    if ((!swap) || (heldBlockType == -1)) {
+      // get the first element from the preview list - it is the new block
+      b = preview[0];
+      preview.shift();
+
+      if (swap) {
+        heldBlockType = curBlockType;
+      }
+      // make the preview scroll to the next block
+      previewAnim = PREVIEWANIMFRAMES;
+      previewOffset = (blockData[b].height+1)*squareWidth/2;
+    } else {
+      // user swapped out block - do not change the preview list
+      b = heldBlockType;
+      // hold the current block
+      heldBlockType = curBlockType;
+    }
+
+    // record the new block type
+    curBlockType = b;
+
+    curBlock = new Block();
+    curBlock.x = blockData[b].x;
+    curBlock.y = blockData[b].y - blockData[b].height + MAXBLOCKSIZE;
+    curBlock.height = blockData[b].height;
+    curBlock.numSquares = blockData[b].numSquares;
+    oldBlock.numSquares = blockData[b].numSquares;
+    for (var i = 0; i < curBlock.numSquares; i++) {
+      curBlock.squares[i].x = blockData[b].squares[i].x;
+      curBlock.squares[i].y = blockData[b].squares[i].y;
+
+      oldBlock.squares[i].x = blockData[b].squares[i].x;
+      oldBlock.squares[i].y = blockData[b].squares[i].y;
+    }
+    curBlock.color = blockData[b].color;
+    curBlock.rotates = blockData[b].rotates;
+
+    curBlock.rowsDropped = calculateRowsDropped(curBlock);
+    if (curBlock.rowsDropped < 0)
+      boardState = GAMEOVER;
+
+    if (swap == false) {
+      // if we just generated a new block, we can hold again
+      holdUsed = false;
+    } else {
+      holdUsed = true;
+      justHeld = true;
+    }
+  }
+  
+  function checkBlock(block) {
+    var point = new Point();
+    var illegality = 0;
+    var overlapsFound = 0;
+
+    // don't check a non-existent block
+    if (block == null)
+      return OK;
+
+    // run through each square to see if the block is in a legal position
+    for (var i = 0; i < block.numSquares; i++) {
+      // change square coordinates, from local coordinates into global
+      if (block.angle%2 == 0) {
+        // the block is rotated either 0 or 180 degrees
+        point.x = block.x + block.squares[i].x*(1-(block.angle%4));
+        point.y = block.y + block.squares[i].y*(1-(block.angle%4));
+      } else {
+        // the block is rotated either 90 or 270 degrees
+        point.x = block.x + block.squares[i].y*((block.angle%4)-2);
+        point.y = block.y + block.squares[i].x*(2-(block.angle%4));
+      }
+
+      if (point.y < 0) {
+        // the highest priority errors are being off the top or bottom edge
+        if (illegality == 0)
+          illegality = TOPEDGE;
+      } else if (point.y >= NUMROWS) {
+        // bottom edge - this can cause the block to stick
+        if (illegality == 0) illegality = BOTTOMEDGE;
+      } else if (point.x < 0) {
+        // block is off the left edge of the board
+        if (illegality == 0) illegality = LEFTEDGE;
+      } else if (point.x >= NUMCOLS) {
+        if (illegality == 0) illegality = RIGHTEDGE;
+      } else if (board[point.x][point.y] != 'black') {
+        // keep track of the number of overlaps with blocks already placed
+        overlapsFound++;
+      }
+    }
+
+    // the flag returned contains all the information found
+    // flag%OVERLAP gives any edges the block strayed over
+    // flag/OVERLAP gives the number of overlaps
+    // if flag == OK (OK = 0) then the position is legal
+    return illegality + OVERLAP*overlapsFound;
+  }  
+  
+  function calculateRowsDropped(block) {
+    if (block == null)
+      return 0;
+
+    for (var i = 0; i < NUMROWS+1; i++) {
+      // check if the block is in a legal position
+      if (checkBlock(block) == OK) {
+        // still legal - move the block down 1 unit
+        block.y++;
+      } else {
+        // the block is in illegal position - move it back, and
+        // return the number of squares it can move down legally
+        block.y -= i;
+        return i-1;
+      }
+    }
+    return NUMROWS;
+  }
+  
+  // this method is called each time a block is placed - it clears any full rows
+  function removeRows() {
+    var downShift = 0;
+
+    for (var y = NUMROWS-1; y >= highestRow; y--) {
+      if (blocksInRow[y] == NUMCOLS) {
+        // downShift keeps track of the number of cleared rows up to this point
+        downShift++;
+      } else if (downShift > 0) {
+        // down shift this row by downShift rows
+        for (var x = 0; x < NUMCOLS; x++) {
+          board[x][y+downShift] = board[x][y];
+          blocksInRow[y+downShift] = blocksInRow[y];
+        }
+      }
+    }
+    // if any rows were removed, add empty space to the top of the board
+    if (downShift > 0) {
+      for (var y = highestRow; y < highestRow+downShift; y++) {
+        for (var x = 0; x < NUMCOLS; x++) {
+          board[x][y] = 'black';
+          blocksInRow[y] = 0;
+        }
+      }
+      highestRow += downShift;
+      score += ((1<<downShift)-1);
+      combo++;
+    } else combo = 0;
+
+    return downShift;
+  }
+
+  /* * * * * * * * * * * * * * * *
+   * Drawing routines start here *
+   * * * * * * * * * * * * * * * */
+
+  function draw() {
+    if (boardState == PLAYING) {
+      if (boardChanged == true) {
+        redrawBoard();
+        boardChanged = false;
+      } else {
+        drawBoard();
+      }
+      justHeld = false;
+    } else if ((boardState >= PAUSED) && (boardState < GAMEOVER)) {
+      if (boardState == PAUSED) {
+        gameBuffer.fillStyle = 'black';
+        gameBuffer.fillRectOffset(0, 0, boardWidth, boardHeight);
+
+        gameBuffer.fillStyle = 'white';
+        gameBuffer.textAlign = 'center';
+        gameBuffer.fillTextOffset('-- Paused - press P to resume --', boardWidth/2, boardHeight/2);
+        boardState++;
+      }
+    } else if ((boardState >= GAMEOVER) && (boardState < COUNTDOWN)) {
+      if (boardState == GAMEOVER) {
+        redrawBoard(true);
+        gameBuffer.fillStyle = 'black';
+        gameBuffer.fillRectOffset(boardWidth/2 - 84, boardHeight/2 - 20, 168, 40);
+
+        gameBuffer.fillStyle = 'white';
+        gameBuffer.textAlign = 'center';
+        gameBuffer.textBaseline = 'bottom';
+        gameBuffer.fillTextOffset('-- YOU FAILED --', boardWidth/2, boardHeight/2);
+        gameBuffer.textBaseline = 'top';
+        gameBuffer.fillTextOffset('-- press enter to try again --', boardWidth/2, boardHeight/2);
+        gameBuffer.textBaseline = 'middle';
+        boardState++;
+      }
+    }
+  }
+  
+  function drawBoard() {
+    if (justHeld == true) {
+      var xOffset = oldBlock.x-blockData[heldBlockType].x;
+      var yOffset = oldBlock.y-blockData[heldBlockType].y;
+
+      drawBlock(blockData[heldBlockType], true, false, xOffset, yOffset, oldBlock.angle);
+      drawBlock(blockData[heldBlockType], true, false, xOffset, yOffset+oldBlock.rowsDropped, oldBlock.angle);
+    } else {
+      drawBlock(oldBlock, true, false, 0, 0, 0);
+      drawBlock(oldBlock, true, false, 0, oldBlock.rowsDropped, 0);
+    }
+
+    if (curBlock != null) {
+      drawBlock(curBlock, false, true, 0, curBlock.rowsDropped);
+      drawBlock(curBlock);
+
+      oldBlock.x = curBlock.x;
+      oldBlock.y = curBlock.y;
+      oldBlock.angle = curBlock.angle;
+      oldBlock.rowsDropped = curBlock.rowsDropped;
+    }
+
+    drawGUI();
+  }
+  
+  function redrawBoard(tinted, tint) {
+    if (!tinted) var tinted = false;
+    if (!tint) var tint = 'red';
+
+    var backColor = 'black';
+    var lineColor = mixedColor('white', 'black', LAMBDA);
+    if (tinted) {
+      backColor = mixedColor(tint, backColor, LAMBDA);
+      lineColor = mixedColor(tint, lineColor, LAMBDA);
+      highestRow = 0;
+    }
+
+    // first clear the board with backColor
+    gameBuffer.fillStyle = backColor;
+    gameBuffer.fillRectOffset(0, 0, squareWidth*NUMCOLS, boardHeight);
+
+    // draw in the vertical and horizontal grid lines
+    gameBuffer.strokeStyle = lineColor;
+    gameBuffer.lineWidth = 2;
+    for (var i = 0; i < NUMCOLS; i++) {
+      gameBuffer.drawLineOffset(squareWidth*i, 0, squareWidth*i, boardHeight-1);
+      gameBuffer.drawLineOffset(squareWidth*(i+1)-1, 0, squareWidth*(i+1)-1, boardHeight-1);
+    }
+    for (var i = 0; i < NUMROWS-MAXBLOCKSIZE+1; i++) {
+      gameBuffer.drawLineOffset(0, squareWidth*i, squareWidth*NUMCOLS-1, squareWidth*i);
+      gameBuffer.drawLineOffset(0, squareWidth*(i+1)-1, squareWidth*NUMCOLS-1, squareWidth*(i+1)-1);
+    }
+    // below the highest row, fill in the colors of the blocks there
+    for (var y = highestRow; y < NUMROWS; y++) {
+      for (var x = 0; x < NUMCOLS; x++) {
         if (tinted) {
-            backColor = mixedColor(tint, backColor, LAMBDA);
-            lineColor = mixedColor(tint, lineColor, LAMBDA);
-            highestRow = 0;
-        }
-
-        // first clear the board with backColor
-        gameBuffer.fillStyle = backColor;
-        gameBuffer.fillRectOffset(0, 0, squareWidth*NUMCOLS, boardHeight);
-
-        // draw in the vertical and horizontal grid lines
-        gameBuffer.strokeStyle = lineColor;
-        gameBuffer.lineWidth = 2;
-        for (var i = 0; i < NUMCOLS; i++) {
-            gameBuffer.drawLineOffset(squareWidth*i, 0, squareWidth*i, boardHeight-1);
-            gameBuffer.drawLineOffset(squareWidth*(i+1)-1, 0, squareWidth*(i+1)-1, boardHeight-1);
-        }
-        for (var i = 0; i < NUMROWS-MAXBLOCKSIZE+1; i++) {
-            gameBuffer.drawLineOffset(0, squareWidth*i, squareWidth*NUMCOLS-1, squareWidth*i);
-            gameBuffer.drawLineOffset(0, squareWidth*(i+1)-1, squareWidth*NUMCOLS-1, squareWidth*(i+1)-1);
-        }
-        // below the highest row, fill in the colors of the blocks there
-        for (var y = highestRow; y < NUMROWS; y++) {
-            for (var x = 0; x < NUMCOLS; x++) {
-                if (tinted) {
-                    drawSquare(x, y, mixedColor(tint, board[x][y], LAMBDA), (blocksInRow[y] == NUMCOLS));
-                } else {
-                    drawSquare(x, y, board[x][y], (blocksInRow[y] == NUMCOLS));
-                }
-            }
-        }
-
-        if (curBlock != null) {
-            drawBlock(curBlock, false, true, 0, curBlock.rowsDropped);
-            drawBlock(curBlock);
-        }
-
-        drawGUI(tinted, tint);
-    }
-
-
-    function drawGUI(tinted, tint) {
-        var listY, digit, i;
-        var x = 1;
-        var yQueue = 5*(squareWidth/2)*(PREVIEW+2);
-
-        // if the board is tinted, we erase the entire GUI right here
-        if (tinted == true) {
-            //if (gameMode == SINGLEPLAYER) numbers.frameRow = 2;
-            gameBuffer.fillStyle = mixedColor(tint, 'black', 1.2*LAMBDA);
-            gameBuffer.fillRectOffset(squareWidth*NUMCOLS, 0, boardWidth-squareWidth*NUMCOLS, boardHeight);
+          drawSquare(x, y, mixedColor(tint, board[x][y], LAMBDA), (blocksInRow[y] == NUMCOLS));
         } else {
-            //if (gameMode == SINGLEPLAYER) numbers.frameRow = 1;
-            // otherwise, if the preview is scrolling, then we erase the GUI
-            if (previewAnim > 0) {
-                gameBuffer.fillStyle = 'black';
-                gameBuffer.fillRectOffset(squareWidth*NUMCOLS, 0, boardWidth-squareWidth*NUMCOLS, yQueue+1);
-            }
+          drawSquare(x, y, board[x][y], (blocksInRow[y] == NUMCOLS));
         }
+      }
+    }
 
-        // d acts like a y-Offset for the blocks - increases as we go down the preview
-        if ((previewAnim > 0) || (tinted == true)) {
-            var xOffset = squareWidth*NUMCOLS + sideBoard/2 - 3*squareWidth/4;
-            listY = 0;
-            if (previewAnim > 0) listY = (previewOffset*(previewAnim-1))/PREVIEWANIMFRAMES;
+    if (curBlock != null) {
+      drawBlock(curBlock, false, true, 0, curBlock.rowsDropped);
+      drawBlock(curBlock);
+    }
 
-            var type;
-            for (var j = 0; j < preview.length; j++) {
-                type = preview[j];
-                if (listY == 0) {
-                    // the first one is drawn in a bright color
-                    drawSmallBlock(blockData[type], xOffset, squareWidth+listY, squareWidth/2, -LAMBDA, tinted, tint);
-                } else {
-                    // all others are drawn in dull colors
-                    drawSmallBlock(blockData[type], xOffset, squareWidth+listY, squareWidth/2, 1.2*LAMBDA, tinted, tint);
-                }
-                listY += (blockData[type].height+2)*squareWidth/2;
-            }
-        }
-        if ((holdUsed == true) || (previewAnim > 0) || (tinted == true)) {
-            // the following code executes when the held piece changes
-            if (tinted == true) {
-                gameBuffer.fillStyle = mixedColor(tint, 'black', 1.2*LAMBDA);
-                gameBuffer.fillRectOffset(squareWidth*NUMCOLS, yQueue+1,
-                                    boardWidth-squareWidth*NUMCOLS, boardHeight-yQueue-1);
-            } else {
-                gameBuffer.fillStyle = 'black';
-                gameBuffer.fillRectOffset(squareWidth*NUMCOLS, yQueue+1,
-                                    boardWidth-squareWidth*NUMCOLS, boardHeight-yQueue-1);
-            }
-            drawHold(holdUsed, tinted, tint);
+    drawGUI(tinted, tint);
+  }
 
-            previewAnim--;
-            if (previewAnim == 0)
-                previewOffset = 0;
+
+  function drawGUI(tinted, tint) {
+    var listY, digit, i;
+    var x = 1;
+    var yQueue = 5*(squareWidth/2)*(PREVIEW+2);
+
+    // if the board is tinted, we erase the entire GUI right here
+    if (tinted == true) {
+      //if (gameMode == SINGLEPLAYER) numbers.frameRow = 2;
+      gameBuffer.fillStyle = mixedColor(tint, 'black', 1.2*LAMBDA);
+      gameBuffer.fillRectOffset(squareWidth*NUMCOLS, 0, boardWidth-squareWidth*NUMCOLS, boardHeight);
+    } else {
+      //if (gameMode == SINGLEPLAYER) numbers.frameRow = 1;
+      // otherwise, if the preview is scrolling, then we erase the GUI
+      if (previewAnim > 0) {
+        gameBuffer.fillStyle = 'black';
+        gameBuffer.fillRectOffset(squareWidth*NUMCOLS, 0, boardWidth-squareWidth*NUMCOLS, yQueue+1);
+      }
+    }
+
+    // d acts like a y-Offset for the blocks - increases as we go down the preview
+    if ((previewAnim > 0) || (tinted == true)) {
+      var xOffset = squareWidth*NUMCOLS + sideBoard/2 - 3*squareWidth/4;
+      listY = 0;
+      if (previewAnim > 0) listY = (previewOffset*(previewAnim-1))/PREVIEWANIMFRAMES;
+
+      var type;
+      for (var j = 0; j < preview.length; j++) {
+        type = preview[j];
+        if (listY == 0) {
+          // the first one is drawn in a bright color
+          drawSmallBlock(blockData[type], xOffset, squareWidth+listY, squareWidth/2, -LAMBDA, tinted, tint);
         } else {
-            // when the GUI isn't changing, other than the score, just clear a small rectangle where the score/attack queue will be drawn
-            if (gameMode == SINGLEPLAYER) {
-                gameBuffer.fillStyle = 'black';
-                gameBuffer.fillRectOffset(boardWidth-32-squareWidth/2, boardHeight-squareWidth/2-18, 32, 18);
-            } else {
-                gameBuffer.fillStyle = 'black';
-                gameBuffer.fillRectOffset(squareWidth*NUMCOLS, boardHeight-squareWidth/2-6*ATTACKSIZE-1,
-                                    boardWidth-squareWidth*NUMCOLS, 5*ATTACKSIZE);
-            }
+          // all others are drawn in dull colors
+          drawSmallBlock(blockData[type], xOffset, squareWidth+listY, squareWidth/2, 1.2*LAMBDA, tinted, tint);
         }
+        listY += (blockData[type].height+2)*squareWidth/2;
+      }
+    }
+    if ((holdUsed == true) || (previewAnim > 0) || (tinted == true)) {
+      // the following code executes when the held piece changes
+      if (tinted == true) {
+        gameBuffer.fillStyle = mixedColor(tint, 'black', 1.2*LAMBDA);
+        gameBuffer.fillRectOffset(squareWidth*NUMCOLS, yQueue+1,
+                  boardWidth-squareWidth*NUMCOLS, boardHeight-yQueue-1);
+      } else {
+        gameBuffer.fillStyle = 'black';
+        gameBuffer.fillRectOffset(squareWidth*NUMCOLS, yQueue+1,
+                  boardWidth-squareWidth*NUMCOLS, boardHeight-yQueue-1);
+      }
+      drawHold(holdUsed, tinted, tint);
 
-        if (gameMode == SINGLEPLAYER) {
-            // draw the score by picking the appropriate tiles from numbers
-            gameBuffer.fillStyle = 'white';
-            if (tinted)
-                gameBuffer.fillStyle = mixedColor(tint, 'white', LAMBDA);
-            gameBuffer.textAlign = 'right';
-            gameBuffer.fillTextOffset(score, boardWidth - squareWidth/2 - 8,
-                                      boardHeight - squareWidth/2 - 8);
-            /*
-            numbers.x = boardWidth - squareWidth/2 - 8;
-            numbers.y = yPos + boardHeight - squareWidth/2 - 10;
-            for (i = 0; i < 4; i++) {
-                if ((score >= x) || (i == 0)) {
-                    digit = (score%(10*x))/x;
-                    numbers.frameCol = digit+1;
-                    numbers.draw(g);
-                    numbers.x -= 8;
-                }
-                x = 10*x;
-            }
-            */
-        } else if (attacks.size() > 0) {
-            var xOffset = boardWidth - squareWidth/2 - 6*ATTACKSIZE;
-            var yOffset = boardHeight - squareWidth/2 - 6*ATTACKSIZE;
-            var attack = j.next();
-            drawSmallBlock(blockData[attack + numBlocks + 27], xOffset + 9*ATTACKSIZE/2, yOffset, ATTACKSIZE, LAMBDA);
-            var numDrawn = 1;
-
-            for (var j = 0; j < attacks.length; j++) {
-                attack = attacks[j];
-                drawSmallBlock(blockData[attack + numBlocks + 27], xOffset, yOffset, ATTACKSIZE, 3*LAMBDA);
-                numDrawn++;
-                xOffset -= 9*ATTACKSIZE/2;
-                if (xOffset < squareWidth*NUMCOLS + 6*ATTACKSIZE) {
-                    if (numDrawn == attacks.size()-1) {
-                        attack = j.next();
-                        drawSmallBlock(blockData[attack + numBlocks + 27], xOffset, yOffset, ATTACKSIZE, 3*LAMBDA);
-                    } else if (numDrawn < attacks.size()-1) {
-                        drawSmallBlock(blockData[numBlocks + 70], xOffset, yOffset, ATTACKSIZE, 2*LAMBDA);
-                    }
-                    break;
-                }
-            }
-        }
+      previewAnim--;
+      if (previewAnim == 0)
+        previewOffset = 0;
+    } else {
+      // when the GUI isn't changing, other than the score, just clear a small rectangle where the score/attack queue will be drawn
+      if (gameMode == SINGLEPLAYER) {
+        gameBuffer.fillStyle = 'black';
+        gameBuffer.fillRectOffset(boardWidth-32-squareWidth/2, boardHeight-squareWidth/2-18, 32, 18);
+      }
     }
 
-    function drawHold(shadow, tinted, tint) {
-        var lambda;
+    if (gameMode == SINGLEPLAYER) {
+      // draw the score by picking the appropriate tiles from numbers
+      gameBuffer.fillStyle = 'white';
+      if (tinted)
+        gameBuffer.fillStyle = mixedColor(tint, 'white', LAMBDA);
+      gameBuffer.textAlign = 'right';
+      gameBuffer.fillTextOffset(score, boardWidth - squareWidth/2 - 8,
+                    boardHeight - squareWidth/2 - 8);
+      /*
+      numbers.x = boardWidth - squareWidth/2 - 8;
+      numbers.y = yPos + boardHeight - squareWidth/2 - 10;
+      for (i = 0; i < 4; i++) {
+        if ((score >= x) || (i == 0)) {
+          digit = (score%(10*x))/x;
+          numbers.frameCol = digit+1;
+          numbers.draw(g);
+          numbers.x -= 8;
+        }
+        x = 10*x;
+      }
+      */
+    }
+  }
 
-        if (shadow == true) {
-            // draw the hold rectangle in the GUI to the right, in shadow - signifying that the hold has been used for this block
-            lambda = 2*LAMBDA;
-        } else {
-            // draw the hold rectangle in the GUI to the right in white
-            lambda = 0.0;
-        }
-        var xOffset = squareWidth*NUMCOLS+squareWidth/2;
-        var yOffset = 5*(squareWidth/2)*(PREVIEW+2)+1;
-        if (tinted == true) {
-            gameBuffer.fillStyle = mixedColor(tint, 'white', 3*LAMBDA);
-            gameBuffer.fillRectOffset(xOffset, yOffset, 5*squareWidth/2, 4*squareWidth);
-            gameBuffer.fillStyle = mixedColor(tint, 'black', 1.5*LAMBDA);
-            gameBuffer.fillRectOffset(xOffset+1, yOffset+1, 5*squareWidth/2-2, 4*squareWidth-2);
-        } else {
-            gameBuffer.fillStyle = mixedColor('black', 'white', lambda);
-            gameBuffer.fillRectOffset(xOffset, yOffset, 5*squareWidth/2, 4*squareWidth);
-            gameBuffer.fillStyle = 'black';
-            gameBuffer.fillRectOffset(xOffset+1, yOffset+1, 5*squareWidth/2-2, 4*squareWidth-2);
-        }
+  function drawHold(shadow, tinted, tint) {
+    var lambda;
 
-        if (heldBlockType != -1) {
-            xOffset = squareWidth*NUMCOLS + sideBoard/2 - 3*squareWidth/4;
-            yOffset += 2*squareWidth - ((squareWidth/2)*(blockData[heldBlockType].height))/2;
-            drawSmallBlock(blockData[heldBlockType], xOffset, yOffset, (squareWidth/2), lambda, tinted);
-        }
+    if (shadow == true) {
+      // draw the hold rectangle in the GUI to the right, in shadow - signifying that the hold has been used for this block
+      lambda = 2*LAMBDA;
+    } else {
+      // draw the hold rectangle in the GUI to the right in white
+      lambda = 0.0;
+    }
+    var xOffset = squareWidth*NUMCOLS+squareWidth/2;
+    var yOffset = 5*(squareWidth/2)*(PREVIEW+2)+1;
+    if (tinted == true) {
+      gameBuffer.fillStyle = mixedColor(tint, 'white', 3*LAMBDA);
+      gameBuffer.fillRectOffset(xOffset, yOffset, 5*squareWidth/2, 4*squareWidth);
+      gameBuffer.fillStyle = mixedColor(tint, 'black', 1.5*LAMBDA);
+      gameBuffer.fillRectOffset(xOffset+1, yOffset+1, 5*squareWidth/2-2, 4*squareWidth-2);
+    } else {
+      gameBuffer.fillStyle = mixedColor('black', 'white', lambda);
+      gameBuffer.fillRectOffset(xOffset, yOffset, 5*squareWidth/2, 4*squareWidth);
+      gameBuffer.fillStyle = 'black';
+      gameBuffer.fillRectOffset(xOffset+1, yOffset+1, 5*squareWidth/2-2, 4*squareWidth-2);
     }
 
-    function drawBlock(block, erase, shadow, xOffset, yOffset, aOffset) {
-        if (!erase) var erase = false;
-        if (!shadow) var shadow = false;
-        if (!xOffset) var xOffset = 0;
-        if (!yOffset) var yOffset = 0;
-        if (!aOffset) var aOffset = 0;
-
-        var point = new Point();
-
-        // don't draw a non-existent block
-        if (block == null)
-            return;
-
-        // draw a block, square by square
-        for (var i = 0; i < block.numSquares; i++) {
-            if ((block.angle+aOffset)%2 == 0) {
-                // either the block is unrotated, or rotated 180 degrees - x's correspond to x's
-                point.x = block.x + block.squares[i].x*(1-((block.angle+aOffset)%4));
-                point.y = block.y + block.squares[i].y*(1-((block.angle+aOffset)%4));
-            } else {
-                // the block is rotated 90 or 270 degrees - x's in local coordinates are y's in global coords
-                point.x = block.x + block.squares[i].y*(((block.angle+aOffset)%4)-2);
-                point.y = block.y + block.squares[i].x*(2-((block.angle+aOffset)%4));
-            }
-
-            if ((point.x+xOffset >= 0) && (point.x+xOffset < NUMCOLS) &&
-                    (point.y+yOffset >= 0) && (point.y+yOffset < NUMROWS)) {
-                // draw the block at its correct position
-                // active blocks are drawn in a lighter color than placed blocks
-                if (shadow == false) {
-                    if (erase == false) {
-                        drawSquare(point.x+xOffset, point.y+yOffset, block.color);
-                    } else {
-                        drawSquare(point.x+xOffset, point.y+yOffset, board[point.x+xOffset][point.y+yOffset]);
-                    }
-                } else {
-                    drawSquare(point.x+xOffset, point.y+yOffset, block.color, true);
-                }
-            }
-        }
+    if (heldBlockType != -1) {
+      xOffset = squareWidth*NUMCOLS + sideBoard/2 - 3*squareWidth/4;
+      yOffset += 2*squareWidth - ((squareWidth/2)*(blockData[heldBlockType].height))/2;
+      drawSmallBlock(blockData[heldBlockType], xOffset, yOffset, (squareWidth/2), lambda, tinted);
     }
+  }
 
-    function drawSmallBlock(block, xOffset, yOffset,
-                                width, lambda, tinted, tint) {
-        if (!tinted) var tinted = false;
-        if (!tint) var tint = 'red';
+  function drawBlock(block, erase, shadow, xOffset, yOffset, aOffset) {
+    if (!erase) var erase = false;
+    if (!shadow) var shadow = false;
+    if (!xOffset) var xOffset = 0;
+    if (!yOffset) var yOffset = 0;
+    if (!aOffset) var aOffset = 0;
 
-        point = new Point();
-        pos = new Point();
-        dim = new Point();
+    var point = new Point();
 
-        // don't draw a non-existent block
-        if (block == null)
-            return;
+    // don't draw a non-existent block
+    if (block == null)
+      return;
 
-        // draw a block, square by square
-        for (var i = 0; i < block.numSquares; i++) {
-            if (block.angle%2 == 0) {
-                // either the block is unrotated, or rotated 180 degrees - x's correspond to x's
-                point.x = block.x + block.squares[i].x*(1-(block.angle%4));
-                point.y = block.y + block.squares[i].y*(1-(block.angle%4));
-            } else {
-                // the block is rotated 90 or 270 degrees - x's in local coordinates are y's in global coords
-                point.x = block.x + block.squares[i].y*((block.angle%4)-2);
-                point.y = block.y + block.squares[i].x*(2-(block.angle%4));
-            }
-            pos.x = xOffset + (point.x-NUMCOLS/2+1)*width;
-            pos.y = yOffset + point.y*width;
-            dim.x = width;
-            dim.y = width;
-            if (tinted == true) {
-                gameBuffer.fillStyle = mixedColor(tint, mixedColor('black', block.color, lambda), 3*LAMBDA);
-                gameBuffer.fillRectOffset(pos.x, pos.y, dim.x, dim.y);
-            } else {
-                gameBuffer.fillStyle = mixedColor('black', block.color, lambda);
-                gameBuffer.fillRectOffset(pos.x, pos.y, dim.x, dim.y);
-            }
-        }
-    }
+    // draw a block, square by square
+    for (var i = 0; i < block.numSquares; i++) {
+      if ((block.angle+aOffset)%2 == 0) {
+        // either the block is unrotated, or rotated 180 degrees - x's correspond to x's
+        point.x = block.x + block.squares[i].x*(1-((block.angle+aOffset)%4));
+        point.y = block.y + block.squares[i].y*(1-((block.angle+aOffset)%4));
+      } else {
+        // the block is rotated 90 or 270 degrees - x's in local coordinates are y's in global coords
+        point.x = block.x + block.squares[i].y*(((block.angle+aOffset)%4)-2);
+        point.y = block.y + block.squares[i].x*(2-((block.angle+aOffset)%4));
+      }
 
-    function drawSquare(x, y, color, shadow) {
-        if (!shadow) var shadow = false;
-
-        var pos = new Point();
-        var dim = new Point();
-
-        // don't draw the first MAXBLOCKSIZE-1 rows
-        // shift the other rows up
-        y -= MAXBLOCKSIZE-1;
-        if (y < 0) return;
-
-        // draws a specific square
-        // first position the drawing square around the border
-        pos.x = squareWidth*x;
-        pos.y = squareWidth*y;
-        dim.x = squareWidth;
-        dim.y = squareWidth;
-
-        // draw the square's border, a mix of white and the square's color
+      if ((point.x+xOffset >= 0) && (point.x+xOffset < NUMCOLS) &&
+          (point.y+yOffset >= 0) && (point.y+yOffset < NUMROWS)) {
+        // draw the block at its correct position
+        // active blocks are drawn in a lighter color than placed blocks
         if (shadow == false) {
-            gameBuffer.fillStyle = mixedColor('white', color, LAMBDA);
-            gameBuffer.fillRectOffset(pos.x, pos.y, dim.x, dim.y);
+          if (erase == false) {
+            drawSquare(point.x+xOffset, point.y+yOffset, block.color);
+          } else {
+            drawSquare(point.x+xOffset, point.y+yOffset, board[point.x+xOffset][point.y+yOffset]);
+          }
         } else {
-            // draw the gray border around a shadowed square
-            gameBuffer.fillStyle = mixedColor('white', 'black', LAMBDA);
-            gameBuffer.fillRectOffset(pos.x, pos.y, dim.x, dim.y);
+          drawSquare(point.x+xOffset, point.y+yOffset, block.color, true);
         }
+      }
+    }
+  }
 
-        // shrink the square by 1 on all four sides
-        pos.x += 1;
-        pos.y += 1;
-        dim.x -= 3;
-        dim.y -= 3;
+  function drawSmallBlock(block, xOffset, yOffset,
+                width, lambda, tinted, tint) {
+    if (!tinted) var tinted = false;
+    if (!tint) var tint = 'red';
 
-        // draw the interior of the square in the color board[x][y]
-        if (shadow == false) {
-            gameBuffer.fillStyle = color;
-            gameBuffer.fillRectOffset(pos.x, pos.y, dim.x, dim.y);
-        } else {
-            gameBuffer.fillStyle = 'black';
-            gameBuffer.fillRectOffset(pos.x, pos.y, dim.x, dim.y);
-        }
+    point = new Point();
+    pos = new Point();
+    dim = new Point();
 
-        if (shadow == true) {
-            // draw a sequence of diagonal lines to represent the shadow
-            gameBuffer.strokeStyle = color;
-            gameBuffer.lineWidth = 1;
-            for (var i = 0; i < 2*squareWidth-1; i++) {
-                if (((squareWidth*(x+y))+i)%4 == 0) {
-                    if (i < squareWidth) {
-                        gameBuffer.drawLineOffset(squareWidth*x+1, squareWidth*y+i,
-                                squareWidth*x+i, squareWidth*y);
-                    } else {
-                        gameBuffer.drawLineOffset(squareWidth*(x+1), squareWidth*(y-1)+i+1,
-                                squareWidth*(x-1)+i+1, squareWidth*(y+1)-1);
-                    }
-                }
-            }
-        }
+    // don't draw a non-existent block
+    if (block == null)
+      return;
+
+    // draw a block, square by square
+    for (var i = 0; i < block.numSquares; i++) {
+      if (block.angle%2 == 0) {
+        // either the block is unrotated, or rotated 180 degrees - x's correspond to x's
+        point.x = block.x + block.squares[i].x*(1-(block.angle%4));
+        point.y = block.y + block.squares[i].y*(1-(block.angle%4));
+      } else {
+        // the block is rotated 90 or 270 degrees - x's in local coordinates are y's in global coords
+        point.x = block.x + block.squares[i].y*((block.angle%4)-2);
+        point.y = block.y + block.squares[i].x*(2-(block.angle%4));
+      }
+      pos.x = xOffset + (point.x-NUMCOLS/2+1)*width;
+      pos.y = yOffset + point.y*width;
+      dim.x = width;
+      dim.y = width;
+      if (tinted == true) {
+        gameBuffer.fillStyle = mixedColor(tint, mixedColor('black', block.color, lambda), 3*LAMBDA);
+        gameBuffer.fillRectOffset(pos.x, pos.y, dim.x, dim.y);
+      } else {
+        gameBuffer.fillStyle = mixedColor('black', block.color, lambda);
+        gameBuffer.fillRectOffset(pos.x, pos.y, dim.x, dim.y);
+      }
+    }
+  }
+
+  function drawSquare(x, y, color, shadow) {
+    if (!shadow) var shadow = false;
+
+    var pos = new Point();
+    var dim = new Point();
+
+    // don't draw the first MAXBLOCKSIZE-1 rows
+    // shift the other rows up
+    y -= MAXBLOCKSIZE-1;
+    if (y < 0) return;
+
+    // draws a specific square
+    // first position the drawing square around the border
+    pos.x = squareWidth*x;
+    pos.y = squareWidth*y;
+    dim.x = squareWidth;
+    dim.y = squareWidth;
+
+    // draw the square's border, a mix of white and the square's color
+    if (shadow == false) {
+      gameBuffer.fillStyle = mixedColor('white', color, LAMBDA);
+      gameBuffer.fillRectOffset(pos.x, pos.y, dim.x, dim.y);
+    } else {
+      // draw the gray border around a shadowed square
+      gameBuffer.fillStyle = mixedColor('white', 'black', LAMBDA);
+      gameBuffer.fillRectOffset(pos.x, pos.y, dim.x, dim.y);
     }
 
-    function mixedColor(color1, color2, l) {
-        var rgba1 = Colour.fromString(color1);
-        var rgba2 = Colour.fromString(color2);
+    // shrink the square by 1 on all four sides
+    pos.x += 1;
+    pos.y += 1;
+    dim.x -= 3;
+    dim.y -= 3;
 
-        var new_rgba = new Array(4);
-        for (var i = 0; i < 4; i++) {
-            new_rgba[i] = l*rgba1.values[i] + (1 - l)*rgba2.values[i];
-            new_rgba[i] = Math.max(Math.min(new_rgba[i], 1), 0);
-        }
-
-        return new Colour(Colour.RGBA, new_rgba).toString();
+    // draw the interior of the square in the color board[x][y]
+    if (shadow == false) {
+      gameBuffer.fillStyle = color;
+      gameBuffer.fillRectOffset(pos.x, pos.y, dim.x, dim.y);
+    } else {
+      gameBuffer.fillStyle = 'black';
+      gameBuffer.fillRectOffset(pos.x, pos.y, dim.x, dim.y);
     }
+
+    if (shadow == true) {
+      // draw a sequence of diagonal lines to represent the shadow
+      gameBuffer.strokeStyle = color;
+      gameBuffer.lineWidth = 1;
+      for (var i = 0; i < 2*squareWidth-1; i++) {
+        if (((squareWidth*(x+y))+i)%4 == 0) {
+          if (i < squareWidth) {
+            gameBuffer.drawLineOffset(squareWidth*x+1, squareWidth*y+i,
+                squareWidth*x+i, squareWidth*y);
+          } else {
+            gameBuffer.drawLineOffset(squareWidth*(x+1), squareWidth*(y-1)+i+1,
+                squareWidth*(x-1)+i+1, squareWidth*(y+1)-1);
+          }
+        }
+      }
+    }
+  }
+
+  function mixedColor(color1, color2, l) {
+    var rgba1 = Colour.fromString(color1);
+    var rgba2 = Colour.fromString(color2);
+
+    var new_rgba = new Array(4);
+    for (var i = 0; i < 4; i++) {
+      new_rgba[i] = l*rgba1.values[i] + (1 - l)*rgba2.values[i];
+      new_rgba[i] = Math.max(Math.min(new_rgba[i], 1), 0);
+    }
+
+    return new Colour(Colour.RGBA, new_rgba).toString();
+  }
 </script>
 </head>
 
 <body onload="load();">
 <style>
-    canvas#gameBuffer {
-        border: 1px dotted #bbb;
-    }
+  canvas#gameBuffer {
+    border: 1px dotted #bbb;
+  }
 </style>
 
 <center>
-    <canvas id="gameBuffer" width=367 height=546>
-        <p>YOU YOU ARE NOT USING A BROWSER THAT SUPPORTS THE
-        <a href="http://www.w3.org/html/wg/html5/">HTML5</a>
-        &lt;canvas&gt; FEATURE.</p>
-    </canvas>
+  <canvas id="gameBuffer" width=367 height=546>
+    <p>YOU YOU ARE NOT USING A BROWSER THAT SUPPORTS THE
+    <a href="http://www.w3.org/html/wg/html5/">HTML5</a>
+    &lt;canvas&gt; FEATURE.</p>
+  </canvas>
 </center>
 
 </body>
