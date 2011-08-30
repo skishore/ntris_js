@@ -1,5 +1,18 @@
 var LAMBDA = 0.32;
 
+function mixedColor(color1, color2, l) {
+  var rgba1 = Colour.fromString(color1);
+  var rgba2 = Colour.fromString(color2);
+
+  var new_rgba = new Array(4);
+  for (var i = 0; i < 4; i++) {
+    new_rgba[i] = l*rgba1.values[i] + (1 - l)*rgba2.values[i];
+    new_rgba[i] = Math.max(Math.min(new_rgba[i], 1), 0);
+  }
+
+  return new Colour(Colour.RGBA, new_rgba).toString();
+}
+
 function colorCode(index) {
   return mixedColor('black',
                     mixedColor('white', rainbowCode(index), 1.6*LAMBDA),
@@ -32,7 +45,7 @@ function rainbowCode(index) {
     case 21: return '#FF8C00';
     case 22: return '#20B2AA';
     case 23: return '#B8860B';
-    case 24: return '#FF4500'; 
+    case 24: return '#FF4500';
     case 25: return '#48D1CC';
     case 26: return '#9966CC';
     case 27: return '#FFA500';
