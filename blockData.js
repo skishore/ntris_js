@@ -1,5 +1,15 @@
-var difficultyLevels = rawBlockData[0][0];
-var numBlockTypes = rawBlockData[0].slice(1);
+if (!Block) {
+  console.debug('here');
+  var Block = {};
+  Block.MAXBLOCKSIZE = 10;
+  Block.LEVELS = RawBlockData[0][0];
+
+  Block.TYPES = RawBlockData[0].slice(1);
+  assert(Block.TYPES.length == Block.LEVELS, 'Unexpected number of block types');
+}
+
+var difficultyLevels = RawBlockData[0][0];
+var numBlockTypes = RawBlockData[0].slice(1);
 if (numBlockTypes.length != difficultyLevels) {
   console.debug("Read an incorrect number of difficulty levels");
 }
@@ -11,7 +21,7 @@ function openBlockData() {
 
   var data;
   for (var i = 1; i < numBlocks + 1; i++) {
-    data = rawBlockData[i];
+    data = RawBlockData[i];
 
     var block = new Block();
     block.numSquares = data[2];
