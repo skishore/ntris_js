@@ -16,12 +16,12 @@ var COUNTDOWN = 6;
 var QUIT = -1;
 
 // Block physics engine constants
-var FRAMERATE = 60;
-var MAXFRAMENUM = 840;
+var FRAMERATE = 50;
+var MAXFRAMENUM = 1000;
 var MAXSHOVEAWAYS = 2;
-var MAXLOCALSTICKFRAMES = 24;
-var MAXGLOBALSTICKFRAMES = 120;
-var GRAVITY = 48;
+var MAXLOCALSTICKFRAMES = 20;
+var MAXGLOBALSTICKFRAMES = 80;
+var GRAVITY = 60;
 
 // illegal block flags - these record why a block is illegal
 // given in order of priority, so first a block is tested against
