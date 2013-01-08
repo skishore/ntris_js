@@ -8,10 +8,6 @@ Constants.COLS = 12;
 
 // Screen size constants.
 Constants.SQUAREWIDTH = 21;
-Constants.BORDER = Constants.SQUAREWIDTH;
-Constants.SIDEBOARD = Math.floor(7*Constants.SQUAREWIDTH/2);
-Constants.WIDTH = Constants.SQUAREWIDTH*Constants.COLS + Constants.SIDEBOARD + 2*Constants.BORDER;
-Constants.HEIGHT = Constants.SQUAREWIDTH*Constants.VISIBLEROWS + 2*Constants.BORDER;
 
 // Game states.
 Constants.PLAYING = 0;
