@@ -4,6 +4,8 @@
 
 #gameBuffer {
   border: 1px dotted #bbb;
+  width: 367px;
+  height: 546px;
 }
 
 #gameBuffer:focus {

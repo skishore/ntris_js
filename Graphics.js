@@ -5,8 +5,6 @@ var Graphics = function(target) {
   this.width = Constants.COLS*this.squareWidth + this.sideboard + 2*this.border;
   this.height = Constants.VISIBLEROWS*this.squareWidth + 2*this.border;
 
-  console.debug(this.width);
-  console.debug(target.width());
   assert(this.width == target.width(), 'Error: width mismatch');
   assert(this.height == target.height(), 'Error: height mismatch');
   this.g = target[0].getContext('2d');
