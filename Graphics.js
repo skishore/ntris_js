@@ -59,30 +59,21 @@ Graphics.prototype.clear = function() {
 };
 
 Graphics.prototype.drawGrid = function() {
-  this.lineColor('grey');
-  for (var i = 0; i < Constants.VISIBLEROWS; i++) {
-    this.drawLineOffset(0, i*this.squareWidth,
-        Constants.COLS*this.squareWidth - 1, i*this.squareWidth);
-    this.drawLineOffset(0, (i + 1)*this.squareWidth - 1,
-        Constants.COLS*this.squareWidth - 1, (i + 1)*this.squareWidth - 1);
-  }
-  for (i = 0; i < Constants.COLS; i++) {
-    this.drawLineOffset(i*this.squareWidth, 0,
-        i*this.squareWidth, Constants.VISIBLEROWS*this.squareWidth - 1);
-    this.drawLineOffset((i + 1)*this.squareWidth - 1, 0,
-        (i + 1)*this.squareWidth - 1, Constants.VISIBLEROWS*this.squareWidth - 1);
+  for (var i = Constants.ROWS - Constants.VISIBLEROWS; i < Constants.ROWS; i++) {
+    for (var j = 0; j < Constants.COLS; j++) {
+      this.drawBoardSquare(i, j, Color.BLACK);
+    }
   }
 };
 
 Graphics.prototype.drawBoardSquare = function(i, j, color) {
   i -= (Constants.ROWS - Constants.VISIBLEROWS);
   if (i < 0 || i >= Constants.VISIBLEROWS ||
-      j < 0 || j > Constants.COLS || color == 'black') {
+      j < 0 || j > Constants.COLS) {
     return;
   }
-  console.debug(i, j);
 
-  this.lineColor('red');
+  this.lineColor(Color.lighten(color));
   this.fillColor(color);
   this.drawRectOffset(j*this.squareWidth, i*this.squareWidth,
       this.squareWidth, this.squareWidth);

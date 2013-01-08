@@ -1,7 +1,7 @@
 var Color = {
   BLACK: '#000000',
   WHITE: '#FFFFFF',
-  LAMBDA: 0.2,
+  LAMBDA: 0.32,
 
   mix: function(color1, color2, l) {
     var rgba1 = Colour.fromString(color1);
@@ -25,7 +25,7 @@ var Color = {
   },
 
   colorCode: function(index) {
-    return Color.mix(Color.rainbowCode(index), Color.WHITE, 3.2*Color.LAMBDA);
+    return Color.mix(Color.rainbowCode(index), Color.WHITE, 0.8*Color.LAMBDA);
   },
 
   rainbowCode: function(index) {
