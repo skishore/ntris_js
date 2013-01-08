@@ -1,5 +1,7 @@
 <html>
   <head>
+    <link rel="stylesheet" type="text/css" href="style.css">
+
     <!-- Outside imports. -->
     <script type="text/javascript" src="assert.js"></script>
     <script type="text/javascript" src="colour.js"></script>
@@ -11,8 +13,28 @@
     <script type="text/javascript" src="Block.js"></script>
     <script type="text/javascript" src="Key.js"></script>
     <script type="text/javascript" src="KeyRepeater.js"></script>
+    <script type="text/javascript" src="Graphics.js"></script>
   </head>
 
+  <body class="centered" onload="initialize()">
+    <canvas id="gameBuffer" width=367 height=546>
+      <p>
+        You are not using a browser that supports the
+        <a href="http://www.w3.org/html/wg/html5/">HTML5</a>
+        &lt;canvas&gt; feature.
+      </p>
+    </canvas>
+  </body>
+
+  <script>
+    var graphics;
+    function initialize() {
+      graphics = new Graphics($('#gameBuffer'));
+    }
+  </script>
+</html>
+
+<!--onload="load();"-->
 
 <!--
 <script type="text/javascript" src="ntrisConstants.js"></script>
@@ -1089,27 +1111,3 @@
   }
 </script>
 -->
-
-<body> <!--onload="load();"-->
-<style>
-  #gameBuffer {
-    border: 1px dotted #bbb;
-  }
-
-  #gameBuffer:focus {
-    outline: 0;
-  }
-</style>
-
-<center>
-  <canvas id="gameBuffer" width=367 height=546>
-    <p>
-      You are not using a browser that supports the
-      <a href="http://www.w3.org/html/wg/html5/">HTML5</a>
-      &lt;canvas&gt; feature.
-    </p>
-  </canvas>
-</center>
-
-</body>
-</html>

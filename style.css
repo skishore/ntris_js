@@ -1,0 +1,11 @@
+.centered {
+  text-align: center;
+}
+
+#gameBuffer {
+  border: 1px dotted #bbb;
+}
+
+#gameBuffer:focus {
+  outline: 0;
+}
