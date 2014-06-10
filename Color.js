@@ -1,6 +1,7 @@
 var Color = {
   BLACK: '#000000',
   WHITE: '#FFFFFF',
+  BORDER: '#44FF44',
   LAMBDA: 0.32,
 
   mix: function(color1, color2, l) {

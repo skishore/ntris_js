@@ -54,8 +54,16 @@ Graphics.prototype.fillRectOffset = function(x, y, w, h) {
 };
 
 Graphics.prototype.clear = function() {
-  this.fillColor('black');
+  this.fillColor(Color.BLACK);
   this.fillRect(0, 0, this.width, this.height);
+};
+
+Graphics.prototype.drawBorder = function() {
+  this.lineColor(Color.BORDER);
+  this.drawRect(this.border/2 - 1, this.border/2 - 1,
+      this.width - this.border + 2, this.height - this.border + 2);
+  this.drawRect(this.border/2, this.border/2,
+      this.width - this.border, this.height - this.border);
 };
 
 Graphics.prototype.drawGrid = function() {
@@ -79,4 +87,10 @@ Graphics.prototype.drawBoardSquare = function(i, j, color) {
       this.squareWidth, this.squareWidth);
   this.fillRectOffset(j*this.squareWidth + 1, i*this.squareWidth + 1,
       this.squareWidth - 2, this.squareWidth - 2);
+};
+
+Graphics.prototype.test = function() {
+  this.clear();
+  this.drawBorder();
+  this.drawGrid();
 };
