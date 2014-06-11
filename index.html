@@ -28,11 +28,20 @@
   </body>
 
   <script>
+    var initialize = (function() {
+    "use strict";
+
+    var block = new Block(4);
     var graphics;
+
     function initialize() {
       graphics = new Graphics($('#gameBuffer'));
       graphics.test();
+      graphics.drawBlock(block);
     }
+
+    return initialize;
+    })();
   </script>
 </html>
 

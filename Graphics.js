@@ -70,17 +70,23 @@ Graphics.prototype.drawBorder = function() {
 };
 
 Graphics.prototype.drawGrid = function() {
-  for (var i = Constants.ROWS - Constants.VISIBLEROWS; i < Constants.ROWS; i++) {
+  var min_row = Constants.ROWS - Constants.VISIBLEROWS;
+  for (var i = min_row; i < Constants.ROWS; i++) {
     for (var j = 0; j < Constants.COLS; j++) {
       this.drawBoardSquare(i, j, Color.BLACK);
     }
   }
 };
 
+//////////////////////////////////////////////////////////////////////////////
+// Public interface begins here!
+//////////////////////////////////////////////////////////////////////////////
+
 Graphics.prototype.drawBoardSquare = function(i, j, color) {
+  assert(i >= 0 && i < Constants.ROWS && j >= 0 && j < Constants.COLS,
+      'Invalid board square: (' + i + ', ' + j + ')');
   i -= (Constants.ROWS - Constants.VISIBLEROWS);
-  if (i < 0 || i >= Constants.VISIBLEROWS ||
-      j < 0 || j > Constants.COLS) {
+  if (i < 0) {
     return;
   }
 
@@ -91,6 +97,13 @@ Graphics.prototype.drawBoardSquare = function(i, j, color) {
   this.fillRectOffset(j*this.squareWidth + 1, i*this.squareWidth + 1,
       this.squareWidth - 2, this.squareWidth - 2);
 };
+
+Graphics.prototype.drawBlock = function(block) {
+  var offsets = block.getOffsets();
+  for (var i = 0; i < offsets.length; i++) {
+    this.drawBoardSquare(offsets[i].y, offsets[i].x, block.color);
+  }
+}
 
 Graphics.prototype.test = function() {
   this.clear();

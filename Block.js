@@ -3,6 +3,7 @@ var Block = (function() {
 
 var Block = function(type) {
   if (type === undefined) {
+    assert(!Block.loaded, 'new Block called without a type!');
     return;
   }
 
@@ -21,6 +22,10 @@ var Block = function(type) {
   this.rotates = Block.prototypes[type].rotates;
   this.height = Block.prototypes[type].height;
   this.type = type;
+
+  // Move the block to its starting position with just one row visible.
+  this.x += Math.floor(Constants.COLS/2);
+  this.y += Block.MAXBLOCKSIZE - this.height;
 }
 
 Block.MAXBLOCKSIZE = 10;
@@ -82,37 +87,6 @@ Block.prototype.checkIfRotates = function() {
   return false;
 }
 
-Block.prototype.draw = function() {
-  var lowest = new Point(this.squares[0].x, this.squares[0].y);
-  var highest = new Point(this.squares[0].x, this.squares[0].y);
-
-  for (var i = 1; i < this.squares.length; i++) {
-    if (this.squares[i].x < lowest.x) {
-      lowest.x = this.squares[i].x;
-    } else if (this.squares[i].x > highest.x) {
-      highest.x = this.squares[i].x;
-    }
-    if (this.squares[i].y < lowest.y) {
-      lowest.y = this.squares[i].y;
-    } else if (this.squares[i].y > highest.y) {
-      highest.y = this.squares[i].y;
-    }
-  }
-
-  var str = '';
-  for (var i = lowest.y; i <= highest.y; i++) {
-    for (var j = lowest.x; j <= highest.x; j++) {
-      var found = false;
-      for (var k = 0; k < this.squares.length; k++) {
-        found = found || (this.squares[k].x == j && this.squares[k].y == i);
-      }
-      str += (found ? '*' : '_');
-    }
-    str += '\n';
-  }
-  console.debug(str);
-}
-
 Block.loaded = function() {
   Block.prototypes = [];
 
@@ -138,6 +112,25 @@ Block.loaded = function() {
       'Unexpected number of blocks');
   return true;
 }();
+
+Block.prototype.getOffsets = function() {
+  var result = [];
+
+  if (this.angle % 2 == 0) {
+    for (var i = 0; i < this.squares.length; i++) {
+      var x = this.x + (1 - (this.angle % 4))*this.squares[i].x;
+      var y = this.y + (1 - (this.angle % 4))*this.squares[i].y;
+      result.push(new Point(x, y));
+    }
+  } else {
+    for (var i = 0; i < this.squares.length; i++) {
+      var x = this.x + (2 - (this.angle % 4))*this.squares[i].y;
+      var y = this.y + (2 - (this.angle % 4))*this.squares[i].x;
+      result.push(new Point(x, y));
+    }
+  }
+  return result;
+}
 
 return Block;
 })();
