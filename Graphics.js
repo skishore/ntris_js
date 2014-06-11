@@ -97,9 +97,8 @@ Graphics.prototype.drawBlock = function(block) {
 Graphics.prototype.eraseBlock = function(block) {
   var offsets = block.getOffsets();
   for (var i = 0; i < offsets.length; i++) {
-    this.drawBoardSquare(offsets[i].y + 3, offsets[i].x, Color.BLACK);
+    this.drawBoardSquare(offsets[i].y, offsets[i].x, Color.BLACK);
   }
-  console.log(this.g.strokeStyle);
 }
 
 return Graphics;
