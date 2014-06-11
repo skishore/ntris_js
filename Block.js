@@ -1,4 +1,7 @@
-Block = function(type) {
+var Block = (function() {
+"use strict";
+
+var Block = function(type) {
   if (type === undefined) {
     return;
   }
@@ -135,3 +138,6 @@ Block.loaded = function() {
       'Unexpected number of blocks');
   return true;
 }();
+
+return Block;
+})();

@@ -1,4 +1,7 @@
-KeyRepeater = function(pause, repeat, target) {
+var KeyRepeater = (function() {
+"use strict";
+
+var KeyRepeater = function(pause, repeat, target) {
   this.pause = pause;
   this.repeat = repeat;
 
@@ -70,3 +73,6 @@ KeyRepeater.prototype.query = function(e) {
   this.keys.length = 0;
   return result;
 };
+
+return KeyRepeater;
+})();

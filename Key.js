@@ -1,3 +1,6 @@
+var Key = (function() {
+"use strict";
+
 var Key = {};
 
 Key.NUMKEYS = 7;
@@ -25,3 +28,6 @@ Key.translateKeyCode = function(keyCode) {
     default: return -1;
   }
 }
+
+return Key;
+})();

@@ -1,5 +1,6 @@
+// This file adds the assert function to the global namespace.
 function assert(clause, message) {
   if (!clause) {
-    console.debug(message);
+    throw new Error(message);
   }
 }

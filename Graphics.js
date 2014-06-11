@@ -1,3 +1,6 @@
+var Graphics = (function() {
+"use strict";
+
 var Graphics = function(target) {
   this.squareWidth = Constants.SQUAREWIDTH;
   this.border = this.squareWidth;
@@ -94,3 +97,6 @@ Graphics.prototype.test = function() {
   this.drawBorder();
   this.drawGrid();
 };
+
+return Graphics;
+})();
