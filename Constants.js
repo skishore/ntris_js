@@ -18,7 +18,7 @@ Constants.PAUSED = 1;
 Constants.GAMEOVER = 2;
 
 // Game engine constants.
-Constants.FRAMERATE = 10;
+Constants.FRAMERATE = 60;
 Constants.FRAMEDELAY = Math.floor(1000/Constants.FRAMERATE);
 Constants.MAXFRAME = 3628800;
 Constants.PAUSE = 2;
