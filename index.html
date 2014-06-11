@@ -19,13 +19,7 @@
   </head>
 
   <body class="centered" onload="initialize()">
-    <canvas id="gameBuffer" width=367 height=546>
-      <p>
-        You are not using a browser that supports the
-        <a href="http://www.w3.org/html/wg/html5/">HTML5</a>
-        &lt;canvas&gt; feature.
-      </p>
-    </canvas>
+    <div class="ntris-game"></div>
   </body>
 
   <script>
@@ -33,10 +27,9 @@
     "use strict";
 
     function initialize() {
-      var target = $('#gameBuffer');
+      var target = $('.ntris-game');
       var graphics = new Graphics(target);
-      graphics.test();
-      var board = new Board(graphics, target);
+      //var board = new Board(graphics, target);
     }
 
     return initialize;

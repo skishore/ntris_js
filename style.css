@@ -2,12 +2,28 @@
   text-align: center;
 }
 
-#gameBuffer {
-  border: 1px dotted #bbb;
-  width: 367px;
-  height: 546px;
+.ntris-game {
+  background-color: black;
+  display: inline-block;
+  margin: 0 auto;
 }
 
-#gameBuffer:focus {
-  outline: 0;
+.ntris-game .ntris-border {
+  border: 2px solid #484;
+  display: inline-block;
+  margin: 0 auto;
+}
+
+.ntris-game .ntris-board {
+  float: left;
+}
+
+.ntris-game .ntris-board .ntris-square {
+  float: left;
+  border-style: solid;
+  border-width: 1px;
+}
+
+.ntris-game .ntris-sideboard {
+  float: left;
 }
