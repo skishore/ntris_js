@@ -15,6 +15,7 @@
     <script type="text/javascript" src="Key.js"></script>
     <script type="text/javascript" src="KeyRepeater.js"></script>
     <script type="text/javascript" src="Graphics.js"></script>
+    <script type="text/javascript" src="Board.js"></script>
   </head>
 
   <body class="centered" onload="initialize()">
@@ -31,13 +32,11 @@
     var initialize = (function() {
     "use strict";
 
-    var block = new Block(4);
-    var graphics;
-
     function initialize() {
-      graphics = new Graphics($('#gameBuffer'));
+      var target = $('#gameBuffer');
+      var graphics = new Graphics(target);
       graphics.test();
-      graphics.drawBlock(block);
+      var board = new Board(graphics, target);
     }
 
     return initialize;

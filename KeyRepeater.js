@@ -33,8 +33,8 @@ KeyRepeater.prototype.keydown_handler = function() {
     var key = Key.translateKeyCode(repeater.keyCode(e));
     if (key >= 0) {
       repeater.isKeyDown[key] = true;
+      e.preventDefault();
     }
-    return false;
   };
 };
 
@@ -48,8 +48,8 @@ KeyRepeater.prototype.keyup_handler = function() {
         repeater.keys.push(key);
       }
       repeater.keyFireFrames[key] = -1;
+      e.preventDefault();
     }
-    return false;
   };
 };
 

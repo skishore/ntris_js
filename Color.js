@@ -12,7 +12,7 @@ var Color = {
     var rgba2 = Colour.fromString(color2);
 
     var new_rgba = new Array(4);
-    for (var i = 0; i < 4; i++) {
+    for (var i = 0; i < 3; i++) {
       new_rgba[i] = (1 - l)*rgba1.values[i] + l*rgba2.values[i];
       new_rgba[i] = Math.max(Math.min(new_rgba[i], 1), 0);
     }
