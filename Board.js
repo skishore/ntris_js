@@ -3,6 +3,7 @@ var Board = (function() {
 
 var Board = function(graphics, target) {
   this.graphics = graphics;
+  this.repeater = new KeyRepeater(Constants.PAUSE, Constants.REPEAT, target);
 
   this.data = [];
   for (var i = 0; i < Constants.ROWS; i++) {
@@ -13,22 +14,40 @@ var Board = function(graphics, target) {
     this.data.push(row);
   }
 
-  this.repeater = new KeyRepeater(Constants.PAUSE, Constants.REPEAT, target);
-
-  this.curBlock = new Block(7);
-  this.frame = 0;
+  this.reset();
 
   this.afterTime = (new Date).getTime();
   this.sleepTime = Constants.FRAMEDELAY;
   setTimeout(this.gameLoop.bind(this), this.sleepTime);
 }
 
+Board.prototype.reset = function() {
+  for (var i = 0; i < Constants.ROWS; i++) {
+    for (var j = 0; j < Constants.COLS; j++) {
+      this.data[i][j] = 0;
+    }
+  }
+
+  this.block = null;
+  this.frame = 0;
+  this.preview = [];
+  this.previewFrame = 0;
+  this.previewOffset = 0;
+  this.held = false;
+  this.heldBlockType = -1;
+  this.score = 0;
+  this.state = Constants.PLAYING;
+}
+
 Board.prototype.gameLoop = function() {
   this.beforeTime = (new Date).getTime();
   var extraTime = (this.beforeTime - this.afterTime) - this.sleepTime;
 
-  this.frame = (this.frame + 1) % Constants.MAXFRAME;
-  this.update(this.repeater.query());
+  var frames = Math.floor(extraTime/Constants.FRAMEDELAY) + 1;
+  for (var i = 0; i < frames; i++) {
+    this.update();
+  }
+  this.graphics.flip();
 
   this.afterTime = (new Date).getTime();
   var sleepTime =
@@ -37,10 +56,45 @@ Board.prototype.gameLoop = function() {
 }
 
 Board.prototype.update = function(keys) {
-  this.graphics.eraseBlock(this.curBlock);
-  this.moveBlock(this.curBlock, this.data, keys);
-  this.graphics.drawBlock(this.curBlock);
-  this.graphics.flip();
+  var keys = this.repeater.query();
+
+  if (this.state == Constants.PLAYING) {
+    this.frame = (this.frame + 1) % Constants.MAXFRAME;
+
+    this.graphics.eraseBlock(this.block);
+    if (!this.held && keys.indexOf(Key.HOLD) >= 0) {
+      this.block = this.nextBlock(this.block);
+    } else if (this.block == null ||
+               this.moveBlock(this.block, this.data, keys)) {
+      this.block = this.nextBlock();
+    }
+    this.graphics.drawBlock(this.block);
+  } else {
+    assert(false, "Unexpected state: " + this.state);
+  }
+}
+
+Board.prototype.nextBlock = function(swap) {
+  var type = -1;
+  if (swap) {
+    type = this.heldBlockType;
+    this.heldBlockType = swap.type;
+  }
+  if (type < 0) {
+    var blocksNeeded = Constants.PREVIEW - this.preview.length + 1;
+    for (var i = 0; i < blocksNeeded; i++) {
+      this.preview.push(this.playTetrisGod(this.score));
+    }
+    this.previewFrame = Constants.PREVIEWFRAMES;
+    type = this.preview.shift();
+  }
+
+  this.held = (swap ? true : false);
+  return new Block(type);
+}
+
+Board.prototype.playTetrisGod = function(score) {
+  return Math.floor(29*Math.random());
 }
 
 Board.prototype.moveBlock = function(block, data, keys) {

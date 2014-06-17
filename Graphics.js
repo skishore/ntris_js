@@ -68,16 +68,20 @@ Graphics.prototype.drawBoardSquare = function(i, j, color) {
 };
 
 Graphics.prototype.drawBlock = function(block) {
-  var offsets = block.getOffsets();
-  for (var i = 0; i < offsets.length; i++) {
-    this.drawBoardSquare(offsets[i].y, offsets[i].x, block.color);
+  if (block != null) {
+    var offsets = block.getOffsets();
+    for (var i = 0; i < offsets.length; i++) {
+      this.drawBoardSquare(offsets[i].y, offsets[i].x, block.color);
+    }
   }
 }
 
 Graphics.prototype.eraseBlock = function(block) {
-  var offsets = block.getOffsets();
-  for (var i = 0; i < offsets.length; i++) {
-    this.drawBoardSquare(offsets[i].y, offsets[i].x, 0);
+  if (block != null) {
+    var offsets = block.getOffsets();
+    for (var i = 0; i < offsets.length; i++) {
+      this.drawBoardSquare(offsets[i].y, offsets[i].x, 0);
+    }
   }
 }
 
