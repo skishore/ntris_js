@@ -5,16 +5,27 @@ var Color = {
   BLACK: '#000000',
   WHITE: '#FFFFFF',
   BORDER: '#44FF44',
-  LAMBDA: 0.32,
+  LAMBDA: 0.36,
+  MAX: 29,
 
   initialize: function(colorCode) {
     this.body_colors = [];
     this.edge_colors = [];
-    for (var i = -1; i < 29; i++) {
-      var color = (i < 0 ? this.BLACK : colorCode(i));
-      this.body_colors.push(color);
-      this.edge_colors.push(this.lighten(color));
+    // Push color 0, which is always black.
+    this.push_color(this.BLACK);
+    // Push colors for squares that are on the board.
+    for (var i = 0; i < this.MAX; i++) {
+      this.push_color(colorCode(i));
     }
+    // Push lighter colors for squares in currently active blocks.
+    for (var i = 0; i < this.MAX; i++) {
+      this.push_color(this.mix(colorCode(i), this.WHITE, Color.LAMBDA));
+    }
+  },
+
+  push_color: function(color) {
+    this.body_colors.push(color);
+    this.edge_colors.push(this.lighten(color));
   },
 
   mix: function(color1, color2, l) {

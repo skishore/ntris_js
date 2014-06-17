@@ -71,7 +71,8 @@ Graphics.prototype.drawBlock = function(block) {
   if (block != null) {
     var offsets = block.getOffsets();
     for (var i = 0; i < offsets.length; i++) {
-      this.drawBoardSquare(offsets[i].y, offsets[i].x, block.color);
+      var offset = offsets[i];
+      this.drawBoardSquare(offset.y, offset.x, block.color + Color.MAX);
     }
   }
 }
@@ -80,7 +81,8 @@ Graphics.prototype.eraseBlock = function(block) {
   if (block != null) {
     var offsets = block.getOffsets();
     for (var i = 0; i < offsets.length; i++) {
-      this.drawBoardSquare(offsets[i].y, offsets[i].x, 0);
+      var offset = offsets[i];
+      this.drawBoardSquare(offset.y, offset.x, 0);
     }
   }
 }
