@@ -105,7 +105,7 @@ Board.prototype.nextBlock = function(swap) {
 }
 
 Board.prototype.playTetrisGod = function(score) {
-  return Math.floor(29*Math.random());
+  return Math.floor(Block.TYPES[0]*Math.random());
 }
 
 // Move the block and possibly update data. Note that this function can also
