@@ -5,12 +5,12 @@ var Constants = {};
 
 // Board size constants.
 Constants.VISIBLEROWS = 24;
-// (VISIBLEROWS + Block.MAXBLOCKSIZE - 1)
+// ROWS = (VISIBLEROWS + Block.MAXBLOCKSIZE - 1)
 Constants.ROWS = (Constants.VISIBLEROWS + 10 - 1);
 Constants.COLS = 12;
 
 // Screen size constants.
-Constants.SQUAREWIDTH = 21;
+Constants.SQUAREWIDTH = 14;
 
 // Game states.
 Constants.PLAYING = 0;
@@ -25,7 +25,7 @@ Constants.PAUSE = 3;
 Constants.REPEAT = 0;
 
 // Block movement constants, some of which are imported by Block.
-Constants.GRAVITY = 60;
+Constants.GRAVITY = Constants.FRAMERATE;
 Constants.SHOVEAWAYS = 2;
 Constants.LOCALSTICKFRAMES = 24;
 Constants.GLOBALSTICKFRAMES = 120;

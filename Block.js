@@ -125,7 +125,7 @@ Block.prototype.getOffsets = function() {
     }
   } else {
     for (var i = 0; i < this.squares.length; i++) {
-      var x = this.x + (2 - (this.angle % 4))*this.squares[i].y;
+      var x = this.x - (2 - (this.angle % 4))*this.squares[i].y;
       var y = this.y + (2 - (this.angle % 4))*this.squares[i].x;
       result.push(new Point(x, y));
     }
