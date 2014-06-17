@@ -18,10 +18,10 @@ Constants.PAUSED = 1;
 Constants.GAMEOVER = 2;
 
 // Game engine constants.
-Constants.FRAMERATE = 60;
+Constants.FRAMERATE = 36;
 Constants.FRAMEDELAY = Math.floor(1000/Constants.FRAMERATE);
 Constants.MAXFRAME = 3628800;
-Constants.PAUSE = 2;
+Constants.PAUSE = 3;
 Constants.REPEAT = 0;
 
 // Block movement constants, some of which are imported by Block.
