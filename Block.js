@@ -12,8 +12,8 @@ var Block = function(type) {
   this.y = Block.prototypes[type].y;
   this.angle = 0;
   this.shoveaways = Constants.SHOVEAWAYS;
-  this.localStickFrames = Constants.MAXLOCALSTICKFRAMES;
-  this.globalStickFrames = Constants.MAXGLOBALSTICKFRAMES;
+  this.localStickFrames = Constants.LOCALSTICKFRAMES;
+  this.globalStickFrames = Constants.GLOBALSTICKFRAMES;
   this.rowsFree = 0;
 
   // These properties should be immutable.
