@@ -27,8 +27,8 @@ Constants.REPEAT = 0;
 // Block movement constants, some of which are imported by Block.
 Constants.GRAVITY = Constants.FRAMERATE;
 Constants.SHOVEAWAYS = 2;
-Constants.LOCALSTICKFRAMES = 24;
-Constants.GLOBALSTICKFRAMES = 120;
+Constants.LOCALSTICKFRAMES = Constants.FRAMERATE/2;
+Constants.GLOBALSTICKFRAMES = 2*Constants.FRAMERATE;
 
 // Block overlap codes, in order of priority.
 Constants.LEFTEDGE = 0;
