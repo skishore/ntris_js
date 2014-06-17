@@ -11,6 +11,7 @@ var Graphics = function(target) {
   this.elements = this.build(target);
   assert(this.width == target.outerWidth(), 'Error: width mismatch');
   assert(this.height == target.outerHeight(), 'Error: height mismatch');
+  this.delta = {};
 };
 
 Graphics.prototype.build = function(target) {
@@ -29,19 +30,16 @@ Graphics.prototype.build = function(target) {
 
   result.board = [];
   var hiddenRows = Constants.ROWS - Constants.VISIBLEROWS;
-  for (var i = 0; i < Constants.VISIBLEROWS; i++) {
-    var row = [];
-    for (var j = 0; j < Constants.COLS; j++) {
-      var square = $('<div>').addClass('ntris-square').css({
-        "background-color": Color.BLACK,
-        "border-color": Color.lighten(Color.BLACK),
-        "height": this.squareWidth - 2,
-        "width": this.squareWidth - 2,
-      })
-      row.push(square);
-      board.append(square);
-    }
-    result.board.push(row);
+  for (var i = 0; i < Constants.VISIBLEROWS*Constants.COLS; i++) {
+    var square = $('<div>').addClass('ntris-square').css({
+      "background-color": Color.BLACK,
+      "border-color": Color.lighten(Color.BLACK),
+      "height": this.squareWidth - 2,
+      "width": this.squareWidth - 2,
+    })
+    square.data('color', 0);
+    board.append(square);
+    result.board.push(square);
   }
 
   result.sideboard = $('<div>').addClass('ntris-sideboard').css({
@@ -52,23 +50,10 @@ Graphics.prototype.build = function(target) {
   return result;
 };
 
-Graphics.prototype.drawBorder = function() {
-  return;
-  this.lineColor(Color.BORDER);
-  this.drawRect(this.border/2 - 1, this.border/2 - 1,
-      this.width - this.border + 2, this.height - this.border + 2);
-  this.drawRect(this.border/2, this.border/2,
-      this.width - this.border, this.height - this.border);
-};
-
-Graphics.prototype.drawGrid = function() {
-  return;
-  var min_row = Constants.ROWS - Constants.VISIBLEROWS;
-  for (var i = min_row; i < Constants.ROWS; i++) {
-    for (var j = 0; j < Constants.COLS; j++) {
-      this.drawBoardSquare(i, j, Color.BLACK);
-    }
-  }
+Graphics.prototype.getSquareIndex = function(i, j) {
+  assert(i >= 0 && i < Constants.ROWS && j >= 0 && j < Constants.COLS,
+      'Invalid board square: (' + i + ', ' + j + ')');
+  return Constants.COLS*(i - Constants.ROWS + Constants.VISIBLEROWS) + j;
 };
 
 //////////////////////////////////////////////////////////////////////////////
@@ -76,14 +61,9 @@ Graphics.prototype.drawGrid = function() {
 //////////////////////////////////////////////////////////////////////////////
 
 Graphics.prototype.drawBoardSquare = function(i, j, color) {
-  assert(i >= 0 && i < Constants.ROWS && j >= 0 && j < Constants.COLS,
-      'Invalid board square: (' + i + ', ' + j + ')');
-  i -= (Constants.ROWS - Constants.VISIBLEROWS);
-  if (i >= 0) {
-    this.elements.board[i][j].css({
-      'background-color': color,
-      'border-color': Color.lighten(color),
-    });
+  var k = this.getSquareIndex(i, j);
+  if (k >= 0) {
+    this.delta[k] = color;
   }
 };
 
@@ -97,8 +77,21 @@ Graphics.prototype.drawBlock = function(block) {
 Graphics.prototype.eraseBlock = function(block) {
   var offsets = block.getOffsets();
   for (var i = 0; i < offsets.length; i++) {
-    this.drawBoardSquare(offsets[i].y, offsets[i].x, Color.BLACK);
+    this.drawBoardSquare(offsets[i].y, offsets[i].x, 0);
   }
+}
+
+Graphics.prototype.flip = function() {
+  for (var k in this.delta) {
+    var color = this.delta[k];
+    var square = this.elements.board[k];
+    if (square.data('color') != color) {
+      square.data('color', color);
+      square.css('background-color', Color.body_colors[color]);
+      square.css('border-color', Color.edge_colors[color]);
+    }
+  }
+  this.delta = {};
 }
 
 return Graphics;

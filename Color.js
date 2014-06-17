@@ -7,6 +7,16 @@ var Color = {
   BORDER: '#44FF44',
   LAMBDA: 0.32,
 
+  initialize: function(colorCode) {
+    this.body_colors = [];
+    this.edge_colors = [];
+    for (var i = -1; i < 29; i++) {
+      var color = (i < 0 ? this.BLACK : colorCode(i));
+      this.body_colors.push(color);
+      this.edge_colors.push(this.lighten(color));
+    }
+  },
+
   mix: function(color1, color2, l) {
     var rgba1 = Colour.fromString(color1);
     var rgba2 = Colour.fromString(color2);
@@ -63,10 +73,12 @@ var Color = {
       case 26: return '#9966CC';
       case 27: return '#FFA500';
       case 28: return '#00FF00';
-      default: return '#FF0000';
+      default: return '#000000';
     }
   },
 };
+
+Color.initialize(Color.colorCode);
 
 return Color;
 })();

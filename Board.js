@@ -24,6 +24,7 @@ Board.prototype.gameLoop = function() {
   this.graphics.eraseBlock(this.curBlock);
   this.moveBlock(this.curBlock, this.data, this.repeater.query());
   this.graphics.drawBlock(this.curBlock);
+  this.graphics.flip();
 }
 
 Board.prototype.moveBlock = function(block, data, keys) {

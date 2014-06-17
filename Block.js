@@ -102,7 +102,8 @@ Block.loaded = function() {
     for (var j = 0; j < numSquares; j++) {
       block.squares.push(new Point(data[2*j + 3], data[2*j + 4]));
     }
-    block.color = Color.colorCode(data[2*numSquares + 3]);
+    // The color 0 is reserved for empty (black) squares.
+    block.color = data[2*numSquares + 3] + 1;
     block.height = block.calculateHeight();
     block.rotates = block.checkIfRotates();
     Block.prototypes.push(block);
