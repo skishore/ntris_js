@@ -16,13 +16,29 @@ var Board = function(graphics, target) {
   this.repeater = new KeyRepeater(Constants.PAUSE, Constants.REPEAT, target);
 
   this.curBlock = new Block(7);
+  this.frame = 0;
 
-  setInterval(this.gameLoop.bind(this), Constants.FRAMEDELAY);
+  this.afterTime = (new Date).getTime();
+  this.sleepTime = Constants.FRAMEDELAY;
+  setTimeout(this.gameLoop.bind(this), this.sleepTime);
 }
 
 Board.prototype.gameLoop = function() {
+  this.beforeTime = (new Date).getTime();
+  var extraTime = (this.beforeTime - this.afterTime) - this.sleepTime;
+
+  this.frame = (this.frame + 1) % Constants.MAXFRAME;
+  this.update(this.repeater.query());
+
+  this.afterTime = (new Date).getTime();
+  var sleepTime =
+      Constants.FRAMEDELAY - (this.afterTime - this.beforeTime) - extraTime;
+  setTimeout(this.gameLoop.bind(this), sleepTime);
+}
+
+Board.prototype.update = function(keys) {
   this.graphics.eraseBlock(this.curBlock);
-  this.moveBlock(this.curBlock, this.data, this.repeater.query());
+  this.moveBlock(this.curBlock, this.data, keys);
   this.graphics.drawBlock(this.curBlock);
   this.graphics.flip();
 }
