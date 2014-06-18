@@ -91,13 +91,14 @@ Graphics.prototype.getSquareIndex = function(i, j) {
 Graphics.prototype.drawFreeBlock = function(target, type, x, y, w, lambda) {
   if (type >= 0) {
     var block = Block.prototypes[type];
-    var color = Color.mix(Color.body_colors[block.color], Color.BLACK, lambda);
+    var light = Color.mix(Color.body_colors[block.color], Color.BLACK, lambda);
+    var dark = Color.mix(light, Color.BLACK, 0.3*Color.LAMBDA);
 
     var offsets = block.getOffsets();
     for (var i = 0; i < offsets.length; i++) {
       var offset = offsets[i];
       target.append($('<div>').addClass('ntris-free-square').css({
-        'background-color': color,
+        'background-color': (offset.x + offset.y % 2 ? dark : light),
         'left': x + w*offset.x,
         'top': y + w*offset.y,
         'height': w,
@@ -158,7 +159,7 @@ Graphics.prototype.flip = function() {
   // drawing subroutine and one function that copies delta -> state.
   if (this.state.held != this.delta.held ||
       this.state.heldBlockType != this.delta.heldBlockType) {
-    var lambda = (this.delta.held ? 1.5*Color.LAMBDA : 0);
+    var lambda = (this.delta.held ? 1.2*Color.LAMBDA : 0);
     if (this.state.held != this.delta.held) {
       this.state.held = this.delta.held;
       var color = Color.mix(Color.WHITE, Color.BLACK, lambda);
