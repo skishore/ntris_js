@@ -94,8 +94,8 @@ Graphics.prototype.getSquareIndex = function(i, j) {
 Graphics.prototype.drawFreeBlock = function(target, type, x, y, w) {
   if (type >= 0) {
     var block = Block.prototypes[type];
-    var light = Color.body_colors[block.color];
-    var dark = Color.mix(light, Color.BLACK, 0.3*Color.LAMBDA);
+    var light = Color.body_colors[block.color + Color.MAX];
+    var dark = Color.mix(light, Color.BLACK, 0.4*Color.LAMBDA);
 
     var offsets = block.getOffsets();
     for (var i = 0; i < offsets.length; i++) {
@@ -162,8 +162,8 @@ Graphics.prototype.flip = function() {
   // drawing subroutine and one function that copies delta -> state.
   if (this.state.held != this.delta.held) {
     this.state.held = this.delta.held;
-    var opacity = (this.state.held ? 0.8*Color.LAMBDA : 0);
-    this.elements.hold.css('opacity', opacity || 1);
+    var opacity = (this.state.held ? 0.2*Color.LAMBDA : 0);
+    this.elements.hold.css('opacity', 1 - 8*opacity);
     this.elements.hold_overlay.css('opacity', opacity);
   }
   if (this.state.heldBlockType != this.delta.heldBlockType) {
