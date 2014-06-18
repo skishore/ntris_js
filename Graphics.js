@@ -88,6 +88,21 @@ Graphics.prototype.getSquareIndex = function(i, j) {
   return Constants.COLS*(i - Constants.ROWS + Constants.VISIBLEROWS) + j;
 }
 
+Graphics.prototype.drawFreeBlock = function(target, type, x, y, w) {
+  if (type >= 0) {
+    var offsets = Block.prototypes[type].getOffsets();
+    for (var i = 0; i < offsets.length; i++) {
+      var offset = offsets[i];
+      target.append($('<div>').addClass('ntris-free-square').css({
+        'left': x + w*offset.x,
+        'top': y + w*offset.y,
+        'height': w,
+        'width': w,
+      }));
+    }
+  }
+}
+
 //////////////////////////////////////////////////////////////////////////////
 // Public interface begins here!
 //////////////////////////////////////////////////////////////////////////////
@@ -142,7 +157,10 @@ Graphics.prototype.flip = function() {
   }
   if (this.state.heldBlockType != this.delta.heldBlockType) {
     this.state.heldBlockType = this.delta.heldBlockType;
-    // TODO(skishore): Draw the held block here...
+    this.elements.hold.empty();
+    this.drawFreeBlock(
+        this.elements.hold, this.state.heldBlockType,
+        this.squareWidth - 1, this.squareWidth/4, this.squareWidth/2);
   }
   if (this.state.score != this.delta.score) {
     this.state.score = this.delta.score;

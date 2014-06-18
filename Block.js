@@ -95,6 +95,7 @@ Block.loaded = function() {
     var block = new Block();
     block.x = data[0];
     block.y = data[1];
+    block.angle = 0;
     var numSquares = data[2];
     assert(data.length == 2*numSquares + 4,
         'Unexpected block (index ' + i + '): ' + data);
