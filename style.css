@@ -40,6 +40,17 @@
   position: relative;
 }
 
+.ntris-game .ntris-sideboard .ntris-hold .ntris-hold-overlay {
+  background-color: black;
+  opacity: 0;
+  position: absolute;
+  left: -1;
+  bottom: -1;
+  right: -1;
+  top: -1;
+  z-index: 1;
+}
+
 .ntris-game .ntris-sideboard .ntris-score {
   color: white;
   text-align: right;
