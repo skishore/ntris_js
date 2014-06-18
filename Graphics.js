@@ -162,7 +162,8 @@ Graphics.prototype.flip = function() {
   // drawing subroutine and one function that copies delta -> state.
   if (this.state.held != this.delta.held) {
     this.state.held = this.delta.held;
-    var opacity = (this.state.held ? 1.2*Color.LAMBDA : 0);
+    var opacity = (this.state.held ? 0.8*Color.LAMBDA : 0);
+    this.elements.hold.css('opacity', opacity || 1);
     this.elements.hold_overlay.css('opacity', opacity);
   }
   if (this.state.heldBlockType != this.delta.heldBlockType) {
