@@ -88,12 +88,16 @@ Graphics.prototype.getSquareIndex = function(i, j) {
   return Constants.COLS*(i - Constants.ROWS + Constants.VISIBLEROWS) + j;
 }
 
-Graphics.prototype.drawFreeBlock = function(target, type, x, y, w) {
+Graphics.prototype.drawFreeBlock = function(target, type, x, y, w, lambda) {
   if (type >= 0) {
-    var offsets = Block.prototypes[type].getOffsets();
+    var block = Block.prototypes[type];
+    var color = Color.mix(Color.body_colors[block.color], Color.BLACK, lambda);
+
+    var offsets = block.getOffsets();
     for (var i = 0; i < offsets.length; i++) {
       var offset = offsets[i];
       target.append($('<div>').addClass('ntris-free-square').css({
+        'background-color': color,
         'left': x + w*offset.x,
         'top': y + w*offset.y,
         'height': w,
@@ -150,17 +154,21 @@ Graphics.prototype.flip = function() {
       square.css('border-color', Color.edge_colors[color]);
     }
   }
-  if (this.state.held != this.delta.held) {
-    this.state.held = this.delta.held;
-    var color = (this.state.held ? Color.edge_colors[0] : 'white');
-    this.elements.hold.css('border-color', color);
-  }
-  if (this.state.heldBlockType != this.delta.heldBlockType) {
+  // TODO(skishore): Refactor this blob of logic into functions for each
+  // drawing subroutine and one function that copies delta -> state.
+  if (this.state.held != this.delta.held ||
+      this.state.heldBlockType != this.delta.heldBlockType) {
+    var lambda = (this.delta.held ? 1.5*Color.LAMBDA : 0);
+    if (this.state.held != this.delta.held) {
+      this.state.held = this.delta.held;
+      var color = Color.mix(Color.WHITE, Color.BLACK, lambda);
+      this.elements.hold.css('border-color', color);
+    }
     this.state.heldBlockType = this.delta.heldBlockType;
     this.elements.hold.empty();
     this.drawFreeBlock(
         this.elements.hold, this.state.heldBlockType,
-        this.squareWidth - 1, this.squareWidth/4, this.squareWidth/2);
+        this.squareWidth - 1, this.squareWidth/4, this.squareWidth/2, lambda);
   }
   if (this.state.score != this.delta.score) {
     this.state.score = this.delta.score;

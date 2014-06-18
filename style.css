@@ -29,7 +29,6 @@
 }
 
 .ntris-game .ntris-sideboard .ntris-free-square {
-  background-color: red;
   display: inline-block;
   position: absolute;
 }
