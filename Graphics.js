@@ -8,8 +8,7 @@ var Graphics = function(target) {
   this.width = Constants.COLS*this.squareWidth + this.sideboard + 2*this.border;
   this.height = Constants.VISIBLEROWS*this.squareWidth + 2*this.border;
 
-  this.state = {board: [], score: 0};
-  this.delta = {board: {}, score: 0};
+  this.resetState();
   this.elements = this.build(target);
 
   assert(this.width == target.outerWidth(), 'Error: width mismatch');
@@ -73,6 +72,16 @@ Graphics.prototype.build = function(target) {
   return result;
 }
 
+Graphics.prototype.resetState = function() {
+  this.state = {board: [], score: 0, held: false, heldBlockType: -1};
+  this.resetDelta();
+}
+
+Graphics.prototype.resetDelta = function() {
+  this.delta = $.extend({}, this.state);
+  this.delta.board = {};
+}
+
 Graphics.prototype.getSquareIndex = function(i, j) {
   assert(i >= 0 && i < Constants.ROWS && j >= 0 && j < Constants.COLS,
       'Invalid board square: (' + i + ', ' + j + ')');
@@ -110,8 +119,10 @@ Graphics.prototype.eraseBlock = function(block) {
   }
 }
 
-Graphics.prototype.drawScore = function(score) {
-  this.delta.score = score;
+Graphics.prototype.drawUI = function(board) {
+  this.delta.held = board.held;
+  this.delta.heldBlockType = board.heldBlockType;
+  this.delta.score = board.score;
 }
 
 Graphics.prototype.flip = function() {
@@ -124,11 +135,20 @@ Graphics.prototype.flip = function() {
       square.css('border-color', Color.edge_colors[color]);
     }
   }
+  if (this.state.held != this.delta.held) {
+    this.state.held = this.delta.held;
+    var color = (this.state.held ? Color.edge_colors[0] : 'white');
+    this.elements.hold.css('border-color', color);
+  }
+  if (this.state.heldBlockType != this.delta.heldBlockType) {
+    this.state.heldBlockType = this.delta.heldBlockType;
+    // TODO(skishore): Draw the held block here...
+  }
   if (this.state.score != this.delta.score) {
     this.state.score = this.delta.score;
     this.elements.score.text(this.delta.score);
   }
-  this.delta = {board: {}, score: this.state.score};
+  this.resetDelta();
 }
 
 return Graphics;

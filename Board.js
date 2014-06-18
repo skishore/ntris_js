@@ -75,7 +75,7 @@ Board.prototype.update = function() {
       }
     }
     this.graphics.drawBlock(this.block);
-    this.drawUI();
+    this.graphics.drawUI(this);
   } else {
     assert(false, "Unexpected state: " + this.state);
   }
@@ -87,10 +87,6 @@ Board.prototype.redraw = function() {
       this.graphics.drawBoardSquare(i, j, this.data[i][j]);
     }
   }
-}
-
-Board.prototype.drawUI = function() {
-  this.graphics.drawScore(this.score);
 }
 
 Board.prototype.nextBlock = function(swap) {
