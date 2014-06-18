@@ -55,7 +55,7 @@ Board.prototype.gameLoop = function() {
   setTimeout(this.gameLoop.bind(this), sleepTime);
 }
 
-Board.prototype.update = function(keys) {
+Board.prototype.update = function() {
   var keys = this.repeater.query();
 
   if (this.state == Constants.PLAYING) {
@@ -70,22 +70,27 @@ Board.prototype.update = function(keys) {
       var result = Physics.moveBlock(this.block, this.data, this.frame, keys);
       if (result.place) {
         this.score += result.score;
-        this.redraw(this.graphics);
+        this.redraw();
         this.block = this.nextBlock();
       }
     }
     this.graphics.drawBlock(this.block);
+    this.drawUI();
   } else {
     assert(false, "Unexpected state: " + this.state);
   }
 }
 
-Board.prototype.redraw = function(graphics) {
+Board.prototype.redraw = function() {
   for (var i = 0; i < Constants.ROWS; i++) {
     for (var j = 0; j < Constants.COLS; j++) {
-      graphics.drawBoardSquare(i, j, this.data[i][j]);
+      this.graphics.drawBoardSquare(i, j, this.data[i][j]);
     }
   }
+}
+
+Board.prototype.drawUI = function() {
+  this.graphics.drawScore(this.score);
 }
 
 Board.prototype.nextBlock = function(swap) {

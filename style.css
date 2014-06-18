@@ -27,3 +27,14 @@
 .ntris-game .ntris-sideboard {
   float: left;
 }
+
+.ntris-game .ntris-sideboard .ntris-hold {
+  border-color: white;
+  border-style: solid;
+  border-width: 1px;
+}
+
+.ntris-game .ntris-sideboard .ntris-score {
+  color: white;
+  text-align: right;
+}
