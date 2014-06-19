@@ -25,7 +25,7 @@ Constants.PAUSE = 3;
 Constants.REPEAT = 0;
 
 // Block movement constants, some of which are imported by Block.
-Constants.GRAVITY = Constants.FRAMERATE;
+Constants.GRAVITY = 3*Constants.FRAMERATE/4;
 Constants.SHOVEAWAYS = 2;
 Constants.LOCALSTICKFRAMES = Constants.FRAMERATE/2;
 Constants.GLOBALSTICKFRAMES = 2*Constants.FRAMERATE;
@@ -46,7 +46,7 @@ Constants.PREVIEWFRAMES = 3;
 Constants.LEVELINTERVAL = 60;
 Constants.MINR = 0.1;
 Constants.MAXR = 0.9;
-Constants.RINTERVAL = 480;
+Constants.HALFRSCORE = 480;
 
 // Points given for each number of rows cleared.
 Constants.POINTS = [0, 1, 3, 7, 15, 31, 63, 79, 87, 91, 93];
