@@ -90,11 +90,12 @@ Graphics.prototype.resetState = function() {
     heldBlockType: -1,
     score: 0,
   };
+  this.delta = {};
   this.resetDelta();
 }
 
 Graphics.prototype.resetDelta = function() {
-  this.delta = $.extend({}, this.state);
+  this.drawUI(this.state);
   this.delta.board = {};
 }
 
