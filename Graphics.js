@@ -25,6 +25,10 @@ Graphics.prototype.build = function(target) {
   border.css('padding', Math.ceil(this.border/2) - 1);
   target.append(border);
 
+  result.overlay = $('<div>').addClass('ntris-overlay').css(
+    'margin', Math.ceil(this.border/2) - 1);
+  border.append(result.overlay);
+
   var board = $('<div>').addClass('ntris-board').css({
     'height': this.squareWidth*Constants.VISIBLEROWS,
     'width': this.squareWidth*Constants.COLS,
@@ -179,6 +183,19 @@ Graphics.prototype.updateHeldBlockType = function() {
   this.state.heldBlockType = this.delta.heldBlockType;
 }
 
+Graphics.prototype.updateOverlay = function() {
+  if (this.delta.state == Constants.PLAYING) {
+    this.elements.overlay.css('background-color', 'transparent');
+  } else if (this.delta.state == Constants.PAUSED) {
+    this.elements.overlay.css('background-color', 'black');
+    this.elements.overlay.css('opacity', 1);
+  } else {
+    this.elements.overlay.css('background-color', 'red');
+    this.elements.overlay.css('opacity', Color.LAMBDA);
+  }
+  this.state.state = this.delta.state;
+}
+
 //////////////////////////////////////////////////////////////////////////////
 // Public interface begins here!
 //////////////////////////////////////////////////////////////////////////////
@@ -244,6 +261,9 @@ Graphics.prototype.flip = function() {
   if (this.state.score != this.delta.score) {
     this.elements.score.text(this.delta.score);
     this.state.score = this.delta.score;
+  }
+  if (this.state.state != this.delta.state) {
+    this.updateOverlay();
   }
   this.resetDelta();
 }
