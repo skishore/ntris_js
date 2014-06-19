@@ -52,9 +52,7 @@ Graphics.prototype.build = function(target) {
   result.board = [];
   var hiddenRows = Constants.ROWS - Constants.VISIBLEROWS;
   for (var i = 0; i < Constants.VISIBLEROWS*Constants.COLS; i++) {
-    var square = $('<div>').addClass('ntris-square').css({
-      "background-color": Color.BLACK,
-      "border-color": Color.lighten(Color.BLACK),
+    var square = $('<div>').addClass('ntris-square ntris-square-0').css({
       "height": this.squareWidth - 2,
       "width": this.squareWidth - 2,
     })
@@ -254,9 +252,15 @@ Graphics.prototype.drawBoardSquare = function(i, j, color) {
 Graphics.prototype.drawBlock = function(block) {
   if (block != null) {
     var offsets = block.getOffsets();
+    var color = block.color + Color.MAX;
+    var shadow = color + Color.MAX;
     for (var i = 0; i < offsets.length; i++) {
       var offset = offsets[i];
-      this.drawBoardSquare(offset.y, offset.x, block.color + Color.MAX);
+      this.drawBoardSquare(offset.y + block.rowsFree, offset.x, shadow);
+    }
+    for (var i = 0; i < offsets.length; i++) {
+      var offset = offsets[i];
+      this.drawBoardSquare(offset.y, offset.x, color);
     }
   }
 }
@@ -264,6 +268,10 @@ Graphics.prototype.drawBlock = function(block) {
 Graphics.prototype.eraseBlock = function(block) {
   if (block != null) {
     var offsets = block.getOffsets();
+    for (var i = 0; i < offsets.length; i++) {
+      var offset = offsets[i];
+      this.drawBoardSquare(offset.y + block.rowsFree, offset.x, 0);
+    }
     for (var i = 0; i < offsets.length; i++) {
       var offset = offsets[i];
       this.drawBoardSquare(offset.y, offset.x, 0);
@@ -285,8 +293,7 @@ Graphics.prototype.flip = function() {
     var color = this.delta.board[k];
     if (this.state.board[k] != color) {
       var square = this.elements.board[k];
-      square.css('background-color', Color.body_colors[color]);
-      square.css('border-color', Color.edge_colors[color]);
+      square.attr('class', 'ntris-square ntris-square-' + color);
       this.state.board[k] = color;
     }
   }

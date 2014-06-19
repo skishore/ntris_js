@@ -12,20 +12,46 @@ var Color = {
     this.body_colors = [];
     this.edge_colors = [];
     // Push color 0, which is always black.
-    this.push_color(this.BLACK);
+    this.pushColor(this.BLACK);
     // Push colors for squares that are on the board.
     for (var i = 0; i < this.MAX; i++) {
-      this.push_color(colorCode(i));
+      this.pushColor(colorCode(i));
     }
     // Push lighter colors for squares in currently active blocks.
     for (var i = 0; i < this.MAX; i++) {
-      this.push_color(this.mix(colorCode(i), this.WHITE, Color.LAMBDA));
+      this.pushColor(this.mix(colorCode(i), this.WHITE, Color.LAMBDA));
     }
+    // Create a CSS stylesheet with rules for ntris-square-i for each i.
+    var rules = [];
+    for (var i = 0; i <= 2*this.MAX; i++) {
+      rules.push(
+        '.ntris-square-' + i + ' {\n' +
+        '  background-color: ' + this.body_colors[i] + ';\n' +
+        '  border-color: ' + this.edge_colors[i] + ';\n' +
+        '}');
+    }
+    for (var i = 2*this.MAX + 1; i <= 3*this.MAX; i++) {
+      var color = this.body_colors[i - Color.MAX];
+      rules.push(
+        '.ntris-square-' + i + ' {\n' +
+        '  background: repeating-linear-gradient(45deg, black, black 1.4px, ' +
+        color + ' 1.4px, ' + color + ' 2.8px, black 2.8px, black 4.2px);\n' +
+        '  border-color: ' + this.edge_colors[0] + ';\n' +
+        '}');
+    }
+    this.addStyle(rules.join('\n'));
   },
 
-  push_color: function(color) {
+  pushColor: function(color) {
     this.body_colors.push(color);
     this.edge_colors.push(this.lighten(color));
+  },
+
+  addStyle: function(rules) {
+    var style = document.createElement('style');
+    style.type = 'text/css';
+    style.innerHTML = rules;
+    document.getElementsByTagName('head')[0].appendChild(style);
   },
 
   mix: function(color1, color2, l) {
