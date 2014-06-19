@@ -122,6 +122,45 @@ Graphics.prototype.drawFreeBlock = function(target, type, x, y, w) {
   }
 }
 
+Graphics.prototype.updatePreview = function() {
+  // We should never be ahead of the board in the index of the current block.
+  assert(this.state.blockIndex <= this.delta.blockIndex, "Invalid blockIndex!");
+  // Pop blocks that were pulled from the preview queue from state and the UI.
+  while (this.state.blockIndex < this.delta.blockIndex) {
+    this.state.blockIndex += 1;
+    this.state.preview.shift();
+    this.elements.preview.children().eq('0').remove();
+  }
+  // Push new blocks in the preview queue to state and to the UI.
+  while (this.state.preview.length < this.delta.preview.length) {
+    var type = this.delta.preview[this.state.preview.length];
+    this.state.preview.push(type);
+    var block = $('<div>').addClass('ntris-preview-block').css({
+      'height': this.smallWidth*Block.prototypes[type].height,
+      'margin-bottom': this.squareWidth,
+    });
+    var xOffset = 2*this.smallWidth + 3*this.squareWidth/4;
+    this.drawFreeBlock(block, type, xOffset, 0, this.smallWidth);
+    this.elements.preview.append(block);
+  }
+  assert(this.state.preview.equals(this.delta.preview), "Previews mismatched!");
+}
+
+Graphics.prototype.updateHeldState = function() {
+  var opacity = (this.delta.held ? 0.2*Color.LAMBDA : 0);
+  this.elements.hold.css('opacity', 1 - 8*opacity);
+  this.elements.hold_overlay.css('opacity', opacity);
+  this.state.held = this.delta.held;
+}
+
+Graphics.prototype.updateHeldBlockType = function() {
+  this.elements.hold.find('.ntris-free-square').remove();
+  this.drawFreeBlock(
+      this.elements.hold, this.delta.heldBlockType,
+      2*this.smallWidth - 1, 3*this.smallWidth/4, this.smallWidth);
+  this.state.heldBlockType = this.delta.heldBlockType;
+}
+
 //////////////////////////////////////////////////////////////////////////////
 // Public interface begins here!
 //////////////////////////////////////////////////////////////////////////////
@@ -165,52 +204,24 @@ Graphics.prototype.flip = function() {
   for (var k in this.delta.board) {
     var color = this.delta.board[k];
     if (this.state.board[k] != color) {
-      this.state.board[k] = color;
       var square = this.elements.board[k];
       square.css('background-color', Color.body_colors[color]);
       square.css('border-color', Color.edge_colors[color]);
+      this.state.board[k] = color;
     }
   }
-  // TODO(skishore): Refactor this blob of logic into functions for each
-  // drawing subroutine and one function that copies delta -> state.
   if (this.state.blockIndex != this.delta.blockIndex) {
-    while (this.state.blockIndex < this.delta.blockIndex) {
-      this.state.blockIndex += 1;
-      this.state.preview.shift();
-      this.elements.preview.children().eq('0').remove();
-    }
-    while (this.state.preview.length < this.delta.preview.length) {
-      var type = this.delta.preview[this.state.preview.length];
-      this.state.preview.push(type);
-      var block = $('<div>').addClass('ntris-preview-block').css({
-        'height': this.smallWidth*Block.prototypes[type].height,
-        'margin-bottom': this.squareWidth,
-      });
-      var xOffset = 2*this.smallWidth + 3*this.squareWidth/4;
-      this.drawFreeBlock(block, type, xOffset, 0, this.smallWidth);
-      this.elements.preview.append(block);
-    }
-    this.state.blockIndex = this.delta.blockIndex;
-    assert(
-        this.state.preview.equals(this.delta.preview),
-        "Previews mismatched!");
+    this.updatePreview();
   }
   if (this.state.held != this.delta.held) {
-    this.state.held = this.delta.held;
-    var opacity = (this.state.held ? 0.2*Color.LAMBDA : 0);
-    this.elements.hold.css('opacity', 1 - 8*opacity);
-    this.elements.hold_overlay.css('opacity', opacity);
+    this.updateHeldState();
   }
   if (this.state.heldBlockType != this.delta.heldBlockType) {
-    this.state.heldBlockType = this.delta.heldBlockType;
-    this.elements.hold.find('.ntris-free-square').remove();
-    this.drawFreeBlock(
-        this.elements.hold, this.state.heldBlockType,
-        2*this.smallWidth - 1, 3*this.smallWidth/4, this.smallWidth);
+    this.updateHeldBlockType();
   }
   if (this.state.score != this.delta.score) {
-    this.state.score = this.delta.score;
     this.elements.score.text(this.delta.score);
+    this.state.score = this.delta.score;
   }
   this.resetDelta();
 }
