@@ -28,19 +28,21 @@ Board.prototype.reset = function() {
     }
   }
 
-  this.block = null;
-  this.blockIndex = 0;
-  this.frame = 0;
-
   this.preview = [];
   for (var i = 0; i < Constants.PREVIEW; i++) {
     this.preview.push(this.playTetrisGod(0));
   }
 
+  this.blockIndex = 0;
+  this.block = this.nextBlock();
+
+  this.frame = 0;
   this.held = false;
   this.heldBlockType = -1;
   this.score = 0;
   this.state = Constants.PLAYING;
+
+  this.graphics.reset(this);
 }
 
 Board.prototype.gameLoop = function() {
@@ -91,6 +93,10 @@ Board.prototype.update = function() {
       }
     }
     this.graphics.drawBlock(this.block);
+
+    if (this.block.rowsFree < 0) {
+      this.state = Constants.GAMEOVER;
+    }
   }
 }
 

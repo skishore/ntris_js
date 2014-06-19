@@ -6,6 +6,7 @@
   background-color: black;
   display: inline-block;
   margin: 0 auto;
+  outline: none;
 }
 
 .ntris-game .ntris-border {

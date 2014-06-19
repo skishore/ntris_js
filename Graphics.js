@@ -9,9 +9,7 @@ var Graphics = function(target) {
   this.width = Constants.COLS*this.squareWidth + this.sideboard + 2*this.border;
   this.height = Constants.VISIBLEROWS*this.squareWidth + 2*this.border;
 
-  this.resetState();
   this.elements = this.build(target);
-
   assert(this.width == target.outerWidth(), 'Error: width mismatch');
   assert(this.height == target.outerHeight(), 'Error: height mismatch');
 }
@@ -46,7 +44,6 @@ Graphics.prototype.build = function(target) {
     })
     board.append(square);
     result.board.push(square);
-    this.state.board.push(0);
   }
 
   var sideboard = $('<div>').addClass('ntris-sideboard').css({
@@ -75,28 +72,12 @@ Graphics.prototype.build = function(target) {
   result.score = $('<div>').addClass('ntris-score').css({
     'font-size': this.squareWidth,
     'right': this.squareWidth/4,
-  }).text(this.state.score);
+  }).text(0);
   sideboard.append(result.score);
   // Hack around the fact that CSS font-sizes don't set the height equal.
   result.score.css('bottom', (this.squareWidth - result.score.height())/2);
 
   return result;
-}
-
-Graphics.prototype.resetState = function() {
-  this.state = {
-    board: [],
-    blockIndex: 0,
-    preview: [],
-    previewFrame: 0,
-    previewOffset: 0,
-    held: false,
-    heldBlockType: -1,
-    score: 0,
-    state: Constants.PLAYING,
-  };
-  this.delta = {};
-  this.resetDelta();
 }
 
 Graphics.prototype.resetDelta = function() {
@@ -132,7 +113,7 @@ Graphics.prototype.drawFreeBlock = function(target, type, x, y, w) {
 
 Graphics.prototype.updatePreview = function() {
   // We should never be ahead of the board in the index of the current block.
-  assert(this.state.blockIndex <= this.delta.blockIndex, "Invalid blockIndex!");
+  assert(this.state.blockIndex < this.delta.blockIndex, "Invalid blockIndex!");
   // Pop blocks that were pulled from the preview queue from state and the UI.
   while (this.state.blockIndex < this.delta.blockIndex) {
     this.state.blockIndex += 1;
@@ -200,6 +181,30 @@ Graphics.prototype.updateOverlay = function() {
 // Public interface begins here!
 //////////////////////////////////////////////////////////////////////////////
 
+Graphics.prototype.reset = function(board) {
+  // We set blockIndex to -Constants.PREVIEW so that we delete all blocks that
+  // are currently queued up in the preview.
+  this.state = {
+    board: [],
+    blockIndex: -Constants.PREVIEW,
+    preview: [],
+    previewFrame: 0,
+    previewOffset: 0,
+  };
+  this.delta = {board: {}};
+
+  // We set each cell in the board to -1 so that they will all be marked dirty
+  // and redrawn during the call to flip().
+  for (var i = 0; i < Constants.VISIBLEROWS*Constants.COLS; i++) {
+    this.state.board.push(-1);
+    this.delta.board[i] = 0;
+  }
+
+  this.drawBlock(board.block);
+  this.drawUI(board);
+  this.flip();
+}
+
 Graphics.prototype.drawBoardSquare = function(i, j, color) {
   var k = this.getSquareIndex(i, j);
   if (k >= 0) {
@@ -249,7 +254,8 @@ Graphics.prototype.flip = function() {
   if (this.state.blockIndex != this.delta.blockIndex) {
     this.updatePreview();
   }
-  if (this.state.previewFrame > 0) {
+  if (this.state.previewFrame > 0 && this.state.state == Constants.PLAYING) {
+    // We only scroll the preview if the game is in motion.
     this.updatePreviewFrame();
   }
   if (this.state.held != this.delta.held) {
