@@ -31,7 +31,12 @@ Board.prototype.reset = function() {
   this.block = null;
   this.blockIndex = 0;
   this.frame = 0;
+
   this.preview = [];
+  for (var i = 0; i < Constants.PREVIEW; i++) {
+    this.preview.push(this.playTetrisGod(0));
+  }
+
   this.held = false;
   this.heldBlockType = -1;
   this.score = 0;
@@ -46,6 +51,7 @@ Board.prototype.gameLoop = function() {
   for (var i = 0; i < frames; i++) {
     this.update();
   }
+  this.graphics.drawUI(this);
   this.graphics.flip();
 
   this.afterTime = (new Date).getTime();
@@ -56,6 +62,17 @@ Board.prototype.gameLoop = function() {
 
 Board.prototype.update = function() {
   var keys = this.repeater.query();
+
+  if (keys.indexOf(Key.PAUSE) >= 0) {
+    if (this.state == Constants.PLAYING) {
+      this.state = Constants.PAUSED;
+    } else if (this.state == Constants.PAUSED) {
+      this.state = Constants.PLAYING;
+    } else {
+      this.reset();
+    }
+    return;
+  }
 
   if (this.state == Constants.PLAYING) {
     this.frame = (this.frame + 1) % Constants.MAXFRAME;
@@ -74,9 +91,6 @@ Board.prototype.update = function() {
       }
     }
     this.graphics.drawBlock(this.block);
-    this.graphics.drawUI(this);
-  } else {
-    assert(false, "Unexpected state: " + this.state);
   }
 }
 
@@ -95,11 +109,8 @@ Board.prototype.nextBlock = function(swap) {
     this.heldBlockType = swap.type;
   }
   if (type < 0) {
-    var blocksNeeded = Constants.PREVIEW - this.preview.length + 1;
-    for (var i = 0; i < blocksNeeded; i++) {
-      this.preview.push(this.playTetrisGod(this.score));
-    }
     this.blockIndex += 1;
+    this.preview.push(this.playTetrisGod(this.score));
     type = this.preview.shift();
   }
 

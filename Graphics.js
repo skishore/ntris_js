@@ -89,6 +89,7 @@ Graphics.prototype.resetState = function() {
     held: false,
     heldBlockType: -1,
     score: 0,
+    state: Constants.PLAYING,
   };
   this.delta = {};
   this.resetDelta();
@@ -215,6 +216,7 @@ Graphics.prototype.drawUI = function(board) {
   this.delta.held = board.held;
   this.delta.heldBlockType = board.heldBlockType;
   this.delta.score = board.score;
+  this.delta.state = board.state;
 }
 
 Graphics.prototype.flip = function() {
