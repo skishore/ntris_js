@@ -84,6 +84,8 @@ Graphics.prototype.resetState = function() {
     board: [],
     blockIndex: 0,
     preview: [],
+    previewFrame: 0,
+    previewOffset: 0,
     held: false,
     heldBlockType: -1,
     score: 0,
@@ -128,15 +130,21 @@ Graphics.prototype.updatePreview = function() {
   // Pop blocks that were pulled from the preview queue from state and the UI.
   while (this.state.blockIndex < this.delta.blockIndex) {
     this.state.blockIndex += 1;
-    this.state.preview.shift();
+    var type = this.state.preview.shift();
     this.elements.preview.children().eq('0').remove();
+    if (type != undefined) {
+      // Add the block's missing height to the preview offset and scroll it.
+      this.state.previewFrame = Constants.PREVIEWFRAMES;
+      this.state.previewOffset +=
+          Block.prototypes[type].height*this.smallWidth + this.squareWidth;
+    }
   }
   // Push new blocks in the preview queue to state and to the UI.
   while (this.state.preview.length < this.delta.preview.length) {
     var type = this.delta.preview[this.state.preview.length];
     this.state.preview.push(type);
     var block = $('<div>').addClass('ntris-preview-block').css({
-      'height': this.smallWidth*Block.prototypes[type].height,
+      'height': Block.prototypes[type].height*this.smallWidth,
       'margin-bottom': this.squareWidth,
     });
     var xOffset = 2*this.smallWidth + 3*this.squareWidth/4;
@@ -146,7 +154,15 @@ Graphics.prototype.updatePreview = function() {
   assert(this.state.preview.equals(this.delta.preview), "Previews mismatched!");
 }
 
-Graphics.prototype.updateHeldState = function() {
+Graphics.prototype.updatePreviewFrame = function() {
+  this.state.previewOffset *=
+      (this.state.previewFrame - 1)/this.state.previewFrame;
+  this.elements.preview.children().eq('0').css(
+      'margin-top', this.state.previewOffset);
+  this.state.previewFrame -= 1;
+}
+
+Graphics.prototype.updateHeld = function() {
   var opacity = (this.delta.held ? 0.2*Color.LAMBDA : 0);
   this.elements.hold.css('opacity', 1 - 8*opacity);
   this.elements.hold_overlay.css('opacity', opacity);
@@ -213,8 +229,11 @@ Graphics.prototype.flip = function() {
   if (this.state.blockIndex != this.delta.blockIndex) {
     this.updatePreview();
   }
+  if (this.state.previewFrame > 0) {
+    this.updatePreviewFrame();
+  }
   if (this.state.held != this.delta.held) {
-    this.updateHeldState();
+    this.updateHeld();
   }
   if (this.state.heldBlockType != this.delta.heldBlockType) {
     this.updateHeldBlockType();
