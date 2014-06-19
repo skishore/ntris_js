@@ -29,10 +29,10 @@ Board.prototype.reset = function() {
   }
 
   this.block = null;
+  this.blockIndex = 0;
   this.frame = 0;
   this.preview = [];
   this.previewFrame = 0;
-  this.previewOffset = 0;
   this.held = false;
   this.heldBlockType = -1;
   this.score = 0;
@@ -100,6 +100,7 @@ Board.prototype.nextBlock = function(swap) {
     for (var i = 0; i < blocksNeeded; i++) {
       this.preview.push(this.playTetrisGod(this.score));
     }
+    this.blockIndex += 1;
     this.previewFrame = Constants.PREVIEWFRAMES;
     type = this.preview.shift();
   }

@@ -26,12 +26,18 @@
 
 .ntris-game .ntris-sideboard {
   float: left;
+  position: relative;
 }
 
 .ntris-game .ntris-sideboard .ntris-free-square {
   display: inline-block;
   position: absolute;
   z-index: 1;
+}
+
+.ntris-game .ntris-sideboard .ntris-preview-block {
+  overflow: hidden;
+  position: relative;
 }
 
 .ntris-game .ntris-sideboard .ntris-hold {
@@ -56,5 +62,6 @@
 
 .ntris-game .ntris-sideboard .ntris-score {
   color: white;
+  position: absolute;
   text-align: right;
 }

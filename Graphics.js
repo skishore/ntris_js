@@ -3,8 +3,9 @@ var Graphics = (function() {
 
 var Graphics = function(target) {
   this.squareWidth = Constants.SQUAREWIDTH;
+  this.smallWidth = Math.ceil(this.squareWidth/2);
   this.border = this.squareWidth;
-  this.sideboard = Math.floor(7*this.squareWidth/2);
+  this.sideboard = 7*this.smallWidth;
   this.width = Constants.COLS*this.squareWidth + this.sideboard + 2*this.border;
   this.height = Constants.VISIBLEROWS*this.squareWidth + 2*this.border;
 
@@ -46,12 +47,14 @@ Graphics.prototype.build = function(target) {
 
   var sideboard = $('<div>').addClass('ntris-sideboard').css({
     'height': this.squareWidth*Constants.VISIBLEROWS,
-    "width": this.sideboard,
+    'width': this.sideboard,
   });
   border.append(sideboard);
 
+  var padding = this.squareWidth/4;
   result.preview = $('<div>').addClass('ntris-preview').css({
-    'height': 5*this.squareWidth/2*(Constants.PREVIEW + 2),
+    'height': 5*this.squareWidth/2*(Constants.PREVIEW + 2) - padding,
+    'padding-top': padding,
   });
   sideboard.append(result.preview);
 
@@ -67,16 +70,24 @@ Graphics.prototype.build = function(target) {
 
   result.score = $('<div>').addClass('ntris-score').css({
     'font-size': this.squareWidth,
-    'margin-top': 5*this.squareWidth/4,
-    'margin-right': this.squareWidth/2,
+    'right': this.squareWidth/4,
   }).text(this.state.score);
   sideboard.append(result.score);
+  // Hack around the fact that CSS font-sizes don't set the height equal.
+  result.score.css('bottom', (this.squareWidth - result.score.height())/2);
 
   return result;
 }
 
 Graphics.prototype.resetState = function() {
-  this.state = {board: [], score: 0, held: false, heldBlockType: -1};
+  this.state = {
+    board: [],
+    blockIndex: 0,
+    preview: [],
+    held: false,
+    heldBlockType: -1,
+    score: 0,
+  };
   this.resetDelta();
 }
 
@@ -143,6 +154,8 @@ Graphics.prototype.eraseBlock = function(block) {
 }
 
 Graphics.prototype.drawUI = function(board) {
+  this.delta.blockIndex = board.blockIndex;
+  this.delta.preview = board.preview;
   this.delta.held = board.held;
   this.delta.heldBlockType = board.heldBlockType;
   this.delta.score = board.score;
@@ -160,6 +173,28 @@ Graphics.prototype.flip = function() {
   }
   // TODO(skishore): Refactor this blob of logic into functions for each
   // drawing subroutine and one function that copies delta -> state.
+  if (this.state.blockIndex != this.delta.blockIndex) {
+    while (this.state.blockIndex < this.delta.blockIndex) {
+      this.state.blockIndex += 1;
+      this.state.preview.shift();
+      this.elements.preview.children().eq('0').remove();
+    }
+    while (this.state.preview.length < this.delta.preview.length) {
+      var type = this.delta.preview[this.state.preview.length];
+      this.state.preview.push(type);
+      var block = $('<div>').addClass('ntris-preview-block').css({
+        'height': this.smallWidth*Block.prototypes[type].height,
+        'margin-bottom': this.squareWidth,
+      });
+      var xOffset = 2*this.smallWidth + 3*this.squareWidth/4;
+      this.drawFreeBlock(block, type, xOffset, 0, this.smallWidth);
+      this.elements.preview.append(block);
+    }
+    this.state.blockIndex = this.delta.blockIndex;
+    assert(
+        this.state.preview.equals(this.delta.preview),
+        "Previews mismatched!");
+  }
   if (this.state.held != this.delta.held) {
     this.state.held = this.delta.held;
     var opacity = (this.state.held ? 0.2*Color.LAMBDA : 0);
@@ -171,7 +206,7 @@ Graphics.prototype.flip = function() {
     this.elements.hold.find('.ntris-free-square').remove();
     this.drawFreeBlock(
         this.elements.hold, this.state.heldBlockType,
-        this.squareWidth - 1, this.squareWidth/4, this.squareWidth/2);
+        2*this.smallWidth - 1, 3*this.smallWidth/4, this.smallWidth);
   }
   if (this.state.score != this.delta.score) {
     this.state.score = this.delta.score;
