@@ -16,13 +16,23 @@
   position: relative;
 }
 
-.ntris-game .ntris-overlay {
+.ntris-game .ntris-overlay-wrapper, .ntris-game .ntris-overlay {
   position: absolute;
   left: 0;
   bottom: 0;
   right: 0;
   top: 0;
-  z-index: 4;
+  z-index: 5;
+}
+
+.ntris-game .ntris-overlay {
+  z-index: -1;
+}
+
+.ntris-game .ntris-overlay-wrapper .ntris-text {
+  background-color: black;
+  color: white;
+  margin: 0 auto;
 }
 
 .ntris-game .ntris-board {

@@ -23,9 +23,25 @@ Graphics.prototype.build = function(target) {
   border.css('padding', Math.ceil(this.border/2) - 1);
   target.append(border);
 
-  result.overlay = $('<div>').addClass('ntris-overlay').css(
-    'margin', Math.ceil(this.border/2) - 1);
-  border.append(result.overlay);
+  var textHeight = this.getTextHeight(this.squareWidth);
+  var outer = this.squareWidth/4;
+  var inner = this.squareWidth/8;
+  var buffer = textHeight + outer + inner;
+  var overlay_wrapper = $('<div>').addClass('ntris-overlay-wrapper').css({
+    'margin': Math.ceil(this.border/2) - 1,
+    'padding-top': this.squareWidth*Constants.VISIBLEROWS/2 - buffer,
+  });
+  border.append(overlay_wrapper);
+
+  result.overlay = $('<div>').addClass('ntris-overlay');
+  overlay_wrapper.append(result.overlay);
+
+  var css = {'font-size': this.squareWidth, 'width': 3*this.width/4};
+  result.line1 = $('<div>').addClass('ntris-text').css(css)
+      .css({'padding-top': outer, 'padding-bottom': inner}).text('line1');
+  result.line2 = $('<div>').addClass('ntris-text').css(css)
+      .css({'padding-top': inner, 'padding-bottom': outer}).text('line2');
+  overlay_wrapper.append(result.line1, result.line2);
 
   var board = $('<div>').addClass('ntris-board').css({
     'height': this.squareWidth*Constants.VISIBLEROWS,
@@ -71,13 +87,23 @@ Graphics.prototype.build = function(target) {
 
   result.score = $('<div>').addClass('ntris-score').css({
     'font-size': this.squareWidth,
+    'bottom': (this.squareWidth - textHeight)/2,
     'right': this.squareWidth/4,
   }).text(0);
   sideboard.append(result.score);
-  // Hack around the fact that CSS font-sizes don't set the height equal.
-  result.score.css('bottom', (this.squareWidth - result.score.height())/2);
 
   return result;
+}
+
+Graphics.prototype.getTextHeight = function(fontSize) {
+  var testDiv = $('<div>').css({
+    'display': 'none',
+    'font-size': fontSize,
+  }).text('test');
+  $('body').append(testDiv);
+  var textHeight = testDiv.height();
+  testDiv.remove();
+  return textHeight;
 }
 
 Graphics.prototype.resetDelta = function() {
@@ -167,14 +193,27 @@ Graphics.prototype.updateHeldBlockType = function() {
 Graphics.prototype.updateOverlay = function() {
   if (this.delta.state == Constants.PLAYING) {
     this.elements.overlay.css('background-color', 'transparent');
+    this.drawText();
   } else if (this.delta.state == Constants.PAUSED) {
     this.elements.overlay.css('background-color', 'black');
     this.elements.overlay.css('opacity', 1);
+    this.drawText('-- PAUSED --', 'Press ENTER to resume');
   } else {
     this.elements.overlay.css('background-color', 'red');
-    this.elements.overlay.css('opacity', Color.LAMBDA);
+    this.elements.overlay.css('opacity', 1.2*Color.LAMBDA);
+    this.drawText('-- You FAILED --', 'Press ENTER to try again');
   }
   this.state.state = this.delta.state;
+}
+
+Graphics.prototype.drawText = function(line1, line2) {
+  if (!line1 && !line2) {
+    this.elements.line1.hide();
+    this.elements.line2.hide();
+  } else {
+    this.elements.line1.show().text(line1);
+    this.elements.line2.show().text(line2);
+  }
 }
 
 //////////////////////////////////////////////////////////////////////////////
