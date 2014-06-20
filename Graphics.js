@@ -162,7 +162,9 @@ Graphics.prototype.updatePreview = function() {
     this.drawFreeBlock(block, type, xOffset, 0, this.smallWidth);
     this.elements.preview.append(block);
   }
-  assert(this.state.preview.equals(this.delta.preview), "Previews mismatched!");
+  assert(
+      arraysEqual(this.state.preview, this.delta.preview),
+      "Previews mismatched!");
 }
 
 Graphics.prototype.updatePreviewFrame = function() {

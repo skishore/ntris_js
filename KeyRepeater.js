@@ -25,7 +25,7 @@ KeyRepeater.prototype.keyCode = function(e) {
   e = e || window.event;
   e.bubbles = false;
   return e.keyCode;
-};
+}
 
 KeyRepeater.prototype.keydown_handler = function() {
   var repeater = this;
@@ -36,7 +36,7 @@ KeyRepeater.prototype.keydown_handler = function() {
       e.preventDefault();
     }
   };
-};
+}
 
 KeyRepeater.prototype.keyup_handler = function() {
   var repeater = this;
@@ -51,8 +51,9 @@ KeyRepeater.prototype.keyup_handler = function() {
       e.preventDefault();
     }
   };
-};
+}
 
+// Returns a list of Actions that were issued this time step.
 KeyRepeater.prototype.query = function(e) {
   for (var key = 0; key < Key.NUMKEYS; key++) {
     if (this.isKeyDown[key]) {
@@ -69,10 +70,24 @@ KeyRepeater.prototype.query = function(e) {
       }
     }
   }
-  var result = this.keys.slice();
+  var result = this.getActionsForKeys(this.keys);
   this.keys.length = 0;
   return result;
-};
+}
+
+// Converts a list of keys into a list of distinct actions.
+KeyRepeater.prototype.getActionsForKeys = function(keys) {
+  var actions = [];
+  var actionsSet = {};
+  for (var i = 0; i < keys.length; i++) {
+    var action = Key.keyToAction[keys[i]];
+    if (!actionsSet.hasOwnProperty(action)) {
+      actions.push(action);
+      actionsSet[action] = 1;
+    }
+  }
+  return actions;
+}
 
 return KeyRepeater;
 })();

@@ -64,7 +64,7 @@ Board.prototype.gameLoop = function() {
 Board.prototype.update = function() {
   var keys = this.repeater.query();
 
-  if (keys.indexOf(Key.PAUSE) >= 0) {
+  if (keys.indexOf(Action.PAUSE) >= 0) {
     if (this.state == Constants.PLAYING) {
       this.state = Constants.PAUSED;
     } else if (this.state == Constants.PAUSED) {
@@ -79,7 +79,7 @@ Board.prototype.update = function() {
     this.frame = (this.frame + 1) % Constants.MAXFRAME;
 
     this.graphics.eraseBlock(this.block);
-    if (!this.held && keys.indexOf(Key.HOLD) >= 0) {
+    if (!this.held && keys.indexOf(Action.HOLD) >= 0) {
       this.block = this.nextBlock(this.block);
     } else if (this.block == null) {
       this.block = this.nextBlock();

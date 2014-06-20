@@ -7,6 +7,6 @@ function assert(clause, message) {
 }
 
 // Returns true if this array equals the other, element-by-element.
-Array.prototype.equals = function(other) {
-  return !(this < other) && !(other < this);
+arraysEqual = function(first, second) {
+  return !(first < second) && !(second < first);
 }

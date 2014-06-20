@@ -15,15 +15,17 @@ Physics.moveBlock = function(block, data, frame, keys) {
 
   for (var i = 0; i < keys.length; i++) {
     var key = keys[i];
-    if (key == Key.RIGHT) {
+    if (key == Action.RIGHT) {
       shift++;
-    } else if (key == Key.LEFT) {
+    } else if (key == Action.LEFT) {
       shift--;
-    } else if (key == Key.DOWN) {
+    } else if (key == Action.DOWN) {
       drop = true;
-    } else if (key == Key.UP && block.rotates) {
+    } else if (key == Action.ROTATE_CW && block.rotates) {
       turn = 1;
-    } else if (key == Key.DROP) {
+    } else if (key == Action.ROTATE_CCW && block.rotates) {
+      turn = -1;
+    } else if (key == Action.DROP) {
       block.y += block.rowsFree;
       return {place: true, score: this.placeBlock(block, data)};
     }
