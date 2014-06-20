@@ -17,16 +17,7 @@ var Key = {
   C: 10,
 }
 
-Key.doesKeyRepeat = [
-  // Only the RIGHT, DOWN, and LEFT keys repeat.
-  false, true, true, true, false, false, false, false, false, false, false];
-
-Key.keyToAction = [
-  Action.ROTATE_CW, Action.RIGHT, Action.DOWN, Action.LEFT,
-  Action.DROP, Action.HOLD, Action.PAUSE, Action.PAUSE,
-  Action.ROTATE_CCW, Action.ROTATE_CW, Action.HOLD];
-
-Key.keyCodeToKey = {
+Key.keyCodeMap = {
   38: Key.UP,
   39: Key.RIGHT,
   40: Key.DOWN,
@@ -40,11 +31,21 @@ Key.keyCodeToKey = {
   67: Key.C,
 }
 
-Key.translateKeyCode = function(keyCode) {
-  if (Key.keyCodeToKey.hasOwnProperty(keyCode)) {
-    return Key.keyCodeToKey[keyCode];
+Key.keyMap = [
+  Action.ROTATE_CW, Action.RIGHT, Action.DOWN, Action.LEFT,
+  Action.DROP, Action.HOLD, Action.PAUSE, Action.PAUSE,
+  Action.ROTATE_CCW, Action.ROTATE_CW, Action.HOLD];
+
+Key.keyCodeToKey = function(keyCode) {
+  if (Key.keyCodeMap.hasOwnProperty(keyCode)) {
+    return Key.keyCodeMap[keyCode];
   }
   return -1;
+}
+
+Key.keyToAction = function(key) {
+  assert(0 <= key && key < Key.NUMKEYS, "Invalid key: " + key);
+  return Key.keyMap[key];
 }
 
 return Key;

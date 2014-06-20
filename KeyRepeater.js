@@ -30,7 +30,7 @@ KeyRepeater.prototype.keyCode = function(e) {
 KeyRepeater.prototype.keydown_handler = function() {
   var repeater = this;
   return function(e) {
-    var key = Key.translateKeyCode(repeater.keyCode(e));
+    var key = Key.keyCodeToKey(repeater.keyCode(e));
     if (key >= 0) {
       repeater.isKeyDown[key] = true;
       e.preventDefault();
@@ -41,7 +41,7 @@ KeyRepeater.prototype.keydown_handler = function() {
 KeyRepeater.prototype.keyup_handler = function() {
   var repeater = this;
   return function(e) {
-    var key = Key.translateKeyCode(repeater.keyCode(e));
+    var key = Key.keyCodeToKey(repeater.keyCode(e));
     if (key >= 0) {
       repeater.isKeyDown[key] = false;
       if (repeater.keyFireFrames[key] < 0) {
@@ -61,7 +61,7 @@ KeyRepeater.prototype.query = function(e) {
         this.keys.push(key);
         this.keyFireFrames[key] = this.pause;
       } else if (this.keyFireFrames[key] == 0) {
-        if (Key.doesKeyRepeat[key]) {
+        if (Action.doesActionRepeat(Key.keyToAction(key))) {
           this.keys.push(key);
         }
         this.keyFireFrames[key] = this.repeat;
@@ -80,7 +80,7 @@ KeyRepeater.prototype.getActionsForKeys = function(keys) {
   var actions = [];
   var actionsSet = {};
   for (var i = 0; i < keys.length; i++) {
-    var action = Key.keyToAction[keys[i]];
+    var action = Key.keyToAction(keys[i]);
     if (!actionsSet.hasOwnProperty(action)) {
       actions.push(action);
       actionsSet[action] = 1;
