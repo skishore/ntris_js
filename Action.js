@@ -1,3 +1,6 @@
+var Action = function() {
+"use strict";
+
 var Action = {
   LEFT: 0,
   RIGHT: 1,
@@ -8,3 +11,6 @@ var Action = {
   HOLD: 6,
   PAUSE: 7,
 }
+
+return Action;
+}();
