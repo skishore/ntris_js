@@ -1,9 +1,10 @@
 var Action = {
   LEFT: 0,
   RIGHT: 1,
-  ROTATE_CW: 2,
-  ROTATE_CCW: 3,
-  DROP: 4,
-  HOLD: 5,
-  PAUSE: 6,
+  DOWN: 2,
+  ROTATE_CW: 3,
+  ROTATE_CCW: 4,
+  DROP: 5,
+  HOLD: 6,
+  PAUSE: 7,
 }
