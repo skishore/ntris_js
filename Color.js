@@ -8,6 +8,8 @@ var Color = {
   LAMBDA: 0.36,
   MAX: 29,
 
+  HEXREGEX: /\#([0-9a-f][0-9a-f])([0-9a-f][0-9a-f])([0-9a-f][0-9a-f])/i,
+
   initialize: function(colorCode) {
     this.body_colors = [];
     this.edge_colors = [];
@@ -55,16 +57,31 @@ var Color = {
   },
 
   mix: function(color1, color2, l) {
-    var rgba1 = Colour.fromString(color1);
-    var rgba2 = Colour.fromString(color2);
+    var rgb1 = this.fromString(color1);
+    var rgb2 = this.fromString(color2);
 
-    var new_rgba = new Array(4);
-    for (var i = 0; i < 4; i++) {
-      new_rgba[i] = (1 - l)*rgba1.values[i] + l*rgba2.values[i];
-      new_rgba[i] = Math.max(Math.min(new_rgba[i], 1), 0);
+    var new_rgb = new Array(3);
+    for (var i = 0; i < 3; i++) {
+      new_rgb[i] = (1 - l)*rgb1[i] + l*rgb2[i];
+      new_rgb[i] = Math.floor(Math.max(Math.min(new_rgb[i], 255), 0));
     }
+    return this.toString(new_rgb);
+  },
 
-    return new Colour(Colour.RGBA, new_rgba).toString();
+  fromString: function(hex6) {
+    var m = this.HEXREGEX.exec(hex6);
+    if (m == null) {
+      throw new Error("Invalid hex6 color string: " + hex6);
+    }
+    return [parseInt(m[1], 16), parseInt(m[2], 16), parseInt(m[3], 16)];
+  },
+
+  toString: function(rgb) {
+    var result = '#';
+    for (var i = 0; i < 3; i++) {
+      result += ('00' + rgb[i].toString(16)).substr(-2);
+    }
+    return result;
   },
 
   lighten: function(color) {
