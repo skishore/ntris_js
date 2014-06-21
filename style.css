@@ -96,7 +96,7 @@
 }
 
 .ntris-options .form-group {
-  margin-bottom: 8px;
+  margin-bottom: 4px;
 }
 
 .ntris-options label {
@@ -112,4 +112,9 @@
 .ntris-options .ntris-options-keys .btn {
   margin-right: 4px;
   padding: 2px 8px;
+}
+
+.ntris-options .ntris-options-close {
+  margin-left: 4px;
+  color: #666;
 }

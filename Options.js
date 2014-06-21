@@ -8,8 +8,7 @@ var Options = function(target) {
 Options.prototype.build = function(target) {
   var result = {}
 
-  var title = 'Options'
-  target.append($('<h4>').text('Options'));
+  target.append($('<h4>').text('Key bindings'));
 
   var form = $('<form>').addClass('form-horizontal');
   result.actions = [];
@@ -29,10 +28,13 @@ Options.prototype.buildActionElement = function(action) {
   var keys = $('<div>').addClass('col-sm-8 ntris-options-keys');
   for (var key in Key.keyCodeMap) {
     if (Key.keyToAction(key) == action) {
-      keys.append($('<button>').addClass('btn btn-default btn-sm').text(key));
+      keys.append($('<a>').addClass('btn btn-default btn-sm')
+        .text(Key.keyNames[key] || 'Keycode ' + key)
+        .data('key', key)
+        .append($('<span>').addClass('ntris-options-close').html('&times;')));
     }
   }
-  var button = $('<button>').addClass('btn btn-primary btn-sm').text('+');
+  var button = $('<a>').addClass('btn btn-primary btn-sm').text('+');
   result.append(label, keys.append(button));
   return result;
 }
