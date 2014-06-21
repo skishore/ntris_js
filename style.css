@@ -5,6 +5,8 @@
 .ntris-game {
   background-color: black;
   display: inline-block;
+  font-family: Times;
+  line-height: 1;
   margin: 0 auto;
   outline: none;
 }

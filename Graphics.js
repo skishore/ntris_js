@@ -53,8 +53,8 @@ Graphics.prototype.build = function(target) {
   var hiddenRows = Constants.ROWS - Constants.VISIBLEROWS;
   for (var i = 0; i < Constants.VISIBLEROWS*Constants.COLS; i++) {
     var square = $('<div>').addClass('ntris-square ntris-square-0').css({
-      "height": this.squareWidth - 2,
-      "width": this.squareWidth - 2,
+      "height": this.squareWidth,
+      "width": this.squareWidth,
     })
     board.append(square);
     result.board.push(square);
