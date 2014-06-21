@@ -125,7 +125,7 @@ Graphics.prototype.drawFreeBlock = function(target, type, x, y, w) {
     for (var i = 0; i < offsets.length; i++) {
       var offset = offsets[i];
       target.append($('<div>').addClass('ntris-free-square').css({
-        'background-color': (offset.x + offset.y % 2 ? dark : light),
+        'background-color': ((offset.x + offset.y) % 2 ? dark : light),
         'left': x + w*offset.x,
         'top': y + w*offset.y,
         'height': w,
