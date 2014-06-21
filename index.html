@@ -5,12 +5,16 @@
 
     <!-- Bootstrap 3.1.1. -->
     <link rel="stylesheet" href="external/bootstrap/3.1.1/bootstrap.min.css">
-    <link rel="stylesheet" href="external/bootstrap/3.1.1/bootstrap-theme.min.css">
     <script src="external/bootstrap/3.1.1/bootstrap.min.js"></script>
 
     <!-- Base CSS and Javascript. -->
     <link rel="stylesheet" type="text/css" href="style.css">
     <script type="text/javascript" src="util.js"></script>
+
+    <!-- Configuration classes. -->
+    <script type="text/javascript" src="Action.js"></script>
+    <script type="text/javascript" src="Key.js"></script>
+    <script type="text/javascript" src="Options.js"></script>
 
     <!-- Block and its dependencies. -->
     <script type="text/javascript" src="Color.js"></script>
@@ -20,8 +24,6 @@
     <script type="text/javascript" src="Block.js"></script>
 
     <!-- Board and its dependencies. -->
-    <script type="text/javascript" src="Action.js"></script>
-    <script type="text/javascript" src="Key.js"></script>
     <script type="text/javascript" src="KeyRepeater.js"></script>
     <script type="text/javascript" src="Graphics.js"></script>
     <script type="text/javascript" src="Physics.js"></script>
@@ -30,6 +32,7 @@
 
   <body class="centered" onload="initialize()">
     <div class="ntris-game"></div>
+    <div class="ntris-options"></div>
   </body>
 
   <script>
@@ -40,6 +43,8 @@
       var target = $('.ntris-game');
       var graphics = new Graphics(target);
       var board = new Board(graphics, target);
+
+      var options = new Options($('.ntris-options'));
     }
 
     return initialize;

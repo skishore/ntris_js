@@ -88,3 +88,28 @@
   position: absolute;
   text-align: right;
 }
+
+.ntris-options {
+  width: 50%;
+  max-width: 400px;
+  margin: 0 auto;
+}
+
+.ntris-options .form-group {
+  margin-bottom: 8px;
+}
+
+.ntris-options label {
+  padding-right: 4px;
+}
+
+.ntris-options .ntris-options-keys {
+  text-align: left;
+  margin-top: 5px;
+  padding-left: 8px;
+}
+
+.ntris-options .ntris-options-keys .btn {
+  margin-right: 4px;
+  padding: 2px 8px;
+}
