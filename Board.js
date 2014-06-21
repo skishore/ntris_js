@@ -64,7 +64,7 @@ Board.prototype.gameLoop = function() {
 Board.prototype.update = function() {
   var keys = this.repeater.query();
 
-  if (keys.indexOf(Action.PAUSE) >= 0) {
+  if (keys.indexOf(Action.START) >= 0) {
     if (this.state == Constants.PLAYING) {
       this.state = Constants.PAUSED;
     } else if (this.state == Constants.PAUSED) {

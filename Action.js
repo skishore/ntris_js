@@ -11,7 +11,7 @@ var Action = {
   ROTATE_CCW: 4,
   DROP: 5,
   HOLD: 6,
-  PAUSE: 7,
+  START: 7,
 }
 
 Action.labels = [

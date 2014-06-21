@@ -5,11 +5,11 @@ var KeyRepeater = function(pause, repeat, target) {
   this.pause = pause;
   this.repeat = repeat;
 
-  this.isKeyDown = [];
-  this.keyFireFrames = [];
-  for (var i = 0; i < Key.NUMKEYS; i++) {
-    this.isKeyDown.push(false);
-    this.keyFireFrames.push(-1);
+  this.isKeyDown = {};
+  this.keyFireFrames = {};
+  for (var key in Key.keyCodeMap) {
+    this.isKeyDown[key] = false;
+    this.keyFireFrames[key] = -1;
   }
 
   // keys is accessed from outside this class.
@@ -30,8 +30,8 @@ KeyRepeater.prototype.keyCode = function(e) {
 KeyRepeater.prototype.keydown_handler = function() {
   var repeater = this;
   return function(e) {
-    var key = Key.keyCodeToKey(repeater.keyCode(e));
-    if (key >= 0) {
+    var key = repeater.keyCode(e);
+    if (Key.keyCodeMap.hasOwnProperty(key)) {
       repeater.isKeyDown[key] = true;
       e.preventDefault();
     }
@@ -41,8 +41,8 @@ KeyRepeater.prototype.keydown_handler = function() {
 KeyRepeater.prototype.keyup_handler = function() {
   var repeater = this;
   return function(e) {
-    var key = Key.keyCodeToKey(repeater.keyCode(e));
-    if (key >= 0) {
+    var key = repeater.keyCode(e);
+    if (Key.keyCodeMap.hasOwnProperty(key)) {
       repeater.isKeyDown[key] = false;
       if (repeater.keyFireFrames[key] < 0) {
         repeater.keys.push(key);
@@ -55,7 +55,7 @@ KeyRepeater.prototype.keyup_handler = function() {
 
 // Returns a list of Actions that were issued this time step.
 KeyRepeater.prototype.query = function(e) {
-  for (var key = 0; key < Key.NUMKEYS; key++) {
+  for (var key in Key.keyCodeMap) {
     if (this.isKeyDown[key]) {
       if (this.keyFireFrames[key] < 0) {
         this.keys.push(key);

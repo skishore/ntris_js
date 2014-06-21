@@ -27,9 +27,9 @@ Options.prototype.buildActionElement = function(action) {
     .addClass('col-sm-4 control-label')
     .text(Action.labels[action] + ':');
   var keys = $('<div>').addClass('col-sm-8 ntris-options-keys');
-  for (var i = 0; i < Key.NUMKEYS; i++) {
-    if (Key.keyToAction(i) == action) {
-      keys.append($('<button>').addClass('btn btn-default btn-sm').text(i));
+  for (var key in Key.keyCodeMap) {
+    if (Key.keyToAction(key) == action) {
+      keys.append($('<button>').addClass('btn btn-default btn-sm').text(key));
     }
   }
   var button = $('<button>').addClass('btn btn-primary btn-sm').text('+');
