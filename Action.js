@@ -14,6 +14,16 @@ var Action = {
   PAUSE: 7,
 }
 
+Action.labels = [
+  'Left',
+  'Right',
+  'Down',
+  'Rotate CW',
+  'Rotate CCW',
+  'Drop',
+  'Hold',
+  'Start',
+];
 Action.repeats = [true, true, true, false, false, false, false, false];
 
 Action.doesActionRepeat = function(action) {
