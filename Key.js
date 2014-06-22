@@ -112,6 +112,7 @@ var Key = {
     32: Action.DROP,
     16: Action.HOLD,
     13: Action.START,
+    18: Action.ROTATE_CCW,
     80: Action.START,
     90: Action.ROTATE_CCW,
     88: Action.ROTATE_CW,

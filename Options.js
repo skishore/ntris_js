@@ -32,16 +32,24 @@ Options.prototype.buildAction = function(action) {
   var label = $('<label>')
     .addClass('col-sm-6 control-label')
     .text(Action.labels[action] + ':');
-  var keys = $('<div>').addClass('col-sm-6 ntris-options-keys');
+  // Create the keys tag-input element.
+  var tagInput = $('<div>').addClass('col-sm-6 ntris-options-keys');
   var button = $('<a>').addClass('btn btn-primary btn-sm').text('+')
   button.click(function(e) { that.waitForKey(e, button); });
-  keys.append(button);
+  tagInput.append(button);
+  // Get a sorted list of keys assigned to this action and add tags for them.
+  var keys = [];
   for (var key in this.keyCodeMap) {
     if (Key.keyToAction(key) == action) {
-      keys.append(this.buildKey(key));
+      keys.push(key);
     }
   }
-  result.append(label, keys);
+  keys.sort();
+  for (var i = 0; i < keys.length; i++) {
+    tagInput.append(this.buildKey(keys[i]));
+  }
+  // Return the final action input.
+  result.append(label, tagInput);
   return result;
 }
 
