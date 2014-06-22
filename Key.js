@@ -104,7 +104,8 @@ var Key = {
     222: "'",
   },
 
-  keyCodeMap: {
+  // Key bindings are objects mapping keys to the actions that they perform.
+  defaultKeyBindings: {
     38: Action.ROTATE_CW,
     39: Action.RIGHT,
     40: Action.DOWN,

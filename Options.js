@@ -44,15 +44,12 @@ Options.prototype.build = function(target) {
 }
 
 Options.prototype.show = function() {
-  this.keyCodeMap = $.extend({}, this.board.repeater.keyCodeMap);
-  this.keyElementMap = {};
+  this.keyBindings = $.extend({}, this.board.repeater.keyBindings);
+  this.keyElements = {};
 
   this.elements.form.empty();
-  this.elements.actions = [];
   for (var i = 0; i < Action.NUMACTIONS; i++) {
-    var element = this.buildAction(i);
-    this.elements.form.append(element);
-    this.elements.actions.push(element.find('.ntris-options-keys'));
+    this.elements.form.append(this.buildAction(i));
   }
 
   this.elements.target.modal('show');
@@ -60,26 +57,9 @@ Options.prototype.show = function() {
 
 Options.prototype.hide = function(save) {
   if (save) {
-    this.readKeyCodes();
-    this.board.repeater.setKeyCodeMap(this.keyCodeMap);
+    this.board.repeater.setKeyBindings(this.keyBindings);
   }
   this.elements.target.modal('hide');
-}
-
-Options.prototype.readKeyCodes = function() {
-  var keyCodeMap = {};
-  var valid = true;
-  for (var i = 0; i < Action.NUMACTIONS; i++) {
-    var children = this.elements.actions[i].children();
-    if (children.length == 1) {
-      valid = false;
-    }
-    for (var j = 1; j < children.length; j++) {
-      keyCodeMap[$(children[j]).data('key')] = i;
-    }
-  }
-  this.keyCodeMap = keyCodeMap;
-  return valid;
 }
 
 Options.prototype.buildAction = function(action) {
@@ -91,35 +71,40 @@ Options.prototype.buildAction = function(action) {
     .text(Action.labels[action] + ':');
   // Create the keys tag input element.
   var tagInput = $('<div>').addClass('col-sm-8 ntris-options-keys');
-  var button = $('<a>').addClass('btn btn-primary btn-sm').text('+')
+  var button = $('<a>')
+    .addClass('btn btn-primary btn-sm')
+    .data('action', action)
+    .text('+');
   button.click(function(e) { that.waitForKey(e, button); });
   tagInput.append(button);
-  // Get a sorted list of keys assigned to this action and add tags for them.
+  // Build a tag box for each key assigned to this action.
   var keys = [];
-  for (var key in this.keyCodeMap) {
-    if (this.keyCodeMap[key] == action) {
+  for (var key in this.keyBindings) {
+    if (this.keyBindings[key] == action) {
       keys.push(key);
     }
   }
   keys.sort();
   for (var i = 0; i < keys.length; i++) {
-    tagInput.append(this.buildKey(keys[i]));
+    tagInput.append(this.buildKey(action, keys[i]));
   }
   // Return the final action input.
   result.append(label, tagInput);
   return result;
 }
 
-Options.prototype.buildKey = function(key) {
-  if (this.keyElementMap.hasOwnProperty(key)) {
-    this.keyElementMap[key].remove();
+Options.prototype.buildKey = function(action, key) {
+  if (this.keyElements.hasOwnProperty(key)) {
+    this.keyElements[key].remove();
   }
-  var result = $('<a>').addClass('btn btn-default btn-sm')
+  var result = $('<a>')
+    .addClass('btn btn-default btn-sm')
     .data('key', key)
     .click(function() { this.remove(); })
     .text(Key.keyNames[key] || 'Keycode ' + key)
     .append($('<span>').addClass('ntris-options-close').html('&times;'));
-  this.keyElementMap[key] = result;
+  this.keyBindings[key] = action;
+  this.keyElements[key] = result;
   return result;
 }
 
@@ -151,7 +136,7 @@ Options.prototype.getKey = function(e, button) {
   var key = this.keyCode(e);
   if (key != 27) {
     // We don't allow the user to assign escape to a button.
-    this.addKey(button.parent(), key);
+    this.addKey(button, key);
   }
   e.preventDefault();
 }
@@ -162,8 +147,8 @@ Options.prototype.keyCode = function(e) {
   return e.keyCode;
 }
 
-Options.prototype.addKey = function(element, key) {
-  var children = element.children();
+Options.prototype.addKey = function(button, key) {
+  var children = button.parent().children();
   for (var i = 1; i < children.length; i++) {
     var existingKey = parseInt($(children[i]).data('key'), 10);
     if (existingKey == key) {
@@ -173,7 +158,8 @@ Options.prototype.addKey = function(element, key) {
       break;
     }
   }
-  $(children[i - 1]).after(this.buildKey(key));
+  var action = parseInt(button.data('action'), 10);
+  $(children[i - 1]).after(this.buildKey(action, key));
 }
 
 return Options;

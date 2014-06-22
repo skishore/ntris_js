@@ -24,6 +24,7 @@ Action.labels = [
   'Hold',
   'Start',
 ];
+
 Action.repeats = [true, true, true, false, false, false, false, false];
 
 Action.doesActionRepeat = function(action) {
