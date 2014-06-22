@@ -197,13 +197,15 @@ Graphics.prototype.updateOverlay = function() {
   } else if (this.delta.state == Constants.PAUSED) {
     this.elements.overlay.css('background-color', 'black');
     this.elements.overlay.css('opacity', 1);
-    this.drawText('-- PAUSED --', 'Press ENTER to resume');
+    var resume = (this.delta.pauseReason == 'focus' ? 'Click' : 'Press START');
+    this.drawText('-- PAUSED --', resume + ' to resume');
   } else {
     this.elements.overlay.css('background-color', 'red');
     this.elements.overlay.css('opacity', 1.2*Color.LAMBDA);
-    this.drawText('-- You FAILED --', 'Press ENTER to try again');
+    this.drawText('-- You FAILED --', 'Press START to try again');
   }
   this.state.state = this.delta.state;
+  this.state.pauseReason = this.delta.pauseReason;
 }
 
 Graphics.prototype.drawText = function(line1, line2) {
@@ -288,6 +290,7 @@ Graphics.prototype.drawUI = function(board) {
   this.delta.heldBlockType = board.heldBlockType;
   this.delta.score = board.score;
   this.delta.state = board.state;
+  this.delta.pauseReason = board.pauseReason;
 }
 
 Graphics.prototype.flip = function() {

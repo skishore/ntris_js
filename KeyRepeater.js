@@ -8,7 +8,6 @@ var KeyRepeater = function(pause, repeat, target) {
   this.setKeyBindings(Key.defaultKeyBindings);
 
   target.attr('tabIndex', 1);
-  target.focus();
   target.keydown(this.keydown_handler());
   target.keyup(this.keyup_handler());
 }

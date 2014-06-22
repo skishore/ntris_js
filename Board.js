@@ -3,7 +3,10 @@ var Board = (function() {
 
 var Board = function(graphics, target) {
   this.graphics = graphics;
+  this.target = target;
+
   this.repeater = new KeyRepeater(Constants.PAUSE, Constants.REPEAT, target);
+  this.setFocusHandlers(target);
 
   this.data = [];
   for (var i = 0; i < Constants.ROWS; i++) {
@@ -19,6 +22,26 @@ var Board = function(graphics, target) {
   this.afterTime = (new Date).getTime();
   this.sleepTime = Constants.FRAMEDELAY;
   setTimeout(this.gameLoop.bind(this), this.sleepTime);
+}
+
+Board.prototype.setFocusHandlers = function() {
+  this.target.focus(this.gainFocus.bind(this));
+  this.target.focusout(this.loseFocus.bind(this));
+  $(window).blur(this.loseFocus.bind(this));
+  this.target.focus();
+}
+
+Board.prototype.loseFocus = function(e) {
+  if (this.state == Constants.PLAYING) {
+    this.state = Constants.PAUSED;
+    this.pauseReason = 'focus';
+  }
+}
+
+Board.prototype.gainFocus = function(e) {
+  if (this.state == Constants.PAUSED && this.pauseReason == 'focus') {
+    this.state = Constants.PLAYING;
+  }
 }
 
 Board.prototype.reset = function() {
@@ -67,6 +90,7 @@ Board.prototype.update = function() {
   if (keys.indexOf(Action.START) >= 0) {
     if (this.state == Constants.PLAYING) {
       this.state = Constants.PAUSED;
+      this.pauseReason = 'manual';
     } else if (this.state == Constants.PAUSED) {
       this.state = Constants.PLAYING;
     } else {

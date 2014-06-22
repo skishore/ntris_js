@@ -32,7 +32,6 @@ Options.prototype.build = function(target) {
     $('<a>').addClass('btn btn-default btn-sm').text('Cancel')
         .click(function(e) { that.hide(false); })
   );
-
   target.append(dialog.append(content.append(header, body, footer)));
 
   // Add in the button required to show the form.
@@ -40,6 +39,8 @@ Options.prototype.build = function(target) {
     $('<a>').addClass('btn btn-primary btn-sm').text('Edit key bindings')
         .click(function(e) { that.show(); })
   );
+
+  target.on('hidden.bs.modal', function () { that.board.target.focus(); });
   return result;
 }
 
