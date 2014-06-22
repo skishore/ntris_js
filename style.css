@@ -129,3 +129,7 @@
   margin-left: 4px;
   color: #666;
 }
+
+.ntris-options .ntris-restore-defaults {
+  float: left;
+}

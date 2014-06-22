@@ -27,6 +27,9 @@ Options.prototype.build = function(target) {
 
   // Create buttons required to hide the modal.
   footer.append(
+    $('<a>').addClass('btn btn-danger btn-sm ntris-restore-defaults')
+        .text('Restore defaults')
+        .click(function(e) { that.show(true); }),
     $('<a>').addClass('btn btn-primary btn-sm').text('Apply')
         .click(function(e) { that.hide(true); }),
     $('<a>').addClass('btn btn-default btn-sm').text('Cancel')
@@ -37,15 +40,19 @@ Options.prototype.build = function(target) {
   // Add in the button required to show the form.
   target.after(
     $('<a>').addClass('btn btn-primary btn-sm').text('Edit key bindings')
-        .click(function(e) { that.show(); })
+        .click(function(e) { that.show(false); })
   );
 
   target.on('hidden.bs.modal', function () { that.board.target.focus(); });
   return result;
 }
 
-Options.prototype.show = function() {
-  this.keyBindings = $.extend({}, this.board.repeater.keyBindings);
+Options.prototype.show = function(restore) {
+  if (restore) {
+    this.keyBindings = $.extend({}, Key.defaultKeyBindings);
+  } else {
+    this.keyBindings = $.extend({}, this.board.repeater.keyBindings);
+  }
   this.keyElements = {};
 
   this.elements.form.empty();
@@ -53,7 +60,9 @@ Options.prototype.show = function() {
     this.elements.form.append(this.buildAction(i));
   }
 
-  this.elements.target.modal('show');
+  if (!restore) {
+    this.elements.target.modal('show');
+  }
 }
 
 Options.prototype.hide = function(save) {
