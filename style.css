@@ -90,9 +90,8 @@
 }
 
 .ntris-options {
-  width: 50%;
-  max-width: 400px;
   margin: 0 auto;
+  outline: none;
 }
 
 .ntris-options .form-group {
@@ -100,13 +99,13 @@
 }
 
 .ntris-options label {
-  padding-right: 4px;
+  padding-right: 16px;
 }
 
 .ntris-options .ntris-options-keys {
   text-align: left;
   margin-top: 5px;
-  padding-left: 8px;
+  padding-left: 0px;
 }
 
 .ntris-options .ntris-options-keys .btn {
