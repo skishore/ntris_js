@@ -46,7 +46,7 @@
       var graphics = new Graphics(target);
       var board = new Board(graphics, target);
 
-      var options = new Options($('.ntris-options'));
+      var options = new Options(board, $('.ntris-options'));
     }
 
     return initialize;

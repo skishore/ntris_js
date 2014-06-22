@@ -1,7 +1,8 @@
 var Options = function() {
 "use strict";
 
-var Options = function(target) {
+var Options = function(board, target) {
+  this.board = board;
   this.elements = this.build(target);
 }
 
@@ -43,20 +44,44 @@ Options.prototype.build = function(target) {
 }
 
 Options.prototype.show = function() {
-  this.keyCodeMap = $.extend({}, Key.keyCodeMap);
+  this.keyCodeMap = $.extend({}, this.board.repeater.keyCodeMap);
   this.keyElementMap = {};
 
   this.elements.form.empty();
+  this.elements.actions = [];
   for (var i = 0; i < Action.NUMACTIONS; i++) {
     var element = this.buildAction(i);
     this.elements.form.append(element);
+    this.elements.actions.push(element.find('.ntris-options-keys'));
   }
 
   this.elements.target.modal('show');
 }
 
 Options.prototype.hide = function(save) {
+  if (save) {
+    if (this.readKeyCodes()) {
+      this.board.repeater.setKeyCodeMap(this.keyCodeMap);
+    } else {
+      return;
+    }
+  }
   this.elements.target.modal('hide');
+}
+
+Options.prototype.readKeyCodes = function() {
+  var keyCodeMap = {};
+  for (var i = 0; i < Action.NUMACTIONS; i++) {
+    var children = this.elements.actions[i].children();
+    if (children.length == 1) {
+      return false;
+    }
+    for (var j = 1; j < children.length; j++) {
+      keyCodeMap[$(children[j]).data('key')] = i;
+    }
+  }
+  this.keyCodeMap = keyCodeMap;
+  return true;
 }
 
 Options.prototype.buildAction = function(action) {
@@ -74,7 +99,7 @@ Options.prototype.buildAction = function(action) {
   // Get a sorted list of keys assigned to this action and add tags for them.
   var keys = [];
   for (var key in this.keyCodeMap) {
-    if (Key.keyToAction(key) == action) {
+    if (this.keyCodeMap[key] == action) {
       keys.push(key);
     }
   }

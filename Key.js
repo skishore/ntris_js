@@ -118,13 +118,6 @@ var Key = {
     88: Action.ROTATE_CW,
     67: Action.HOLD,
   },
-
-  keyToAction: function(key) {
-    if (Key.keyCodeMap.hasOwnProperty(key)) {
-      return Key.keyCodeMap[key];
-    }
-    return -1;
-  },
 };
 
 return Key;
