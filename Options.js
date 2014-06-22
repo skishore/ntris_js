@@ -76,13 +76,27 @@ Options.prototype.waitForKey = function(e, button) {
 
 Options.prototype.getKey = function(e, button) {
   this.signalReady(button);
-  button.parent().append(this.buildKey(this.keyCode(e)));
+  this.addKey(button.parent(), this.keyCode(e));
 }
 
 Options.prototype.keyCode = function(e) {
   e = e || window.event;
   e.bubbles = false;
   return e.keyCode;
+}
+
+Options.prototype.addKey = function(element, key) {
+  var children = element.children();
+  for (var i = 1; i < children.length; i++) {
+    var existingKey = $(children[i]).data('key');
+    if (existingKey == key) {
+      // TODO(skishore): Flash this element.
+      return;
+    } else if (existingKey > key) {
+      break;
+    }
+  }
+  $(children[i - 1]).after(this.buildKey(key));
 }
 
 return Options;
