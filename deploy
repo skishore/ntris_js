@@ -1,0 +1,28 @@
+#!/bin/bash
+
+
+PEM="$HOME/gnome.pem"
+EC2_HOST="ec2-54-85-142-145.compute-1.amazonaws.com"
+PORT=1618
+
+SCREEN_SESSION="ntris_js"
+EC2_PROJECT="~/$SCREEN_SESSION"
+
+if [ $USER == skishore ]
+  then
+    echo "Pushing to github..."
+    git push
+    ssh -i $PEM ubuntu@$EC2_HOST "cd $EC2_PROJECT; ./deploy"
+  else
+    echo "Deploying on EC2..."
+    git fetch
+    git reset --hard origin/master
+
+    # Kill and reboot the screened server.
+    pid=$(screen -list | grep $SCREEN_SESSION | cut -d '.' -f 1 | bc)
+    if [ -n "$pid" ]; then
+      screen -X -S $pid quit
+    fi
+    screen -S $SCREEN_SESSION -d -m python -m SimpleHTTPServer $PORT
+    echo "Done! Server running at $EC2_HOST:$PORT"
+fi
