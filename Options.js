@@ -2,12 +2,11 @@ var Options = function() {
 "use strict";
 
 var Options = function(target) {
-  this.keyCodeMap = $.extend({}, Key.keyCodeMap);
-  this.keyElementMap = {};
   this.elements = this.build(target);
 }
 
 Options.prototype.build = function(target) {
+  var that = this;
   var result = {target: target};
 
   target.attr('tabindex', 2);
@@ -19,24 +18,45 @@ Options.prototype.build = function(target) {
   var header = $('<div>').addClass('modal-header')
     .append($('<h4>').text('Edit key bindings'));
   var body = $('<div>').addClass('modal-body');
+  var footer = $('<div>').addClass('modal-footer');
 
   // Create the key-bindings form with a tag input for each action.
-  var form = $('<form>').addClass('form-horizontal');
-  result.actions = [];
-  for (var i = 0; i < Action.NUMACTIONS; i++) {
-    var element = this.buildAction(i);
-    form.append(element);
-    result.actions.push(element);
-  }
-  target.append(dialog.append(content.append(header, body.append(form))));
+  result.form = $('<form>').addClass('form-horizontal');
+  body.append(result.form);
+
+  // Create buttons required to hide the modal.
+  footer.append(
+    $('<a>').addClass('btn btn-primary btn-sm').text('Apply')
+        .click(function(e) { that.hide(true); }),
+    $('<a>').addClass('btn btn-default btn-sm').text('Cancel')
+        .click(function(e) { that.hide(false); })
+  );
+
+  target.append(dialog.append(content.append(header, body, footer)));
 
   // Add in the button required to show the form.
   target.after(
-    $('<button>').addClass('btn btn-default btn-sm').text('Edit key bindings')
-        .click(function(e) { target.modal('show'); })
+    $('<a>').addClass('btn btn-primary btn-sm').text('Edit key bindings')
+        .click(function(e) { that.show(); })
   );
-
   return result;
+}
+
+Options.prototype.show = function() {
+  this.keyCodeMap = $.extend({}, Key.keyCodeMap);
+  this.keyElementMap = {};
+
+  this.elements.form.empty();
+  for (var i = 0; i < Action.NUMACTIONS; i++) {
+    var element = this.buildAction(i);
+    this.elements.form.append(element);
+  }
+
+  this.elements.target.modal('show');
+}
+
+Options.prototype.hide = function(save) {
+  this.elements.target.modal('hide');
 }
 
 Options.prototype.buildAction = function(action) {

@@ -2,6 +2,10 @@
   text-align: center;
 }
 
+.spacer {
+  height: 16px;
+}
+
 .ntris-game {
   background-color: black;
   display: inline-block;
@@ -96,6 +100,14 @@
 
 .ntris-options .form-group {
   margin-bottom: 4px;
+}
+
+.ntris-options .form-horizontal {
+  margin-bottom: 0px;
+}
+
+.ntris-options .modal-footer {
+  margin-top: 2px;
 }
 
 .ntris-options label {
