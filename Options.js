@@ -60,28 +60,26 @@ Options.prototype.show = function() {
 
 Options.prototype.hide = function(save) {
   if (save) {
-    if (this.readKeyCodes()) {
-      this.board.repeater.setKeyCodeMap(this.keyCodeMap);
-    } else {
-      return;
-    }
+    this.readKeyCodes();
+    this.board.repeater.setKeyCodeMap(this.keyCodeMap);
   }
   this.elements.target.modal('hide');
 }
 
 Options.prototype.readKeyCodes = function() {
   var keyCodeMap = {};
+  var valid = true;
   for (var i = 0; i < Action.NUMACTIONS; i++) {
     var children = this.elements.actions[i].children();
     if (children.length == 1) {
-      return false;
+      valid = false;
     }
     for (var j = 1; j < children.length; j++) {
       keyCodeMap[$(children[j]).data('key')] = i;
     }
   }
   this.keyCodeMap = keyCodeMap;
-  return true;
+  return valid;
 }
 
 Options.prototype.buildAction = function(action) {
