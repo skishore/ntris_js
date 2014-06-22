@@ -119,6 +119,17 @@ var Key = {
     88: Action.ROTATE_CW,
     67: Action.HOLD,
   },
+
+  loadKeyBindings: function() {
+    $.cookie.json = true;
+    var savedKeyBindings = $.cookie('savedKeyBindings');
+    return (savedKeyBindings ? savedKeyBindings : this.defaultKeyBindings);
+  },
+
+  saveKeyBindings: function(keyBindings) {
+    $.cookie.json = true;
+    $.cookie('savedKeyBindings', keyBindings);
+  },
 };
 
 return Key;

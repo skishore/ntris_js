@@ -5,7 +5,7 @@ var KeyRepeater = function(pause, repeat, target) {
   this.pause = pause;
   this.repeat = repeat;
 
-  this.setKeyBindings(Key.defaultKeyBindings);
+  this.setKeyBindings(Key.loadKeyBindings());
 
   target.attr('tabIndex', 1);
   target.keydown(this.keydown_handler());

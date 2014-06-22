@@ -58,6 +58,7 @@ Options.prototype.show = function() {
 
 Options.prototype.hide = function(save) {
   if (save) {
+    Key.saveKeyBindings(this.keyBindings);
     this.board.repeater.setKeyBindings(this.keyBindings);
   }
   this.elements.target.modal('hide');
@@ -98,10 +99,14 @@ Options.prototype.buildKey = function(action, key) {
   if (this.keyElements.hasOwnProperty(key)) {
     this.keyElements[key].remove();
   }
+  var that = this;
   var result = $('<a>')
     .addClass('btn btn-default btn-sm')
     .data('key', key)
-    .click(function() { this.remove(); })
+    .click(function() {
+      delete that.keyBindings[key];
+      this.remove();
+    })
     .text(Key.keyNames[key] || 'Keycode ' + key)
     .append($('<span>').addClass('ntris-options-close').html('&times;'));
   this.keyBindings[key] = action;
