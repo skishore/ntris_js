@@ -10,9 +10,17 @@ var Options = function(target) {
 Options.prototype.build = function(target) {
   var result = {target: target};
 
-  target.append($('<h4>').text('Key bindings'));
   target.attr('tabindex', 2);
 
+  // Construct a modal structure within the target.
+  target.addClass('modal fade');
+  var dialog = $('<div>').addClass('modal-dialog');
+  var content = $('<div>').addClass('modal-content');
+  var header = $('<div>').addClass('modal-header')
+    .append($('<h4>').text('Edit key bindings'));
+  var body = $('<div>').addClass('modal-body');
+
+  // Create the key-bindings form with a tag input for each action.
   var form = $('<form>').addClass('form-horizontal');
   result.actions = [];
   for (var i = 0; i < Action.NUMACTIONS; i++) {
@@ -20,7 +28,13 @@ Options.prototype.build = function(target) {
     form.append(element);
     result.actions.push(element);
   }
-  target.append(form);
+  target.append(dialog.append(content.append(header, body.append(form))));
+
+  // Add in the button required to show the form.
+  target.after(
+    $('<button>').addClass('btn btn-default btn-sm').text('Edit key bindings')
+        .click(function(e) { target.modal('show'); })
+  );
 
   return result;
 }
@@ -30,10 +44,10 @@ Options.prototype.buildAction = function(action) {
 
   var result = $('<div>').addClass('form-group');
   var label = $('<label>')
-    .addClass('col-sm-6 control-label')
+    .addClass('col-sm-4 control-label')
     .text(Action.labels[action] + ':');
-  // Create the keys tag-input element.
-  var tagInput = $('<div>').addClass('col-sm-6 ntris-options-keys');
+  // Create the keys tag input element.
+  var tagInput = $('<div>').addClass('col-sm-8 ntris-options-keys');
   var button = $('<a>').addClass('btn btn-primary btn-sm').text('+')
   button.click(function(e) { that.waitForKey(e, button); });
   tagInput.append(button);
@@ -91,7 +105,12 @@ Options.prototype.waitForKey = function(e, button) {
 
 Options.prototype.getKey = function(e, button) {
   this.signalReady(button);
-  this.addKey(button.parent(), this.keyCode(e));
+  var key = this.keyCode(e);
+  if (key != 27) {
+    // We don't allow the user to assign escape to a button.
+    this.addKey(button.parent(), key);
+  }
+  e.preventDefault();
 }
 
 Options.prototype.keyCode = function(e) {
