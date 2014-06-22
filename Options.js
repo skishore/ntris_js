@@ -3,6 +3,7 @@ var Options = function() {
 
 var Options = function(target) {
   this.keyCodeMap = $.extend({}, Key.keyCodeMap);
+  this.keyElementMap = {};
   this.elements = this.build(target);
 }
 
@@ -45,10 +46,16 @@ Options.prototype.buildAction = function(action) {
 }
 
 Options.prototype.buildKey = function(key) {
-  return $('<a>').addClass('btn btn-default btn-sm')
-    .text(Key.keyNames[key] || 'Keycode ' + key)
+  if (this.keyElementMap.hasOwnProperty(key)) {
+    this.keyElementMap[key].remove();
+  }
+  var result = $('<a>').addClass('btn btn-default btn-sm')
     .data('key', key)
+    .click(function() { this.remove(); })
+    .text(Key.keyNames[key] || 'Keycode ' + key)
     .append($('<span>').addClass('ntris-options-close').html('&times;'));
+  this.keyElementMap[key] = result;
+  return result;
 }
 
 Options.prototype.signalReady = function(button) {
@@ -88,7 +95,7 @@ Options.prototype.keyCode = function(e) {
 Options.prototype.addKey = function(element, key) {
   var children = element.children();
   for (var i = 1; i < children.length; i++) {
-    var existingKey = $(children[i]).data('key');
+    var existingKey = parseInt($(children[i]).data('key'), 10);
     if (existingKey == key) {
       // TODO(skishore): Flash this element.
       return;
