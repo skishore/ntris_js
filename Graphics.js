@@ -23,10 +23,9 @@ Graphics.prototype.build = function(target) {
   border.css('padding', Math.ceil(this.border/2) - 1);
   target.append(border);
 
-  var textHeight = this.getTextHeight(this.squareWidth);
   var outer = this.squareWidth/4;
   var inner = this.squareWidth/8;
-  var buffer = textHeight + outer + inner;
+  var buffer = outer + inner;
   var overlay_wrapper = $('<div>').addClass('ntris-overlay-wrapper').css({
     'margin': Math.ceil(this.border/2) - 1,
     'padding-top': this.squareWidth*Constants.VISIBLEROWS/2 - buffer,
@@ -85,23 +84,12 @@ Graphics.prototype.build = function(target) {
 
   result.score = $('<div>').addClass('ntris-score').css({
     'font-size': this.squareWidth,
-    'bottom': (this.squareWidth - textHeight)/2,
+    'bottom': 0,
     'right': this.squareWidth/4,
   }).text(0);
   sideboard.append(result.score);
 
   return result;
-}
-
-Graphics.prototype.getTextHeight = function(fontSize) {
-  var testDiv = $('<div>').css({
-    'display': 'none',
-    'font-size': fontSize,
-  }).text('test');
-  $('body').append(testDiv);
-  var textHeight = testDiv.height();
-  testDiv.remove();
-  return textHeight;
 }
 
 Graphics.prototype.resetDelta = function() {

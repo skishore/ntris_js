@@ -88,6 +88,7 @@
 }
 
 .ntris-game .ntris-sideboard .ntris-score {
+  bottom: 0;
   color: white;
   position: absolute;
   text-align: right;
