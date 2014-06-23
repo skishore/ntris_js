@@ -111,7 +111,7 @@
   margin-top: 2px;
 }
 
-.ntris-options label {
+.ntris-options .control-label {
   padding-right: 16px;
 }
 
