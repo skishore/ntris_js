@@ -31,7 +31,7 @@ var Block = function(type) {
 Block.MAXBLOCKSIZE = 10;
 Block.LEVELS = RawBlockData.LEVELS;
 Block.TYPES = RawBlockData.TYPES;
-assert(Block.LEVELS == Block.TYPES.length, 'Unexpected number of block types');
+assert(Block.LEVELS === Block.TYPES.length, 'Unexpected number of block types');
 
 Block.prototype.calculateHeight = function() {
   var lowest = this.squares[0].y;
@@ -65,7 +65,7 @@ Block.prototype.checkIfRotates = function() {
     }
   }
 
-  if (highest.x - lowest.x != highest.y - lowest.y) {
+  if (highest.x - lowest.x !== highest.y - lowest.y) {
     return true;
   }
 
@@ -76,8 +76,8 @@ Block.prototype.checkIfRotates = function() {
     var found = false;
     for (var j = 0; j < this.squares.length; j++) {
       found = found ||
-              (rotated.x == this.squares[j].x &&
-               rotated.y == this.squares[j].y);
+              (rotated.x === this.squares[j].x &&
+               rotated.y === this.squares[j].y);
     }
     if (!found) {
       return true;
@@ -97,7 +97,7 @@ Block.loaded = function() {
     block.y = data[1];
     block.angle = 0;
     var numSquares = data[2];
-    assert(data.length == 2*numSquares + 4,
+    assert(data.length === 2*numSquares + 4,
         'Unexpected block (index ' + i + '): ' + data);
     block.squares = [];
     for (var j = 0; j < numSquares; j++) {
@@ -110,7 +110,7 @@ Block.loaded = function() {
     Block.prototypes.push(block);
   }
 
-  assert(Block.prototypes.length == Block.TYPES[Block.LEVELS - 1],
+  assert(Block.prototypes.length === Block.TYPES[Block.LEVELS - 1],
       'Unexpected number of blocks');
   return true;
 }();
@@ -118,7 +118,7 @@ Block.loaded = function() {
 Block.prototype.getOffsets = function() {
   var result = [];
 
-  if (this.angle % 2 == 0) {
+  if (this.angle % 2 === 0) {
     for (var i = 0; i < this.squares.length; i++) {
       var x = this.x + (1 - (this.angle % 4))*this.squares[i].x;
       var y = this.y + (1 - (this.angle % 4))*this.squares[i].y;

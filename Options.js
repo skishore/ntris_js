@@ -91,7 +91,7 @@ Options.prototype.buildAction = function(action) {
   // Build a tag box for each key assigned to this action.
   var keys = [];
   for (var key in this.keyBindings) {
-    if (this.keyBindings[key] == action) {
+    if (this.keyBindings[key] === action) {
       keys.push(key);
     }
   }
@@ -137,7 +137,7 @@ Options.prototype.signalWait = function(button) {
 }
 
 Options.prototype.waitForKey = function(e, button) {
-  var repeat = button == this.waitingButton;
+  var repeat = button === this.waitingButton;
   if (this.waitingButton) {
     this.signalReady(this.waitingButton);
   }
@@ -149,7 +149,7 @@ Options.prototype.waitForKey = function(e, button) {
 Options.prototype.getKey = function(e, button) {
   this.signalReady(button);
   var key = this.keyCode(e);
-  if (key != 27) {
+  if (key !== 27) {
     // We don't allow the user to assign escape to a button.
     this.addKey(button, key);
   }
@@ -166,7 +166,7 @@ Options.prototype.addKey = function(button, key) {
   var children = button.parent().children();
   for (var i = 1; i < children.length; i++) {
     var existingKey = parseInt($(children[i]).data('key'), 10);
-    if (existingKey == key) {
+    if (existingKey === key) {
       // TODO(skishore): Flash this element.
       return;
     } else if (existingKey > key) {

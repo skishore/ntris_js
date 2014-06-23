@@ -62,7 +62,7 @@ KeyRepeater.prototype.query = function(e) {
       if (this.keyFireFrames[key] < 0) {
         this.keys.push(key);
         this.keyFireFrames[key] = this.pause;
-      } else if (this.keyFireFrames[key] == 0) {
+      } else if (this.keyFireFrames[key] === 0) {
         if (Action.doesActionRepeat(this.keyBindings[key])) {
           this.keys.push(key);
         }

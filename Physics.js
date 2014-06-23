@@ -9,53 +9,53 @@ var Physics = {};
 //    score: the number of points scored by the placement
 Physics.moveBlock = function(block, data, frame, keys) {
   var shift = 0;
-  var drop = frame % Constants.GRAVITY == 0;
+  var drop = frame % Constants.GRAVITY === 0;
   var turn = 0;
   var moved = false;
 
   for (var i = 0; i < keys.length; i++) {
     var key = keys[i];
-    if (key == Action.RIGHT) {
+    if (key === Action.RIGHT) {
       shift++;
-    } else if (key == Action.LEFT) {
+    } else if (key === Action.LEFT) {
       shift--;
-    } else if (key == Action.DOWN) {
+    } else if (key === Action.DOWN) {
       drop = true;
-    } else if (key == Action.ROTATE_CW && block.rotates) {
+    } else if (key === Action.ROTATE_CW && block.rotates) {
       turn = 1;
-    } else if (key == Action.ROTATE_CCW && block.rotates) {
+    } else if (key === Action.ROTATE_CCW && block.rotates) {
       turn = -1;
-    } else if (key == Action.DROP) {
+    } else if (key === Action.DROP) {
       block.y += block.rowsFree;
       return {place: true, score: this.placeBlock(block, data)};
     }
   }
 
-  if (shift != 0) {
+  if (shift !== 0) {
     block.x += shift;
-    if (this.checkBlock(block, data) == Constants.OK) {
+    if (this.checkBlock(block, data) === Constants.OK) {
       moved = true;
     } else {
       block.x -= shift;
     }
   }
 
-  if (turn != 0) {
+  if (turn !== 0) {
     block.angle = (block.angle + turn + 4) % 4;
     var trans = new Point(0, 0);
-    while (this.checkBlock(block, data) == Constants.LEFTEDGE) {
+    while (this.checkBlock(block, data) === Constants.LEFTEDGE) {
       block.x++;
       trans.x++;
     }
-    while (this.checkBlock(block, data) == Constants.RIGHTEDGE) {
+    while (this.checkBlock(block, data) === Constants.RIGHTEDGE) {
       block.x--;
       trans.x--;
     }
-    while (this.checkBlock(block, data) == Constants.TOPEDGE) {
+    while (this.checkBlock(block, data) === Constants.TOPEDGE) {
       block.y++;
       trans.y++;
     }
-    if (this.checkBlock(block, data) == Constants.OK) {
+    if (this.checkBlock(block, data) === Constants.OK) {
       moved = true;
     } else if (block.shoveaways > 0 && this.shoveaway(block, data, shift)) {
       block.shoveaways--;
@@ -101,14 +101,14 @@ Physics.shoveaway = function(block, data, hint) {
 
   for (var i = 0; i < 4; i++) {
     for (var j = 0; j < 3; j++) {
-      if (this.checkBlock(block, data) == Constants.OK) {
+      if (this.checkBlock(block, data) === Constants.OK) {
         return true;
       }
-      block.x += (j == 1 ? -2*hint : hint);
+      block.x += (j === 1 ? -2*hint : hint);
     }
-    if (i == 0) {
+    if (i === 0) {
       block.y++;
-    } else if (i == 1) {
+    } else if (i === 1) {
       block.y -= 2;
     } else {
       block.y--;
@@ -137,7 +137,7 @@ Physics.removeRows = function(data) {
   for (var i = Constants.ROWS - 1; i >= 0; i--) {
     var isRowFull = true;
     for (var j = 0; j < Constants.COLS; j++) {
-      if (data[i][j] == 0) {
+      if (data[i][j] === 0) {
         isRowFull = false;
       }
     }
@@ -162,7 +162,7 @@ Physics.removeRows = function(data) {
 // Mutates block in the middle of the function but restores it by the end.
 Physics.calculateRowsFree = function(block, data) {
   var result = 0;
-  while (this.checkBlock(block, data) == Constants.OK) {
+  while (this.checkBlock(block, data) === Constants.OK) {
     result++;
     block.y++;
   }
@@ -185,7 +185,7 @@ Physics.checkBlock = function(block, data) {
       status = Math.min(Constants.TOPEDGE, status);
     } else if (offsets[i].y >= Constants.ROWS) {
       status = Math.min(Constants.BOTTOMEDGE, status);
-    } else if (data[offsets[i].y][offsets[i].x] != 0) {
+    } else if (data[offsets[i].y][offsets[i].x] !== 0) {
       status = Math.min(Constants.OVERLAP, status);
     }
   }

@@ -10,8 +10,8 @@ var Graphics = function(target) {
   this.height = Constants.VISIBLEROWS*this.squareWidth + 2*this.border;
 
   this.elements = this.build(target);
-  assert(this.width == target.outerWidth(), 'Error: width mismatch');
-  assert(this.height == target.outerHeight(), 'Error: height mismatch');
+  assert(this.width === target.outerWidth(), 'Error: width mismatch');
+  assert(this.height === target.outerHeight(), 'Error: height mismatch');
 }
 
 // Returns a dictionary of jQuery elements that comprise the graphics.
@@ -131,7 +131,7 @@ Graphics.prototype.updatePreview = function() {
     this.state.blockIndex += 1;
     var type = this.state.preview.shift();
     this.elements.preview.children().eq('0').remove();
-    if (type != undefined) {
+    if (type !== undefined) {
       // Add the block's missing height to the preview offset and scroll it.
       this.state.previewFrame = Constants.PREVIEWFRAMES;
       this.state.previewOffset +=
@@ -179,13 +179,13 @@ Graphics.prototype.updateHeldBlockType = function() {
 }
 
 Graphics.prototype.updateOverlay = function() {
-  if (this.delta.state == Constants.PLAYING) {
+  if (this.delta.state === Constants.PLAYING) {
     this.elements.overlay.css('background-color', 'transparent');
     this.drawText();
-  } else if (this.delta.state == Constants.PAUSED) {
+  } else if (this.delta.state === Constants.PAUSED) {
     this.elements.overlay.css('background-color', 'black');
     this.elements.overlay.css('opacity', 1);
-    var resume = (this.delta.pauseReason == 'focus' ? 'Click' : 'Press START');
+    var resume = (this.delta.pauseReason === 'focus' ? 'Click' : 'Press START');
     this.drawText('-- PAUSED --', resume + ' to resume');
   } else {
     this.elements.overlay.css('background-color', 'red');
@@ -242,32 +242,28 @@ Graphics.prototype.drawBoardSquare = function(i, j, color) {
 }
 
 Graphics.prototype.drawBlock = function(block) {
-  if (block != null) {
-    var offsets = block.getOffsets();
-    var color = block.color + Color.MAX;
-    var shadow = color + Color.MAX;
-    for (var i = 0; i < offsets.length; i++) {
-      var offset = offsets[i];
-      this.drawBoardSquare(offset.y + block.rowsFree, offset.x, shadow);
-    }
-    for (var i = 0; i < offsets.length; i++) {
-      var offset = offsets[i];
-      this.drawBoardSquare(offset.y, offset.x, color);
-    }
+  var offsets = block.getOffsets();
+  var color = block.color + Color.MAX;
+  var shadow = color + Color.MAX;
+  for (var i = 0; i < offsets.length; i++) {
+    var offset = offsets[i];
+    this.drawBoardSquare(offset.y + block.rowsFree, offset.x, shadow);
+  }
+  for (var i = 0; i < offsets.length; i++) {
+    var offset = offsets[i];
+    this.drawBoardSquare(offset.y, offset.x, color);
   }
 }
 
 Graphics.prototype.eraseBlock = function(block) {
-  if (block != null) {
-    var offsets = block.getOffsets();
-    for (var i = 0; i < offsets.length; i++) {
-      var offset = offsets[i];
-      this.drawBoardSquare(offset.y + block.rowsFree, offset.x, 0);
-    }
-    for (var i = 0; i < offsets.length; i++) {
-      var offset = offsets[i];
-      this.drawBoardSquare(offset.y, offset.x, 0);
-    }
+  var offsets = block.getOffsets();
+  for (var i = 0; i < offsets.length; i++) {
+    var offset = offsets[i];
+    this.drawBoardSquare(offset.y + block.rowsFree, offset.x, 0);
+  }
+  for (var i = 0; i < offsets.length; i++) {
+    var offset = offsets[i];
+    this.drawBoardSquare(offset.y, offset.x, 0);
   }
 }
 
@@ -284,30 +280,30 @@ Graphics.prototype.drawUI = function(board) {
 Graphics.prototype.flip = function() {
   for (var k in this.delta.board) {
     var color = this.delta.board[k];
-    if (this.state.board[k] != color) {
+    if (this.state.board[k] !== color) {
       var square = this.elements.board[k];
       square.attr('class', 'ntris-square ntris-square-' + color);
       this.state.board[k] = color;
     }
   }
-  if (this.state.blockIndex != this.delta.blockIndex) {
+  if (this.state.blockIndex !== this.delta.blockIndex) {
     this.updatePreview();
   }
-  if (this.state.previewFrame > 0 && this.state.state == Constants.PLAYING) {
+  if (this.state.previewFrame > 0 && this.state.state === Constants.PLAYING) {
     // We only scroll the preview if the game is in motion.
     this.updatePreviewFrame();
   }
-  if (this.state.held != this.delta.held) {
+  if (this.state.held !== this.delta.held) {
     this.updateHeld();
   }
-  if (this.state.heldBlockType != this.delta.heldBlockType) {
+  if (this.state.heldBlockType !== this.delta.heldBlockType) {
     this.updateHeldBlockType();
   }
-  if (this.state.score != this.delta.score) {
+  if (this.state.score !== this.delta.score) {
     this.elements.score.text(this.delta.score);
     this.state.score = this.delta.score;
   }
-  if (this.state.state != this.delta.state) {
+  if (this.state.state !== this.delta.state) {
     this.updateOverlay();
   }
   this.resetDelta();

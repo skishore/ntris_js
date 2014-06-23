@@ -32,14 +32,14 @@ Board.prototype.setFocusHandlers = function() {
 }
 
 Board.prototype.loseFocus = function(e) {
-  if (this.state == Constants.PLAYING) {
+  if (this.state === Constants.PLAYING) {
     this.state = Constants.PAUSED;
     this.pauseReason = 'focus';
   }
 }
 
 Board.prototype.gainFocus = function(e) {
-  if (this.state == Constants.PAUSED && this.pauseReason == 'focus') {
+  if (this.state === Constants.PAUSED && this.pauseReason === 'focus') {
     this.state = Constants.PLAYING;
   }
 }
@@ -88,10 +88,10 @@ Board.prototype.update = function() {
   var keys = this.repeater.query();
 
   if (keys.indexOf(Action.START) >= 0) {
-    if (this.state == Constants.PLAYING) {
+    if (this.state === Constants.PLAYING) {
       this.state = Constants.PAUSED;
       this.pauseReason = 'manual';
-    } else if (this.state == Constants.PAUSED) {
+    } else if (this.state === Constants.PAUSED) {
       this.state = Constants.PLAYING;
     } else {
       this.reset();
@@ -99,14 +99,12 @@ Board.prototype.update = function() {
     return;
   }
 
-  if (this.state == Constants.PLAYING) {
+  if (this.state === Constants.PLAYING) {
     this.frame = (this.frame + 1) % Constants.MAXFRAME;
 
     this.graphics.eraseBlock(this.block);
     if (!this.held && keys.indexOf(Action.HOLD) >= 0) {
       this.block = this.nextBlock(this.block);
-    } else if (this.block == null) {
-      this.block = this.nextBlock();
     } else {
       var result = Physics.moveBlock(this.block, this.data, this.frame, keys);
       if (result.place) {
@@ -154,7 +152,7 @@ Board.prototype.playTetrisGod = function(score) {
 }
 
 Board.prototype.difficultyLevel = function(score) {
-  if (Block.LEVELS == 1) {
+  if (Block.LEVELS === 1) {
     return 0;
   }
   // Calculate the ratio r between the probability of different levels.

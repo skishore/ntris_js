@@ -70,7 +70,7 @@ var Color = {
 
   fromString: function(hex6) {
     var m = this.HEXREGEX.exec(hex6);
-    if (m == null) {
+    if (m === null) {
       throw new Error("Invalid hex6 color string: " + hex6);
     }
     return [parseInt(m[1], 16), parseInt(m[2], 16), parseInt(m[3], 16)];
