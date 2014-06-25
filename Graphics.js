@@ -28,7 +28,7 @@ Graphics.prototype.build = function(target) {
   var buffer = outer + inner;
   var overlay_wrapper = $('<div>').addClass('ntris-overlay-wrapper').css({
     'margin': Math.ceil(this.border/2) - 1,
-    'padding-top': this.squareWidth*Constants.VISIBLEROWS/2 - buffer,
+    'padding-top': this.squareWidth*(Constants.VISIBLEROWS/2 - 1) - buffer,
   });
   border.append(overlay_wrapper);
 
