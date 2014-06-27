@@ -1,8 +1,7 @@
-var Key = (function() {
-"use strict";
+interface KeyBindings {[key:string]:Action;};
 
-var Key = {
-  keyNames: {
+class Key {
+  public keyNames:{[key:string]:string;} = {
     8: 'Backspace',
     9: 'Tab',
     13: 'Enter',
@@ -102,10 +101,10 @@ var Key = {
     220: '\\',
     221: ']',
     222: "'",
-  },
+  };
 
   // Key bindings are objects mapping keys to the actions that they perform.
-  defaultKeyBindings: {
+  public defaultKeyBindings:KeyBindings = {
     38: Action.ROTATE_CW,
     39: Action.RIGHT,
     40: Action.DOWN,
@@ -118,19 +117,16 @@ var Key = {
     90: Action.ROTATE_CCW,
     88: Action.ROTATE_CW,
     67: Action.HOLD,
-  },
+  };
 
-  loadKeyBindings: function() {
+  public loadKeyBindings = function():KeyBindings {
     $.cookie.json = true;
-    var savedKeyBindings = $.cookie('savedKeyBindings');
+    var savedKeyBindings = <KeyBindings>($.cookie('savedKeyBindings'));
     return (savedKeyBindings ? savedKeyBindings : this.defaultKeyBindings);
-  },
+  };
 
-  saveKeyBindings: function(keyBindings) {
+  public saveKeyBindings = function(keyBindings:KeyBindings) {
     $.cookie.json = true;
     $.cookie('savedKeyBindings', keyBindings);
-  },
+  };
 };
-
-return Key;
-})();

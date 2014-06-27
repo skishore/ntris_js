@@ -1,0 +1,5 @@
+#!/bin/bash
+
+tsc declares.ts Action.ts Key.ts --out ntris.js
+uglifyjs --output ntris.min.js ntris.js
+rm -f ntris.js
