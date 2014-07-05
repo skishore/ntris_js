@@ -31,9 +31,9 @@
 
   <body class="centered" onload="initialize()">
     <div class="spacer"></div>
-    <div class="ntris-game"></div>
+    <div class="combinos"></div>
     <div class="spacer"></div>
-    <div class="ntris-options"></div>
+    <div class="combinos-options"></div>
   </body>
 
   <script>
@@ -41,11 +41,9 @@
     "use strict";
 
     function initialize() {
-      var target = $('.ntris-game');
-      var graphics = new Graphics(target);
-      var board = new Board(graphics, target);
-
-      var options = new Options(board, $('.ntris-options'));
+      var target = $('.combinos');
+      var board = new Board(target);
+      var options = new Options(board, $('.combinos-options'));
     }
 
     return initialize;

@@ -5,7 +5,7 @@ PEM="$HOME/gnome.pem"
 EC2_HOST="ec2-54-85-142-145.compute-1.amazonaws.com"
 PORT=1618
 
-SCREEN_SESSION="ntris_js"
+SCREEN_SESSION="combinos"
 EC2_PROJECT="~/$SCREEN_SESSION"
 
 if [ $USER == skishore ]

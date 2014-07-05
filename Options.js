@@ -27,7 +27,7 @@ Options.prototype.build = function(target) {
 
   // Create buttons required to hide the modal.
   footer.append(
-    $('<a>').addClass('btn btn-danger btn-sm ntris-restore-defaults')
+    $('<a>').addClass('btn btn-danger btn-sm restore-defaults-button')
         .text('Restore defaults')
         .click(function(e) { that.show(true); }),
     $('<a>').addClass('btn btn-primary btn-sm').text('Apply')
@@ -81,7 +81,7 @@ Options.prototype.buildAction = function(action) {
     .addClass('col-sm-4 control-label')
     .text(Action.labels[action] + ':');
   // Create the keys tag input element.
-  var tagInput = $('<div>').addClass('col-sm-8 ntris-options-keys');
+  var tagInput = $('<div>').addClass('col-sm-8 keys-list');
   var button = $('<a>')
     .addClass('btn btn-primary btn-sm')
     .data('action', action)
@@ -117,7 +117,7 @@ Options.prototype.buildKey = function(action, key) {
       this.remove();
     })
     .text(Key.keyNames[key] || 'Keycode ' + key)
-    .append($('<span>').addClass('ntris-options-close').html('&times;'));
+    .append($('<span>').addClass('close-button').html('&times;'));
   this.keyBindings[key] = action;
   this.keyElements[key] = result;
   return result;

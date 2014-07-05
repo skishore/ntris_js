@@ -19,30 +19,30 @@ Graphics.prototype.build = function(target) {
   var result = {};
   target.css('padding', Math.floor(this.border/2) - 1);
 
-  var border = $('<div>').addClass('ntris-border')
+  var border = $('<div>').addClass('border')
   border.css('padding', Math.ceil(this.border/2) - 1);
   target.append(border);
 
   var outer = this.squareWidth/4;
   var inner = this.squareWidth/8;
   var buffer = outer + inner;
-  var overlay_wrapper = $('<div>').addClass('ntris-overlay-wrapper').css({
+  var overlay_wrapper = $('<div>').addClass('overlay-wrapper').css({
     'margin': Math.ceil(this.border/2) - 1,
     'padding-top': this.squareWidth*(Constants.VISIBLEROWS/2 - 1) - buffer,
   });
   border.append(overlay_wrapper);
 
-  result.overlay = $('<div>').addClass('ntris-overlay');
+  result.overlay = $('<div>').addClass('overlay');
   overlay_wrapper.append(result.overlay);
 
   var css = {'font-size': this.squareWidth, 'width': 3*this.width/4};
-  result.line1 = $('<div>').addClass('ntris-text').css(css)
+  result.line1 = $('<div>').addClass('text-box').css(css)
       .css({'padding-top': outer, 'padding-bottom': inner}).text('line1');
-  result.line2 = $('<div>').addClass('ntris-text').css(css)
+  result.line2 = $('<div>').addClass('text-box').css(css)
       .css({'padding-top': inner, 'padding-bottom': outer}).text('line2');
   overlay_wrapper.append(result.line1, result.line2);
 
-  var board = $('<div>').addClass('ntris-board').css({
+  var board = $('<div>').addClass('board').css({
     'height': this.squareWidth*Constants.VISIBLEROWS,
     'width': this.squareWidth*Constants.COLS,
   });
@@ -51,7 +51,7 @@ Graphics.prototype.build = function(target) {
   result.board = [];
   var hiddenRows = Constants.ROWS - Constants.VISIBLEROWS;
   for (var i = 0; i < Constants.VISIBLEROWS*Constants.COLS; i++) {
-    var square = $('<div>').addClass('ntris-square ntris-square-0').css({
+    var square = $('<div>').addClass('square square-0').css({
       "height": this.squareWidth,
       "width": this.squareWidth,
     })
@@ -59,30 +59,30 @@ Graphics.prototype.build = function(target) {
     result.board.push(square);
   }
 
-  var sideboard = $('<div>').addClass('ntris-sideboard').css({
+  var sideboard = $('<div>').addClass('sideboard').css({
     'height': this.squareWidth*Constants.VISIBLEROWS,
     'width': this.sideboard,
   });
   border.append(sideboard);
 
   var padding = this.squareWidth/4;
-  result.preview = $('<div>').addClass('ntris-preview').css({
+  result.preview = $('<div>').addClass('preview').css({
     'height': 5*this.squareWidth/2*(Constants.PREVIEW + 2) - padding,
     'padding-top': padding,
   });
   sideboard.append(result.preview);
 
-  result.hold = $('<div>').addClass('ntris-hold').css({
+  result.hold = $('<div>').addClass('hold').css({
     'height': 4*this.squareWidth,
     'margin-left': 3*this.squareWidth/4,
     'margin-right': this.squareWidth/4,
   });
   sideboard.append(result.hold);
 
-  result.hold_overlay = $('<div>').addClass('ntris-hold-overlay');
+  result.hold_overlay = $('<div>').addClass('hold-overlay');
   result.hold.append(result.hold_overlay);
 
-  result.score = $('<div>').addClass('ntris-score').css({
+  result.score = $('<div>').addClass('score').css({
     'font-size': this.squareWidth,
     'bottom': 0,
     'right': this.squareWidth/4,
@@ -112,7 +112,7 @@ Graphics.prototype.drawFreeBlock = function(target, type, x, y, w) {
     var offsets = block.getOffsets();
     for (var i = 0; i < offsets.length; i++) {
       var offset = offsets[i];
-      target.append($('<div>').addClass('ntris-free-square').css({
+      target.append($('<div>').addClass('free-square').css({
         'background-color': ((offset.x + offset.y) % 2 ? dark : light),
         'left': x + w*offset.x,
         'top': y + w*offset.y,
@@ -142,7 +142,7 @@ Graphics.prototype.updatePreview = function() {
   while (this.state.preview.length < this.delta.preview.length) {
     var type = this.delta.preview[this.state.preview.length];
     this.state.preview.push(type);
-    var block = $('<div>').addClass('ntris-preview-block').css({
+    var block = $('<div>').addClass('preview-block').css({
       'height': Block.prototypes[type].height*this.smallWidth,
       'margin-bottom': this.squareWidth,
     });
@@ -171,7 +171,7 @@ Graphics.prototype.updateHeld = function() {
 }
 
 Graphics.prototype.updateHeldBlockType = function() {
-  this.elements.hold.find('.ntris-free-square').remove();
+  this.elements.hold.find('.free-square').remove();
   this.drawFreeBlock(
       this.elements.hold, this.delta.heldBlockType,
       2*this.smallWidth - 1, 3*this.smallWidth/4, this.smallWidth);
@@ -282,7 +282,7 @@ Graphics.prototype.flip = function() {
     var color = this.delta.board[k];
     if (this.state.board[k] !== color) {
       var square = this.elements.board[k];
-      square.attr('class', 'ntris-square ntris-square-' + color);
+      square.attr('class', 'square square-' + color);
       this.state.board[k] = color;
     }
   }

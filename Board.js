@@ -1,10 +1,9 @@
 var Board = (function() {
 "use strict";
 
-var Board = function(graphics, target) {
-  this.graphics = graphics;
+var Board = function(target) {
   this.target = target;
-
+  this.graphics = new Graphics(target);
   this.repeater = new KeyRepeater(Constants.PAUSE, Constants.REPEAT, target);
   this.setFocusHandlers(target);
 
@@ -24,11 +23,11 @@ var Board = function(graphics, target) {
   setTimeout(this.gameLoop.bind(this), this.sleepTime);
 }
 
-Board.prototype.setFocusHandlers = function() {
-  this.target.focus(this.gainFocus.bind(this));
-  this.target.focusout(this.loseFocus.bind(this));
+Board.prototype.setFocusHandlers = function(target) {
+  target.focus(this.gainFocus.bind(this));
+  target.focusout(this.loseFocus.bind(this));
   $(window).blur(this.loseFocus.bind(this));
-  this.target.focus();
+  target.focus();
 }
 
 Board.prototype.loseFocus = function(e) {

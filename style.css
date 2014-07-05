@@ -6,7 +6,7 @@
   height: 16px;
 }
 
-.ntris-game {
+.combinos {
   background-color: black;
   display: inline-block;
   font-family: Times;
@@ -15,14 +15,14 @@
   outline: none;
 }
 
-.ntris-game .ntris-border {
+.combinos .border {
   border: 2px solid #484;
   display: inline-block;
   margin: 0 auto;
   position: relative;
 }
 
-.ntris-game .ntris-overlay-wrapper, .ntris-game .ntris-overlay {
+.combinos .overlay-wrapper, .combinos .overlay {
   position: absolute;
   left: 0;
   bottom: 0;
@@ -31,43 +31,43 @@
   z-index: 5;
 }
 
-.ntris-game .ntris-overlay {
+.combinos .overlay {
   z-index: -1;
 }
 
-.ntris-game .ntris-overlay-wrapper .ntris-text {
+.combinos .overlay-wrapper .text-box {
   background-color: black;
   color: white;
   margin: 0 auto;
 }
 
-.ntris-game .ntris-board {
+.combinos .board {
   float: left;
 }
 
-.ntris-game .ntris-board .ntris-square {
+.combinos .board .square {
   float: left;
   border-style: solid;
   border-width: 1px;
 }
 
-.ntris-game .ntris-sideboard {
+.combinos .sideboard {
   float: left;
   position: relative;
 }
 
-.ntris-game .ntris-sideboard .ntris-free-square {
+.combinos .sideboard .free-square {
   display: inline-block;
   position: absolute;
   z-index: 1;
 }
 
-.ntris-game .ntris-sideboard .ntris-preview-block {
+.combinos .sideboard .preview-block {
   overflow: hidden;
   position: relative;
 }
 
-.ntris-game .ntris-sideboard .ntris-hold {
+.combinos .sideboard .hold {
   border-color: white;
   border-style: solid;
   border-width: 1px;
@@ -76,7 +76,7 @@
   z-index: 2;
 }
 
-.ntris-game .ntris-sideboard .ntris-hold .ntris-hold-overlay {
+.combinos .sideboard .hold .hold-overlay {
   background-color: black;
   opacity: 0;
   position: absolute;
@@ -87,50 +87,50 @@
   z-index: 3;
 }
 
-.ntris-game .ntris-sideboard .ntris-score {
+.combinos .sideboard .score {
   bottom: 0;
   color: white;
   position: absolute;
   text-align: right;
 }
 
-.ntris-options {
+.combinos-options {
   margin: 0 auto;
   outline: none;
 }
 
-.ntris-options .form-group {
+.combinos-options .form-group {
   margin-bottom: 4px;
 }
 
-.ntris-options .form-horizontal {
+.combinos-options .form-horizontal {
   margin-bottom: 0px;
 }
 
-.ntris-options .modal-footer {
+.combinos-options .modal-footer {
   margin-top: 2px;
 }
 
-.ntris-options .control-label {
+.combinos-options .control-label {
   padding-right: 16px;
 }
 
-.ntris-options .ntris-options-keys {
+.combinos-options .keys-list {
   text-align: left;
   margin-top: 5px;
   padding-left: 0px;
 }
 
-.ntris-options .ntris-options-keys .btn {
+.combinos-options .keys-list .btn {
   margin-right: 4px;
   padding: 2px 8px;
 }
 
-.ntris-options .ntris-options-close {
+.combinos-options .close-button {
   margin-left: 4px;
   color: #666;
 }
 
-.ntris-options .ntris-restore-defaults {
+.combinos-options .restore-defaults-button {
   float: left;
 }
