@@ -10,3 +10,17 @@ function assert(clause, message) {
 arraysEqual = function(first, second) {
   return !(first < second) && !(second < first);
 }
+
+function extend(child, parent) {
+  for (var key in parent) {
+    if (parent.hasOwnProperty(key)) {
+      child[key] = parent[key];
+    }
+  }
+  function ctor() {
+    this.constructor = child;
+  }
+  ctor.prototype = parent.prototype;
+  child.prototype = new ctor();
+  child.prototype.__super__ = parent.prototype;
+}

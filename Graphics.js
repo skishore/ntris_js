@@ -11,7 +11,10 @@ var Graphics = function(target) {
 
   this.elements = this.build(target);
   assert(this.width === target.outerWidth(), 'Error: width mismatch');
-  assert(this.height === target.outerHeight(), 'Error: height mismatch');
+  // HACK(skishore): In a Bootstrap environment, some kind of before/after
+  // pseudo-element screws up the height computation.
+  //assert(this.height === target.outerHeight(), 'Error: height mismatch');
+  target.height(this.height - 2*(Math.floor(this.border/2) - 1));
 }
 
 // Returns a dictionary of jQuery elements that comprise the graphics.
@@ -100,7 +103,7 @@ Graphics.prototype.resetDelta = function() {
 Graphics.prototype.getSquareIndex = function(i, j) {
   assert(i >= 0 && i < Constants.ROWS && j >= 0 && j < Constants.COLS,
       'Invalid board square: (' + i + ', ' + j + ')');
-  return Constants.COLS*(i - Constants.ROWS + Constants.VISIBLEROWS) + j;
+  return Constants.COLS*(i - Constants.HIDDENROWS) + j;
 }
 
 Graphics.prototype.drawFreeBlock = function(target, type, x, y, w) {
@@ -125,7 +128,7 @@ Graphics.prototype.drawFreeBlock = function(target, type, x, y, w) {
 
 Graphics.prototype.updatePreview = function() {
   // We should never be ahead of the board in the index of the current block.
-  assert(this.state.blockIndex < this.delta.blockIndex, "Invalid blockIndex!");
+  assert(this.state.blockIndex <= this.delta.blockIndex, "Invalid blockIndex!");
   // Pop blocks that were pulled from the preview queue from state and the UI.
   while (this.state.blockIndex < this.delta.blockIndex) {
     this.state.blockIndex += 1;
@@ -226,7 +229,9 @@ Graphics.prototype.reset = function(board) {
   // and redrawn during the call to flip().
   for (var i = 0; i < Constants.VISIBLEROWS*Constants.COLS; i++) {
     this.state.board.push(-1);
-    this.delta.board[i] = 0;
+    var x = Math.floor(i/Constants.COLS) + Constants.HIDDENROWS;
+    var y = i % Constants.COLS;
+    this.delta.board[i] = board.data[x][y];
   }
 
   this.drawBlock(board.block);
@@ -286,7 +291,8 @@ Graphics.prototype.flip = function() {
       this.state.board[k] = color;
     }
   }
-  if (this.state.blockIndex !== this.delta.blockIndex) {
+  if (this.state.blockIndex !== this.delta.blockIndex ||
+      this.state.preview.length !== this.delta.preview.length) {
     this.updatePreview();
   }
   if (this.state.previewFrame > 0 && this.state.state === Constants.PLAYING) {

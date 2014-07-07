@@ -41,6 +41,7 @@
     "use strict";
 
     function initialize() {
+      Color.initialize(Color.colorCode);
       var target = $('.combinos');
       var board = new Board(target);
       var options = new Options(board, $('.combinos-options'));

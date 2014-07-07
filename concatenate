@@ -1,0 +1,51 @@
+#!/bin/bash
+
+files=(
+util.js
+
+Action.js
+Key.js
+Options.js
+
+Color.js
+Constants.js
+Point.js
+Block.js
+
+KeyRepeater.js
+Graphics.js
+Physics.js
+Board.js
+ClientBoard.js
+OpponentBoard.js
+ServerBoard.js
+)
+
+if true; then
+  cat RawBlockData.js
+  printf '''
+this.combinos = this.combinos || {};
+this.combinos.RawBlockData = RawBlockData;
+'''
+fi > data.js
+
+if true; then
+  printf '''var RawBlockData = combinos.RawBlockData;\n'''
+  for i in ${!files[@]}; do
+    if [ $i -gt 0 ]; then printf '\n'; fi
+    cat ${files[$i]}
+  done
+  printf '''
+this.combinos.ClientBoard = ClientBoard;
+this.combinos.OpponentBoard = OpponentBoard;
+this.combinos.ServerBoard = ServerBoard;
+
+if (Meteor.isClient) {
+  Color.initialize(Color.colorCode);
+}
+'''
+fi > logic.js
+
+cp style.css ../ugli/games/combinos/style.css
+mv data.js ../ugli/games/combinos/data.js
+mv logic.js ../ugli/games/combinos/logic.js

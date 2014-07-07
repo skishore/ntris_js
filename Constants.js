@@ -4,13 +4,14 @@ var Constants = (function() {
 var Constants = {};
 
 // Board size constants.
+// HIDDENROWS = Block.MAXBLOCKSIZE - 1;
+Constants.HIDDENROWS = 10 - 1;
 Constants.VISIBLEROWS = 24;
-// ROWS = (VISIBLEROWS + Block.MAXBLOCKSIZE - 1)
-Constants.ROWS = (Constants.VISIBLEROWS + 10 - 1);
+Constants.ROWS = Constants.HIDDENROWS + Constants.VISIBLEROWS;
 Constants.COLS = 12;
 
 // Screen size constants.
-Constants.SQUAREWIDTH = 14;
+Constants.SQUAREWIDTH = 12;
 
 // Game states.
 Constants.PLAYING = 0;

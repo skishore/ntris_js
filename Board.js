@@ -58,7 +58,7 @@ Board.prototype.reset = function() {
 
   this.preview = [];
   for (var i = 0; i < Constants.PREVIEW; i++) {
-    this.preview.push(this.playTetrisGod(0));
+    this.maybeAddToPreview();
   }
   this.blockIndex = 0;
   this.block = this.nextBlock();
@@ -72,7 +72,7 @@ Board.prototype.gameLoop = function() {
 
   var frames = Math.floor(extraTime/Constants.FRAMEDELAY) + 1;
   for (var i = 0; i < frames; i++) {
-    this.update();
+    this.tick();
   }
   this.graphics.drawUI(this);
   this.graphics.flip();
@@ -83,8 +83,11 @@ Board.prototype.gameLoop = function() {
   setTimeout(this.gameLoop.bind(this), sleepTime);
 }
 
-Board.prototype.update = function() {
+Board.prototype.tick = function() {
   var keys = this.repeater.query();
+  if (this.frame % Constants.GRAVITY === 0) {
+    keys.push(Action.DOWN);
+  }
 
   if (keys.indexOf(Action.START) >= 0) {
     if (this.state === Constants.PLAYING) {
@@ -100,23 +103,25 @@ Board.prototype.update = function() {
 
   if (this.state === Constants.PLAYING) {
     this.frame = (this.frame + 1) % Constants.MAXFRAME;
-
     this.graphics.eraseBlock(this.block);
-    if (!this.held && keys.indexOf(Action.HOLD) >= 0) {
-      this.block = this.nextBlock(this.block);
-    } else {
-      var result = Physics.moveBlock(this.block, this.data, this.frame, keys);
-      if (result.place) {
-        this.score += result.score;
-        this.redraw();
-        this.block = this.nextBlock();
-      }
-    }
+    this.update(keys);
     this.graphics.drawBlock(this.block);
+  }
+}
 
-    if (this.block.rowsFree < 0) {
-      this.state = Constants.GAMEOVER;
+Board.prototype.update = function(keys) {
+  if (!this.held && keys.indexOf(Action.HOLD) >= 0) {
+    this.block = this.nextBlock(this.block);
+  } else {
+    var result = Physics.moveBlock(this.block, this.data, keys);
+    if (result.place) {
+      this.score += result.score;
+      this.redraw();
+      this.block = this.nextBlock();
     }
+  }
+  if (this.block.rowsFree < 0) {
+    this.state = Constants.GAMEOVER;
   }
 }
 
@@ -136,7 +141,7 @@ Board.prototype.nextBlock = function(swap) {
   }
   if (type < 0) {
     this.blockIndex += 1;
-    this.preview.push(this.playTetrisGod(this.score));
+    this.maybeAddToPreview();
     type = this.preview.shift();
   }
 
@@ -144,6 +149,10 @@ Board.prototype.nextBlock = function(swap) {
   var result = new Block(type);
   result.rowsFree = Physics.calculateRowsFree(result, this.data);
   return result;
+}
+
+Board.prototype.maybeAddToPreview = function() {
+  this.preview.push(this.playTetrisGod(this.score));
 }
 
 Board.prototype.playTetrisGod = function(score) {
@@ -155,7 +164,7 @@ Board.prototype.difficultyLevel = function(score) {
     return 0;
   }
   // Calculate the ratio r between the probability of different levels.
-  var p = Math.random();
+  var p = this.random();
   var x = 2.0*(score - Constants.HALFRSCORE)/Constants.HALFRSCORE;
   var r = (Constants.MAXR - Constants.MINR)*this.sigmoid(x) + Constants.MINR;
   // Run through difficulty levels and compare p to a sigmoid for each level.
@@ -170,6 +179,10 @@ Board.prototype.difficultyLevel = function(score) {
 
 Board.prototype.sigmoid = function(x) {
   return (x/Math.sqrt(1 + x*x) + 1)/2;
+}
+
+Board.prototype.random = function() {
+  return Math.random();
 }
 
 return Board;

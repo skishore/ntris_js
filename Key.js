@@ -121,14 +121,19 @@ var Key = {
   },
 
   loadKeyBindings: function() {
-    $.cookie.json = true;
-    var savedKeyBindings = $.cookie('savedKeyBindings');
-    return (savedKeyBindings ? savedKeyBindings : this.defaultKeyBindings);
+    if ($.cookie) {
+      $.cookie.json = true;
+      var savedKeyBindings = $.cookie('savedKeyBindings');
+      return (savedKeyBindings ? savedKeyBindings : this.defaultKeyBindings);
+    }
+    return this.defaultKeyBindings;
   },
 
   saveKeyBindings: function(keyBindings) {
-    $.cookie.json = true;
-    $.cookie('savedKeyBindings', keyBindings);
+    if ($.cookie) {
+      $.cookie.json = true;
+      $.cookie('savedKeyBindings', keyBindings);
+    }
   },
 };
 

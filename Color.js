@@ -132,7 +132,5 @@ var Color = {
   },
 };
 
-Color.initialize(Color.colorCode);
-
 return Color;
 })();
