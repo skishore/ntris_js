@@ -32,15 +32,12 @@ ClientBoard.prototype.reset = function() {
 }
 
 ClientBoard.prototype.tick = function() {
-  var keys = this.repeater.query();
-  if (this.frame % Constants.GRAVITY === 0) {
-    keys.push(Action.DOWN);
-  }
+  var keys = this.getKeys();
 
   if (this.state === Constants.PLAYING &&
       this.block !== null &&
       this.preview.length > 0) {
-    this.maybeSaveMoves(keys);
+    this.maybeSaveMove(keys);
     var blockIndex = this.blockIndex;
 
     this.frame = (this.frame + 1) % Constants.MAXFRAME;
@@ -55,7 +52,7 @@ ClientBoard.prototype.tick = function() {
   }
 }
 
-ClientBoard.prototype.maybeSaveMoves = function(keys) {
+ClientBoard.prototype.maybeSaveMove = function(keys) {
   var move = [];
   for (var i = 0; i < keys.length; i++) {
     if (keys[i] !== Action.START) {

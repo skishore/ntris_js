@@ -84,10 +84,7 @@ Board.prototype.gameLoop = function() {
 }
 
 Board.prototype.tick = function() {
-  var keys = this.repeater.query();
-  if (this.frame % Constants.GRAVITY === 0) {
-    keys.push(Action.DOWN);
-  }
+  var keys = this.getKeys();
 
   if (keys.indexOf(Action.START) >= 0) {
     if (this.state === Constants.PLAYING) {
@@ -109,16 +106,26 @@ Board.prototype.tick = function() {
   }
 }
 
+Board.prototype.getKeys = function() {
+  var keys = this.repeater.query();
+  if (this.block.localStickFrames <= 0 || this.block.globalStickFrames <= 0) {
+    keys.push(Action.DROP);
+  } else if (this.frame % Constants.GRAVITY === 0) {
+    keys.push(Action.DOWN);
+  }
+  return keys;
+}
+
 Board.prototype.update = function(keys) {
   if (!this.held && keys.indexOf(Action.HOLD) >= 0) {
     this.block = this.nextBlock(this.block);
+  } else if (keys.indexOf(Action.DROP) >= 0) {
+    this.block.y += this.block.rowsFree;
+    this.score += Physics.placeBlock(this.block, this.data);
+    this.redraw();
+    this.block = this.nextBlock();
   } else {
-    var result = Physics.moveBlock(this.block, this.data, keys);
-    if (result.place) {
-      this.score += result.score;
-      this.redraw();
-      this.block = this.nextBlock();
-    }
+    Physics.moveBlock(this.block, this.data, keys);
   }
   if (this.block.rowsFree < 0) {
     this.state = Constants.GAMEOVER;

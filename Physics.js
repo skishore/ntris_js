@@ -3,10 +3,7 @@ var Physics = (function() {
 
 var Physics = {};
 
-// Move the block and possibly update data. Returns a dictionary with the
-// following keys:
-//    place: true if the block was placed on the board
-//    score: the number of points scored by the placement
+// Move the block on the board. This method never modifies data or keys.
 Physics.moveBlock = function(block, data, keys) {
   var shift = 0;
   var drop = 0;
@@ -25,9 +22,6 @@ Physics.moveBlock = function(block, data, keys) {
       turn = 1;
     } else if (key === Action.ROTATE_CCW && block.rotates) {
       turn = -1;
-    } else if (key === Action.DROP) {
-      block.y += block.rowsFree;
-      return {place: true, score: this.placeBlock(block, data)};
     }
   }
 
@@ -84,12 +78,7 @@ Physics.moveBlock = function(block, data, keys) {
     if (!moved) {
       block.localStickFrames--;
     }
-    if (block.localStickFrames <= 0 || block.globalStickFrames <= 0) {
-      return {place: true, score: this.placeBlock(block, data)};
-    }
   }
-
-  return {place: false};
 }
 
 // Tries to shove the block away from obstructing squares and the bottom edge.
