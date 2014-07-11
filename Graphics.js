@@ -4,7 +4,7 @@ var Graphics = (function() {
 var Graphics = function(target) {
   this.squareWidth = Constants.SQUAREWIDTH;
   this.smallWidth = Math.ceil(this.squareWidth/2);
-  this.border = this.squareWidth;
+  this.border = this.smallWidth;
   this.sideboard = 7*this.smallWidth;
   this.width = Constants.COLS*this.squareWidth + this.sideboard + 2*this.border;
   this.height = Constants.VISIBLEROWS*this.squareWidth + 2*this.border;
@@ -13,27 +13,21 @@ var Graphics = function(target) {
   assert(this.width === target.outerWidth(), 'Error: width mismatch');
   // HACK(skishore): In a Bootstrap environment, some kind of before/after
   // pseudo-element screws up the height computation.
-  //assert(this.height === target.outerHeight(), 'Error: height mismatch');
-  target.height(this.height - 2*(Math.floor(this.border/2) - 1));
+  assert(this.height === target.outerHeight(), 'Error: height mismatch');
 }
 
 // Returns a dictionary of jQuery elements that comprise the graphics.
 Graphics.prototype.build = function(target) {
   var result = {};
-  target.css('padding', Math.floor(this.border/2) - 1);
-
-  var border = $('<div>').addClass('border')
-  border.css('padding', Math.ceil(this.border/2) - 1);
-  target.append(border);
+  target.css('padding', this.border);
 
   var outer = this.squareWidth/4;
   var inner = this.squareWidth/8;
-  var buffer = outer + inner;
+  var buffer = outer + inner - this.border;
   var overlay_wrapper = $('<div>').addClass('overlay-wrapper').css({
-    'margin': Math.ceil(this.border/2) - 1,
     'padding-top': this.squareWidth*(Constants.VISIBLEROWS/2 - 1) - buffer,
   });
-  border.append(overlay_wrapper);
+  target.append(overlay_wrapper);
 
   result.overlay = $('<div>').addClass('overlay');
   overlay_wrapper.append(result.overlay);
@@ -49,7 +43,7 @@ Graphics.prototype.build = function(target) {
     'height': this.squareWidth*Constants.VISIBLEROWS,
     'width': this.squareWidth*Constants.COLS,
   });
-  border.append(board);
+  target.append(board);
 
   result.board = [];
   var hiddenRows = Constants.ROWS - Constants.VISIBLEROWS;
@@ -66,7 +60,7 @@ Graphics.prototype.build = function(target) {
     'height': this.squareWidth*Constants.VISIBLEROWS,
     'width': this.sideboard,
   });
-  border.append(sideboard);
+  target.append(sideboard);
 
   var padding = this.squareWidth/4;
   result.preview = $('<div>').addClass('preview').css({

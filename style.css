@@ -1,4 +1,4 @@
-.centered {
+.centered, .combinos {
   text-align: center;
 }
 
@@ -13,12 +13,6 @@
   line-height: 1;
   margin: 0 auto;
   outline: none;
-}
-
-.combinos .border {
-  border: 2px solid #484;
-  display: inline-block;
-  margin: 0 auto;
   position: relative;
 }
 
