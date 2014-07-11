@@ -36,16 +36,23 @@ ServerBoard.prototype.reset = function(seed) {
   }
   this.blockIndex = 0;
   this.block = this.nextBlock();
+  this.syncIndex = 0;
 }
 
 ServerBoard.prototype.redraw = function() {
   // The server board doesn't need to be drawn.
 }
 
+ServerBoard.prototype.nextBlock = function(swap) {
+  this.syncIndex += 1;
+  return this.__super__.nextBlock.bind(this)(swap);
+}
+
 ServerBoard.prototype.serialize = function() {
   return {
     data: this.data,
     blockType: this.block.type,
+    syncIndex: this.syncIndex,
     // The rest of the fields here are the precisely fields that are read
     // by a call to Graphics.drawUI.
     blockIndex: this.blockIndex,

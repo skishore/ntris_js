@@ -5,10 +5,11 @@ var ClientBoard = function(target, view, send) {
   this.__super__.constructor.bind(this)(target);
 
   $.extend(this, view);
-  this.preview = [view.blockType];
-  this.preview.push.apply(this.preview, view.preview);
-  this.blockIndex = 0;
-  this.block = this.nextBlock();
+  this.preview = this.preview.slice();
+  // Delete the blockType property and construct a block of that type instead.
+  delete this.blockType;
+  this.block = new Block(view.blockType);
+  this.block.rowsFree = Physics.calculateRowsFree(this.block, this.data);
   this.graphics.reset(this);
 
   this.send = send;
@@ -38,14 +39,14 @@ ClientBoard.prototype.tick = function() {
       this.block !== null &&
       this.preview.length > 0) {
     this.maybeSaveMove(keys);
-    var blockIndex = this.blockIndex;
+    var syncIndex = this.syncIndex;
 
     this.frame = (this.frame + 1) % Constants.MAXFRAME;
     this.graphics.eraseBlock(this.block);
     this.update(keys);
     this.graphics.drawBlock(this.block);
 
-    if (this.blockIndex > blockIndex) {
+    if (this.syncIndex > syncIndex) {
       this.send({type: 'move', moves: this.moves});
       this.moves.length = 0;
     }
@@ -65,10 +66,8 @@ ClientBoard.prototype.maybeSaveMove = function(keys) {
 }
 
 ClientBoard.prototype.nextBlock = function(swap) {
-  if (this.preview.length > 0) {
-    return this.__super__.nextBlock.bind(this)(swap);
-  }
-  return null;
+  this.syncIndex += 1;
+  return this.__super__.nextBlock.bind(this)(swap);
 }
 
 ClientBoard.prototype.maybeAddToPreview = function() {
