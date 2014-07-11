@@ -12,6 +12,10 @@ var ClientBoard = function(target, view, send) {
   this.block.rowsFree = Physics.calculateRowsFree(this.block, this.data);
   this.graphics.reset(this);
 
+  // Set up the state needed to stay in sync with the server.
+  this.serverSyncIndex = this.syncIndex;
+  this.move = [];
+  this.moveQueue = [];
   this.send = send;
 }
 
@@ -29,7 +33,6 @@ ClientBoard.prototype.reset = function() {
   // The only variable that's not reset from the server view is the
   // frame number.
   this.frame = 0;
-  this.moves = [];
 }
 
 ClientBoard.prototype.tick = function() {
@@ -47,8 +50,10 @@ ClientBoard.prototype.tick = function() {
     this.graphics.drawBlock(this.block);
 
     if (this.syncIndex > syncIndex) {
-      this.send({type: 'move', moves: this.moves});
-      this.moves.length = 0;
+      assert(this.syncIndex === syncIndex + 1, 'Skipped a sync index!');
+      this.moveQueue.push({syncIndex: this.syncIndex, move: this.move});
+      this.send({type: 'move', move_queue: this.moveQueue});
+      this.move = [];
     }
   }
 }
@@ -61,7 +66,7 @@ ClientBoard.prototype.maybeSaveMove = function(keys) {
     }
   }
   if (move.length > 0) {
-    this.moves.push(move);
+    this.move.push(move);
   }
 }
 
@@ -83,6 +88,11 @@ ClientBoard.prototype.deserialize = function(view) {
   this.preview = view.preview.slice();
   for (var i = view.blockIndex; i < this.blockIndex; i++) {
     this.preview.shift();
+  }
+  assert(view.syncIndex <= this.syncIndex, 'Server is ahead of client!');
+  while (this.serverSyncIndex < view.syncIndex) {
+    this.serverSyncIndex += 1;
+    this.moveQueue.pop();
   }
 }
 
