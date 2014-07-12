@@ -48,6 +48,11 @@ Options.prototype.build = function(target) {
 }
 
 Options.prototype.show = function(restore) {
+  if (this.board.state == Constants.PLAYING) {
+    this.board.state = Constants.PAUSED;
+    this.board.pauseReason = 'focus';
+  }
+
   if (restore) {
     this.keyBindings = $.extend({}, Key.defaultKeyBindings);
   } else {

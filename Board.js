@@ -24,7 +24,6 @@ var Board = function(target) {
 
 Board.prototype.setFocusHandlers = function(target) {
   target.focus(this.gainFocus.bind(this));
-  target.focusout(this.loseFocus.bind(this));
   $(window).blur(this.loseFocus.bind(this));
   target.focus();
 }
