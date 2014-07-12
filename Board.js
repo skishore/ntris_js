@@ -67,6 +67,10 @@ Board.prototype.reset = function() {
 }
 
 Board.prototype.gameLoop = function() {
+  if (!$.contains(window.document, this.target[0])) {
+    return;
+  }
+
   this.beforeTime = (new Date).getTime();
   var extraTime = (this.beforeTime - this.afterTime) - this.sleepTime;
 
