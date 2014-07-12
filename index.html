@@ -6,6 +6,10 @@
     <link rel="stylesheet" href="external/bootstrap/3.1.1/bootstrap.min.css">
     <script type="text/javascript" src="external/bootstrap/3.1.1/bootstrap.min.js"></script>
 
+    <!-- AmCharts import needed to display the difficulty guide. -->
+    <script type="text/javascript" src="http://www.amcharts.com/lib/3/amcharts.js"></script>
+    <script type="text/javascript" src="http://www.amcharts.com/lib/3/serial.js"></script>
+
     <!-- Base CSS and Javascript. -->
     <link rel="stylesheet" type="text/css" href="style.css">
     <script type="text/javascript" src="util.js"></script>
@@ -32,9 +36,14 @@
 
   <body class="centered" onload="initialize()">
     <div class="spacer"></div>
-    <div class="combinos"></div>
-    <div class="spacer"></div>
-    <div class="combinos-options"></div>
+    <div class="outer-container">
+      <div class="inner-container">
+        <div class="combinos"></div>
+        <div class="spacer"></div>
+        <div class="combinos-options"></div>
+      </div>
+      <div class="difficulty-graph"></div>
+    </div>
   </body>
 
   <script>
@@ -42,6 +51,8 @@
     "use strict";
 
     function initialize() {
+      var graph = new DifficultyCurve.Graph($('.difficulty-graph'));
+
       Color.initialize(Color.colorCode);
       var target = $('.combinos');
       var board = new Board(target);

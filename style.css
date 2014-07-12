@@ -6,6 +6,26 @@
   height: 16px;
 }
 
+.outer-container {
+  display: inline-block;
+  margin: 0 auto;
+}
+
+.inner-container, .difficulty-graph {
+  display: inline-block;
+  float: left;
+  margin: 0 16px;
+}
+
+.difficulty-graph {
+  height: 360px;
+  width: 720px;
+}
+
+.difficulty-graph>div>div>a {
+  top: 36px !important;
+}
+
 .combinos {
   background-color: black;
   display: inline-block;
