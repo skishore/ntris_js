@@ -10,6 +10,7 @@ var ServerBoard = function(seed) {
     }
     this.data.push(row);
   }
+  this.gameIndex = -1;
   this.reset(seed);
 }
 
@@ -24,7 +25,6 @@ ServerBoard.prototype.reset = function(seed) {
     }
   }
 
-  this.frame = 0;
   this.held = false;
   this.heldBlockType = -1;
   this.score = 0;
@@ -36,6 +36,9 @@ ServerBoard.prototype.reset = function(seed) {
   }
   this.blockIndex = 0;
   this.block = this.nextBlock();
+
+  // Update state used to stay in sync with the client.
+  this.gameIndex += 1;
   this.syncIndex = 0;
 }
 
@@ -52,6 +55,7 @@ ServerBoard.prototype.serialize = function() {
   return {
     data: this.data,
     blockType: this.block.type,
+    gameIndex: this.gameIndex,
     syncIndex: this.syncIndex,
     // The rest of the fields here are the precisely fields that are read
     // by a call to Graphics.drawUI.

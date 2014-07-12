@@ -3,19 +3,7 @@ var ClientBoard = (function() {
 
 var ClientBoard = function(target, view, send) {
   this.__super__.constructor.bind(this)(target);
-
-  $.extend(this, view);
-  this.preview = this.preview.slice();
-  // Delete the blockType property and construct a block of that type instead.
-  delete this.blockType;
-  this.block = new Block(view.blockType);
-  this.block.rowsFree = Physics.calculateRowsFree(this.block, this.data);
-  this.graphics.reset(this);
-
-  // Set up the state needed to stay in sync with the server.
-  this.serverSyncIndex = this.syncIndex;
-  this.move = [];
-  this.moveQueue = [];
+  this.resetForView(view);
   this.send = send;
 }
 
@@ -25,18 +13,28 @@ ClientBoard.prototype.loseFocus = function(e) {
   // A client board doesn't auto-pause on losing focus.
 }
 
-ClientBoard.prototype.gainFocus = function(e) {
-  // A client board doesn't unpause on gaining focus.
+ClientBoard.prototype.reset = function() {
+  this.frame = 0;
 }
 
-ClientBoard.prototype.reset = function() {
-  // The only variable that's not reset from the server view is the
-  // frame number.
-  this.frame = 0;
+ClientBoard.prototype.resetForView = function(view) {
+  OpponentBoard.prototype.deserialize.bind(this)(view);
+  this.preview = this.preview.slice();
+
+  // Set up the state needed to stay in sync with the server.
+  this.serverSyncIndex = this.syncIndex;
+  this.move = [];
+  this.moveQueue = [];
 }
 
 ClientBoard.prototype.tick = function() {
   var keys = this.getKeys();
+
+  if (keys.indexOf(Action.START) >= 0) {
+    if (this.state == Constants.GAMEOVER) {
+      this.send({type: 'start', game_index: this.gameIndex});
+    }
+  }
 
   if (this.state === Constants.PLAYING &&
       this.block !== null &&
@@ -52,7 +50,11 @@ ClientBoard.prototype.tick = function() {
     if (this.syncIndex > syncIndex) {
       assert(this.syncIndex === syncIndex + 1, 'Skipped a sync index!');
       this.moveQueue.push({syncIndex: this.syncIndex, move: this.move});
-      this.send({type: 'move', move_queue: this.moveQueue});
+      this.send({
+        type: 'move',
+        game_index: this.gameIndex,
+        move_queue: this.moveQueue,
+      });
       this.move = [];
     }
   }
@@ -82,17 +84,20 @@ ClientBoard.prototype.maybeAddToPreview = function() {
 }
 
 ClientBoard.prototype.deserialize = function(view) {
-  // Pull preview data out of the view and update the current state. Note
-  // that we could have pulled blocks from the preview since the server sent
-  // it, so we have to shift this blocks first.
-  this.preview = view.preview.slice();
-  for (var i = view.blockIndex; i < this.blockIndex; i++) {
-    this.preview.shift();
-  }
-  assert(view.syncIndex <= this.syncIndex, 'Server is ahead of client!');
-  while (this.serverSyncIndex < view.syncIndex) {
-    this.serverSyncIndex += 1;
-    this.moveQueue.pop();
+  if (this.gameIndex !== view.gameIndex) {
+    this.resetForView(view);
+  } else {
+    // Pull preview data out of the view and update the current state. Note
+    // that we could have pulled blocks from the preview since the server sent
+    // it, so we have to shift this blocks first.
+    this.preview = view.preview.slice();
+    for (var i = view.blockIndex; i < this.blockIndex; i++) {
+      this.preview.shift();
+    }
+    while (this.serverSyncIndex < view.syncIndex) {
+      this.serverSyncIndex += 1;
+      this.moveQueue.pop();
+    }
   }
 }
 
