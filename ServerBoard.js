@@ -17,7 +17,7 @@ var ServerBoard = function(seed) {
 extend(ServerBoard, Board);
 
 ServerBoard.prototype.reset = function(seed) {
-  this.rng = new MersenneTwister(seed);
+  this.curve = new DifficultyCurve(new MersenneTwister(seed));
 
   for (var i = 0; i < Constants.ROWS; i++) {
     for (var j = 0; j < Constants.COLS; j++) {
@@ -30,11 +30,11 @@ ServerBoard.prototype.reset = function(seed) {
   this.score = 0;
   this.state = Constants.PLAYING;
 
+  this.blockIndex = 0;
   this.preview = [];
   for (var i = 0; i < Constants.PREVIEW; i++) {
     this.maybeAddToPreview();
   }
-  this.blockIndex = 0;
   this.block = this.nextBlock();
 
   // Update state used to stay in sync with the client.
@@ -67,10 +67,6 @@ ServerBoard.prototype.serialize = function() {
     state: this.state,
     pauseReason: this.pauseReason,
   }
-}
-
-ServerBoard.prototype.random = function() {
-  return this.rng.random();
 }
 
 return ServerBoard;

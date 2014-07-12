@@ -15,7 +15,6 @@ var Board = function(target) {
     }
     this.data.push(row);
   }
-
   this.reset();
 
   this.afterTime = (new Date).getTime();
@@ -44,6 +43,8 @@ Board.prototype.gainFocus = function(e) {
 }
 
 Board.prototype.reset = function() {
+  this.curve = new DifficultyCurve();
+
   for (var i = 0; i < Constants.ROWS; i++) {
     for (var j = 0; j < Constants.COLS; j++) {
       this.data[i][j] = 0;
@@ -56,11 +57,11 @@ Board.prototype.reset = function() {
   this.score = 0;
   this.state = Constants.PLAYING;
 
+  this.blockIndex = 0;
   this.preview = [];
   for (var i = 0; i < Constants.PREVIEW; i++) {
     this.maybeAddToPreview();
   }
-  this.blockIndex = 0;
   this.block = this.nextBlock();
 
   this.graphics.reset(this);
@@ -163,37 +164,7 @@ Board.prototype.nextBlock = function(swap) {
 }
 
 Board.prototype.maybeAddToPreview = function() {
-  this.preview.push(this.playTetrisGod(this.score));
-}
-
-Board.prototype.playTetrisGod = function(score) {
-  return Math.floor(Block.TYPES[this.difficultyLevel(score)]*Math.random());
-}
-
-Board.prototype.difficultyLevel = function(score) {
-  if (Block.LEVELS === 1) {
-    return 0;
-  }
-  // Calculate the ratio r between the probability of different levels.
-  var p = this.random();
-  var x = 2.0*(score - Constants.HALFRSCORE)/Constants.HALFRSCORE;
-  var r = (Constants.MAXR - Constants.MINR)*this.sigmoid(x) + Constants.MINR;
-  // Run through difficulty levels and compare p to a sigmoid for each level.
-  for (var i = 1; i < Block.LEVELS ; i++) {
-    var x = 2.0*(score - i*Constants.LEVELINTERVAL)/Constants.LEVELINTERVAL;
-    if (p > Math.pow(r, i)*this.sigmoid(x)) {
-      return i - 1;
-    }
-  }
-  return Block.LEVELS - 1;
-}
-
-Board.prototype.sigmoid = function(x) {
-  return (x/Math.sqrt(1 + x*x) + 1)/2;
-}
-
-Board.prototype.random = function() {
-  return Math.random();
+  this.preview.push(this.curve.generateBlockType(this.blockIndex));
 }
 
 return Board;
