@@ -51,12 +51,12 @@
     "use strict";
 
     function initialize() {
-      var graph = new DifficultyCurve.Graph($('.difficulty-graph'));
-
       Color.initialize(Color.colorCode);
       var target = $('.combinos');
       var board = new Board(target);
       var options = new Options(board, $('.combinos-options'));
+
+      var graph = new DifficultyCurve.Graph(board, $('.difficulty-graph'));
     }
 
     return initialize;

@@ -42,21 +42,21 @@ DifficultyCurve.prototype.sigmoid = function(x) {
 DifficultyCurve.prototype.adjustIndex = function(index) {
   var graph = DifficultyCurve.Graph.instance;
   if (graph) {
-    var result = index && graph.index + 1;
-    graph.setIndex(result);
-    return result;
+    return graph.adjustIndex(index);
   } else {
     return index;
   }
 }
 
-DifficultyCurve.Graph = function(target) {
+DifficultyCurve.Graph = function(board, target) {
   target.attr('id', this.generateId());
+  this.board = board;
   this.target = target;
+
   this.chart = AmCharts.makeChart(target.attr('id'), {
     type: 'serial',
     titles: [{text: 'Combinos difficulty curve'}],
-    dataProvider: this.getData(1000, 5),
+    dataProvider: this.getData(2000, 5),
     graphs: this.getSeries(),
     chartCursor: {zoomable: false},
     categoryField: 'index',
@@ -72,7 +72,14 @@ DifficultyCurve.Graph = function(target) {
       label: 'Current index',
     }],
   });
-  this.setIndex(0);
+  this.target.on('click', function(e) {
+    var category = this.chart.chartCursor.categoryBalloon.text;
+    var index = category.length && parseInt(category, 10);
+    this.setHandicap(index);
+    this.board.reset();
+  }.bind(this));
+
+  this.setHandicap(0);
   DifficultyCurve.Graph.instance = this;
 }
 
@@ -110,14 +117,19 @@ DifficultyCurve.Graph.prototype.getSeries = function() {
   return result;
 }
 
-DifficultyCurve.Graph.prototype.setIndex = function(index) {
-  this.index = index;
-  var displayIndex = (index ? index - 1 : 0);
+DifficultyCurve.Graph.prototype.setHandicap = function(handicap) {
+  this.handicap = handicap;
+  this.adjustIndex(0);
+}
+
+DifficultyCurve.Graph.prototype.adjustIndex = function(index) {
+  var result = index + this.handicap;
+  var displayIndex = Math.max(result - 1, 0);
   var category = '' + this.interval*Math.floor(displayIndex / this.interval);
   this.chart.categoryAxis.guides[0].category = category;
   this.chart.categoryAxis.guides[0].label = 'Current index: ' + displayIndex;
   this.chart.validateNow();
-  window.chart = this.chart;
+  return result;
 }
 
 return DifficultyCurve;
