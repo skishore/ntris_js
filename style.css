@@ -28,7 +28,11 @@
 }
 
 .difficulty-source .btn {
-  margin: 0 8px;
+  margin: 12px 8px 8px;
+}
+
+.difficulty-source .eval-error-message {
+  color: red;
 }
 
 .CodeMirror {

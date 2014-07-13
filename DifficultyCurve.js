@@ -164,12 +164,14 @@ DifficultyCurve.SourceEditor.prototype.build = function(target) {
   result.editor.on('change', fixCodeMirrorHeights);
   fixCodeMirrorHeights();
 
+  result.eval_error_message = $('<div>').addClass('eval-error-message');
+
   target.append(
-    $('<div class="spacer">'),
     $('<a>').addClass('btn btn-danger btn-sm restore-defaults-button')
         .text('Restore default').click(this.reset.bind(this)),
     $('<a>').addClass('btn btn-primary btn-sm')
         .text('Apply').click(this.save.bind(this)),
+    result.eval_error_message,
     $('<div class="spacer">')
   );
 
@@ -178,10 +180,18 @@ DifficultyCurve.SourceEditor.prototype.build = function(target) {
 
 DifficultyCurve.SourceEditor.prototype.reset = function() {
   this.elements.editor.setValue(this.defaultValue);
+  this.elements.eval_error_message.text('');
 }
 
 DifficultyCurve.SourceEditor.prototype.save = function(save) {
-  eval(this.elements.editor.getValue());
+  try {
+    eval(this.elements.editor.getValue());
+    DifficultyCurve.prototype.distribution(0);
+  } catch(e) {
+    this.elements.eval_error_message.text(e.toString());
+    return;
+  }
+  this.elements.eval_error_message.text('');
   var graph = DifficultyCurve.Graph.instance;
   if (graph) {
     graph.chart.dataProvider = graph.getData(2000, 10);
