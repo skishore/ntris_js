@@ -23,6 +23,6 @@ if [ $USER == skishore ]
     if [ -n "$pid" ]; then
       screen -X -S $pid quit
     fi
-    screen -S $SCREEN_SESSION -d -m python -m SimpleHTTPServer $PORT
+    screen -S $SCREEN_SESSION -d -m python server.py $PORT
     echo "Done! Server running at $EC2_HOST:$PORT"
 fi

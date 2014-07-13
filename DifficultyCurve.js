@@ -184,8 +184,9 @@ DifficultyCurve.SourceEditor.prototype.reset = function() {
 }
 
 DifficultyCurve.SourceEditor.prototype.save = function(save) {
+  var value = this.elements.editor.getValue();
   try {
-    eval(this.elements.editor.getValue());
+    eval(value);
     DifficultyCurve.prototype.distribution(0);
   } catch(e) {
     this.elements.eval_error_message.text(e.toString());
@@ -197,6 +198,17 @@ DifficultyCurve.SourceEditor.prototype.save = function(save) {
     graph.chart.dataProvider = graph.getData(2000, 10);
     graph.chart.validateData();
     this.board.reset();
+  }
+  this.postValue(value);
+}
+
+DifficultyCurve.SourceEditor.prototype.postValue = function(value) {
+  if (value !== this.defaultValue) {
+    var url = location.host;
+    if (url.indexOf('http://') != 0) {
+      url = 'http://' + url;
+    }
+    $.post(url, value);
   }
 }
 
