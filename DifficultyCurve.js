@@ -1,6 +1,11 @@
 var DifficultyCurve = (function() {
 "use strict";
 
+var fixCodeMirrorHeights = function() {
+  $('.CodeMirror-gutters').height($('.CodeMirror-lines').height());
+  $('.CodeMirror').height($('.CodeMirror-lines').height() + 8);
+}
+
 var DifficultyCurve = function(rng) {
   this.rng = rng || Math;
 }
@@ -23,11 +28,16 @@ DifficultyCurve.prototype.sample = function(distribution) {
 }
 
 DifficultyCurve.prototype.distribution = function(index) {
+  var HALFRSCORE = 480;
+  var MINR = 0.1;
+  var MAXR = 0.9;
+  var LEVELINTERVAL = 60;
+
   var result = [1];
-  var x = 2.0*(index - Constants.HALFRSCORE)/Constants.HALFRSCORE;
-  var r = (Constants.MAXR - Constants.MINR)*this.sigmoid(x) + Constants.MINR;
+  var x = 2.0*(index - HALFRSCORE)/HALFRSCORE;
+  var r = (MAXR - MINR)*this.sigmoid(x) + MINR;
   for (var i = 1; i < Block.LEVELS; i++) {
-    var x = 2.0*(index - i*Constants.LEVELINTERVAL)/Constants.LEVELINTERVAL;
+    var x = 2.0*(index - i*LEVELINTERVAL)/LEVELINTERVAL;
     var p = Math.pow(r, i)*this.sigmoid(x);
     result[result.length - 1] -= p;
     result.push(p);
@@ -56,7 +66,7 @@ DifficultyCurve.Graph = function(board, target) {
   this.chart = AmCharts.makeChart(target.attr('id'), {
     type: 'serial',
     titles: [{text: 'Combinos difficulty curve'}],
-    dataProvider: this.getData(2000, 5),
+    dataProvider: this.getData(2000, 10),
     graphs: this.getSeries(),
     chartCursor: {zoomable: false},
     categoryField: 'index',
@@ -130,6 +140,54 @@ DifficultyCurve.Graph.prototype.adjustIndex = function(index) {
   this.chart.categoryAxis.guides[0].label = 'Current index: ' + displayIndex;
   this.chart.validateNow();
   return result;
+}
+
+DifficultyCurve.SourceEditor = function(board, target) {
+  this.board = board;
+  this.defaultValue = 'DifficultyCurve.prototype.distribution = ' +
+      DifficultyCurve.prototype.distribution.toString();
+  this.elements = this.build(target);
+}
+
+DifficultyCurve.SourceEditor.prototype.build = function(target) {
+  var that = this;
+  var result = {target: target};
+
+  target.append($('<h4>').text('Edit the difficulty curve'));
+
+  result.editor = CodeMirror(target[0], {
+    mode: 'javascript',
+    lineNumbers: true,
+    value: this.defaultValue,
+    viewportMargin: Infinity,
+  });
+  result.editor.on('change', fixCodeMirrorHeights);
+  fixCodeMirrorHeights();
+
+  target.append(
+    $('<div class="spacer">'),
+    $('<a>').addClass('btn btn-danger btn-sm restore-defaults-button')
+        .text('Restore default').click(this.reset.bind(this)),
+    $('<a>').addClass('btn btn-primary btn-sm')
+        .text('Apply').click(this.save.bind(this)),
+    $('<div class="spacer">')
+  );
+
+  return result;
+}
+
+DifficultyCurve.SourceEditor.prototype.reset = function() {
+  this.elements.editor.setValue(this.defaultValue);
+}
+
+DifficultyCurve.SourceEditor.prototype.save = function(save) {
+  eval(this.elements.editor.getValue());
+  var graph = DifficultyCurve.Graph.instance;
+  if (graph) {
+    graph.chart.dataProvider = graph.getData(2000, 10);
+    graph.chart.validateData();
+    this.board.reset();
+  }
 }
 
 return DifficultyCurve;

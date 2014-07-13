@@ -7,8 +7,13 @@
     <script type="text/javascript" src="external/bootstrap/3.1.1/bootstrap.min.js"></script>
 
     <!-- AmCharts import needed to display the difficulty guide. -->
-    <script type="text/javascript" src="http://www.amcharts.com/lib/3/amcharts.js"></script>
-    <script type="text/javascript" src="http://www.amcharts.com/lib/3/serial.js"></script>
+    <script type="text/javascript" src="external/amcharts/3/amcharts.js"></script>
+    <script type="text/javascript" src="external/amcharts/3/serial.js"></script>
+
+    <!-- CodeMirror imports. -->
+    <link rel=stylesheet href="external/codemirror/4.3/lib/codemirror.css">
+    <script type="text/javascript" src="external/codemirror/4.3/lib/codemirror.js"></script>
+    <script type="text/javascript" src="external/codemirror/4.3/mode/javascript/javascript.js"></script>
 
     <!-- Base CSS and Javascript. -->
     <link rel="stylesheet" type="text/css" href="style.css">
@@ -34,15 +39,23 @@
     <script type="text/javascript" src="Board.js"></script>
   </head>
 
-  <body class="centered" onload="initialize()">
+  <body onload="initialize()">
     <div class="spacer"></div>
-    <div class="outer-container">
-      <div class="inner-container">
-        <div class="combinos"></div>
+    <div class="centered">
+      <div class="game-container">
+        <div class="left-side">
+          <div class="combinos"></div>
+          <div class="spacer"></div>
+          <div class="combinos-options"></div>
+        </div>
+        <div class="right-side">
+          <div class="difficulty-graph"></div>
+          <div class="spacer"></div>
+          <div>Click on the graph to set a difficulty.</div>
+        </div>
         <div class="spacer"></div>
-        <div class="combinos-options"></div>
+        <div class="difficulty-source"></div>
       </div>
-      <div class="difficulty-graph"></div>
     </div>
   </body>
 
@@ -57,6 +70,8 @@
       var options = new Options(board, $('.combinos-options'));
 
       var graph = new DifficultyCurve.Graph(board, $('.difficulty-graph'));
+      var source = new DifficultyCurve.SourceEditor(
+          board, $('.difficulty-source'));
     }
 
     return initialize;

@@ -3,27 +3,46 @@
 }
 
 .spacer {
+  clear: both;
   height: 16px;
 }
 
-.outer-container {
+.game-container {
   display: inline-block;
   margin: 0 auto;
 }
 
-.inner-container, .difficulty-graph {
+.left-side, .right-side {
   display: inline-block;
   float: left;
   margin: 0 16px;
 }
 
 .difficulty-graph {
-  height: 360px;
-  width: 720px;
+  height: 310px;
+  width: 620px;
 }
 
 .difficulty-graph>div>div>a {
   top: 36px !important;
+}
+
+.difficulty-source .btn {
+  margin: 0 8px;
+}
+
+.CodeMirror {
+  border: 1px solid #eee;
+  font-size: 12px;
+  height: 40px;
+  margin: 0 auto;
+  text-align: left;
+  width: 640px;
+}
+
+.CodeMirror-scroll {
+  overflow-y: none;
+  overflow-x: auto;
 }
 
 .combinos {
