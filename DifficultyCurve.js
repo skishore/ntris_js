@@ -203,13 +203,7 @@ DifficultyCurve.SourceEditor.prototype.save = function(save) {
 }
 
 DifficultyCurve.SourceEditor.prototype.postValue = function(value) {
-  if (value !== this.defaultValue) {
-    var url = location.host;
-    if (url.indexOf('http://') != 0) {
-      url = 'http://' + url;
-    }
-    $.post(url, value);
-  }
+  $.post('/', value);
 }
 
 return DifficultyCurve;
