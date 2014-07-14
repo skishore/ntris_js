@@ -17,7 +17,7 @@ DifficultyCurve.prototype.generateBlockType = function(index) {
 }
 
 DifficultyCurve.prototype.sample = function(distribution) {
-  var p = this.rng.random();
+  var p = this.rng.random()*this.sum(distribution);
   for (var i = 0; i < distribution.length - 1; i++) {
     p -= distribution[i];
     if (p < 0) {
@@ -25,6 +25,14 @@ DifficultyCurve.prototype.sample = function(distribution) {
     }
   }
   return distribution.length - 1;
+}
+
+DifficultyCurve.prototype.sum = function(array) {
+  var result = 0;
+  for (var i = 0; i < array.length; i++) {
+    result += array[i];
+  }
+  return result;
 }
 
 DifficultyCurve.prototype.distribution = function(index) {
