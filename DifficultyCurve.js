@@ -8,6 +8,10 @@ var fixCodeMirrorHeights = function() {
 
 var DifficultyCurve = function(rng) {
   this.rng = rng || Math;
+  this.derandomizer = [];
+  for (var i = 0; i < Block.LEVELS; i++) {
+    this.derandomizer.push(0);
+  }
 }
 
 DifficultyCurve.prototype.generateBlockType = function(index) {
@@ -18,14 +22,24 @@ DifficultyCurve.prototype.generateBlockType = function(index) {
 }
 
 DifficultyCurve.prototype.sample = function(distribution) {
-  var p = this.rng.random()*this.sum(distribution);
-  for (var i = 0; i < distribution.length - 1; i++) {
-    p -= distribution[i];
-    if (p < 0) {
-      return i;
+  var sum = this.sum(distribution);
+  var max = -Infinity;
+  var samples = [];
+  for (var i = 0; i < distribution.length; i++) {
+    this.derandomizer[i] += distribution[i]/sum;
+    if (this.derandomizer[i] > max) {
+      max = this.derandomizer[i];
+      samples = [i];
+    } else if (this.derandomizer[i] == max) {
+      samples.push(i);
     }
   }
-  return distribution.length - 1;
+  var result = samples[0];
+  if (samples.length > 1) {
+    result = samples[Math.floor(samples.length*this.rng.random())];
+  }
+  this.derandomizer[result] -= 1;
+  return result;
 }
 
 DifficultyCurve.prototype.sum = function(array) {
