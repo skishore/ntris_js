@@ -13,7 +13,8 @@ var DifficultyCurve = function(rng) {
 DifficultyCurve.prototype.generateBlockType = function(index) {
   index = this.adjustIndex(index);
   var level = this.sample(this.distribution(index));
-  return Math.floor(Block.TYPES[level]*this.rng.random());
+  var last = level && Block.TYPES[level - 1];
+  return Math.floor((Block.TYPES[level] - last)*this.rng.random()) + last;
 }
 
 DifficultyCurve.prototype.sample = function(distribution) {
