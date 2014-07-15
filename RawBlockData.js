@@ -1,7 +1,7 @@
 // This function contains a single variable. We don't need to namespace it.
 var RawBlockData = {
-LEVELS: 6,
-TYPES: [29,89,285,989,3489,12678],
+LEVELS: 7,
+TYPES: [11,29,89,285,989,3489,12678],
 DATA: [
 [0,0,1,0,0,0],
 [0,1,2,0,0,0,-1,1],

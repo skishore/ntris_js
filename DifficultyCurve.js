@@ -36,25 +36,25 @@ DifficultyCurve.prototype.sum = function(array) {
 }
 
 DifficultyCurve.prototype.distribution = function(index) {
-  var HALFRSCORE = 480;
-  var MINR = 0.1;
-  var MAXR = 0.9;
-  var LEVELINTERVAL = 60;
+  var FINAL_DISTRIBUTION = [12, 12, 12, 6, 2, 1, 1];
+  var FINAL_SCORE = 2400;
+  var LEVEL_INTERVAL = 120;
 
-  var result = [1];
-  var x = 2.0*(index - HALFRSCORE)/HALFRSCORE;
-  var r = (MAXR - MINR)*this.sigmoid(x) + MINR;
-  for (var i = 1; i < Block.LEVELS; i++) {
-    var x = 2.0*(index - i*LEVELINTERVAL)/LEVELINTERVAL;
-    var p = Math.pow(r, i)*this.sigmoid(x);
-    result[result.length - 1] -= p;
-    result.push(p);
+  var result = [];
+  for (var i = 0; i < Block.LEVELS; i++) {
+    if (i < 2) {
+      result.push(FINAL_DISTRIBUTION[i]);
+    } else {
+      var start = (i - 2)*LEVEL_INTERVAL;
+      var x = 2.0*(index - start)/(FINAL_SCORE - start);
+      result.push(FINAL_DISTRIBUTION[i]*this.flatten(x));
+    }
   }
   return result;
 }
 
-DifficultyCurve.prototype.sigmoid = function(x) {
-  return (x/Math.sqrt(1 + x*x) + 1)/2;
+DifficultyCurve.prototype.flatten = function(x) {
+  return (x < 0 ? 0 : x/(1 + x));
 }
 
 DifficultyCurve.prototype.adjustIndex = function(index) {
