@@ -1,0 +1,36 @@
+.left-side, .right-side {
+  display: inline-block;
+  float: left;
+  margin: 0 16px;
+}
+
+.difficulty-graph {
+  height: 310px;
+  width: 620px;
+}
+
+.difficulty-graph>div>div>a {
+  top: 36px !important;
+}
+
+.difficulty-source .btn {
+  margin: 12px 8px 8px;
+}
+
+.difficulty-source .eval-error-message {
+  color: red;
+}
+
+.CodeMirror {
+  border: 1px solid #eee;
+  font-size: 12px;
+  height: 40px;
+  margin: 0 auto;
+  text-align: left;
+  width: 640px;
+}
+
+.CodeMirror-scroll {
+  overflow-y: none;
+  overflow-x: auto;
+}
