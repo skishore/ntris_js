@@ -34,7 +34,7 @@
 
     <!-- Board and its dependencies. -->
     <script type="text/javascript" src="DifficultyCurve.js"></script>
-    <script type="text/javascript" src="DifficultyEval.js"></script>
+    <!-- <script type="text/javascript" src="DifficultyEval.js"></script> -->
     <script type="text/javascript" src="Graphics.js"></script>
     <script type="text/javascript" src="KeyRepeater.js"></script>
     <script type="text/javascript" src="Physics.js"></script>
@@ -50,12 +50,14 @@
           <div class="spacer"></div>
           <div class="combinos-options"></div>
         </div>
+        <!--
         <div class="right-side">
           <div class="difficulty-graph"></div>
           <div>Click on the graph to set a difficulty.</div>
         </div>
         <div class="spacer"></div>
         <div class="difficulty-source"></div>
+        -->
       </div>
     </div>
   </body>
@@ -70,9 +72,9 @@
       var board = new Board(target);
       var options = new Options(board, $('.combinos-options'));
 
-      var graph = new DifficultyCurve.Graph(board, $('.difficulty-graph'));
-      var source = new DifficultyCurve.SourceEditor(
-          board, $('.difficulty-source'));
+      //var graph = new DifficultyCurve.Graph(board, $('.difficulty-graph'));
+      //var source = new DifficultyCurve.SourceEditor(
+      //    board, $('.difficulty-source'));
     }
 
     return initialize;
