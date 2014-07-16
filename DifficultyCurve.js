@@ -8,40 +8,46 @@ var fixCodeMirrorHeights = function() {
 
 var DifficultyCurve = function(rng) {
   this.rng = rng || Math;
-  this.derandomizer = [];
-  for (var i = 0; i < Block.LEVELS; i++) {
-    this.derandomizer.push(0);
-  }
 }
 
 DifficultyCurve.prototype.generateBlockType = function(index) {
-  var level = this.sample(this.distribution(index));
+  var level = DifficultyCurve.getLevel(index);
   var last = level && Block.TYPES[level - 1];
   return Math.floor((Block.TYPES[level] - last)*this.rng.random()) + last;
 }
 
-DifficultyCurve.prototype.sample = function(distribution) {
+DifficultyCurve.cachedLevels = [];
+DifficultyCurve.derandomizer = [];
+for (var i = 0; i < Block.LEVELS; i++) {
+  DifficultyCurve.derandomizer.push(0);
+}
+
+DifficultyCurve.getLevel = function(index) {
+  if (index >= this.cachedLevels.length) {
+    for (var i = 0; i < index + 1; i++) {
+      var level = this.sample(this.distribution(this.cachedLevels.length));
+      this.cachedLevels.push(level);
+    }
+  }
+  return this.cachedLevels[index];
+}
+
+DifficultyCurve.sample = function(distribution) {
   var sum = this.sum(distribution);
   var max = -Infinity;
-  var samples = [];
+  var result = -1;
   for (var i = 0; i < distribution.length; i++) {
     this.derandomizer[i] += distribution[i]/sum;
     if (this.derandomizer[i] > max) {
       max = this.derandomizer[i];
-      samples = [i];
-    } else if (this.derandomizer[i] == max) {
-      samples.push(i);
+      result = i;
     }
-  }
-  var result = samples[0];
-  if (samples.length > 1) {
-    result = samples[Math.floor(samples.length*this.rng.random())];
   }
   this.derandomizer[result] -= 1;
   return result;
 }
 
-DifficultyCurve.prototype.sum = function(array) {
+DifficultyCurve.sum = function(array) {
   var result = 0;
   for (var i = 0; i < array.length; i++) {
     result += array[i];
@@ -49,7 +55,7 @@ DifficultyCurve.prototype.sum = function(array) {
   return result;
 }
 
-DifficultyCurve.prototype.distribution = function(index) {
+DifficultyCurve.distribution = function(index) {
   var LEVEL_INTERVAL = 100;
   var FINAL_DISTRIBUTION = [11, 13, 12, 6, 2, 1, 1];
   var FINAL_SCORE = 20*LEVEL_INTERVAL;
@@ -67,7 +73,7 @@ DifficultyCurve.prototype.distribution = function(index) {
   return result;
 }
 
-DifficultyCurve.prototype.flatten = function(x) {
+DifficultyCurve.flatten = function(x) {
   return (x < 0 ? 0 : x/(1 + x));
 }
 

@@ -81,6 +81,7 @@ ClientBoard.prototype.maybeAddToPreview = function() {
   // A client board never adds pieces to the preview based on local state.
   // Instead, the server sends a state update with a new preview that replaces
   // the old one.
+  this.blockIndex += 1;
 }
 
 ClientBoard.prototype.deserialize = function(view) {

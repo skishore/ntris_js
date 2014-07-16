@@ -151,7 +151,6 @@ Board.prototype.nextBlock = function(swap) {
     this.heldBlockType = swap.type;
   }
   if (type < 0) {
-    this.blockIndex += 1;
     this.maybeAddToPreview();
     type = this.preview.shift();
   }
@@ -163,6 +162,7 @@ Board.prototype.nextBlock = function(swap) {
 }
 
 Board.prototype.maybeAddToPreview = function() {
+  this.blockIndex += 1;
   this.preview.push(this.curve.generateBlockType(this.blockIndex));
 }
 
