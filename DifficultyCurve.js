@@ -50,9 +50,9 @@ DifficultyCurve.prototype.sum = function(array) {
 }
 
 DifficultyCurve.prototype.distribution = function(index) {
-  var FINAL_DISTRIBUTION = [12, 12, 12, 6, 2, 1, 1];
-  var FINAL_SCORE = 2400;
-  var LEVEL_INTERVAL = 120;
+  var LEVEL_INTERVAL = 100;
+  var FINAL_DISTRIBUTION = [11, 13, 12, 6, 2, 1, 1];
+  var FINAL_SCORE = 20*LEVEL_INTERVAL;
 
   var result = [];
   for (var i = 0; i < Block.LEVELS; i++) {
