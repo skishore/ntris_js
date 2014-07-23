@@ -5,15 +5,7 @@
     <script type="text/javascript" src="external/jquery-cookie/1.4.1/jquery.cookie.js"></script>
     <link rel="stylesheet" href="external/bootstrap/3.1.1/bootstrap.min.css">
     <script type="text/javascript" src="external/bootstrap/3.1.1/bootstrap.min.js"></script>
-
-    <!-- AmCharts import needed to display the difficulty guide. -->
-    <script type="text/javascript" src="external/amcharts/3/amcharts.js"></script>
-    <script type="text/javascript" src="external/amcharts/3/serial.js"></script>
-
-    <!-- CodeMirror imports. -->
-    <link rel=stylesheet href="external/codemirror/4.3/lib/codemirror.css">
-    <script type="text/javascript" src="external/codemirror/4.3/lib/codemirror.js"></script>
-    <script type="text/javascript" src="external/codemirror/4.3/mode/javascript/javascript.js"></script>
+    <script type="text/javascript" src="external/mbostock/protovis.js"></script>
 
     <!-- Base CSS and Javascript. -->
     <link rel="stylesheet" type="text/css" href="style.css">
@@ -34,7 +26,7 @@
 
     <!-- Board and its dependencies. -->
     <script type="text/javascript" src="DifficultyCurve.js"></script>
-    <!-- <script type="text/javascript" src="DifficultyEval.js"></script> -->
+    <script type="text/javascript" src="DifficultyUI.js"></script>
     <script type="text/javascript" src="Graphics.js"></script>
     <script type="text/javascript" src="KeyRepeater.js"></script>
     <script type="text/javascript" src="Physics.js"></script>
@@ -50,14 +42,9 @@
           <div class="spacer"></div>
           <div class="combinos-options"></div>
         </div>
-        <!--
         <div class="right-side">
-          <div class="difficulty-graph"></div>
-          <div>Click on the graph to set a difficulty.</div>
+          <div class="difficulty-ui"></div>
         </div>
-        <div class="spacer"></div>
-        <div class="difficulty-source"></div>
-        -->
       </div>
     </div>
   </body>
@@ -72,9 +59,7 @@
       var board = new Board(target);
       var options = new Options(board, $('.combinos-options'));
 
-      //var graph = new DifficultyCurve.Graph(board, $('.difficulty-graph'));
-      //var source = new DifficultyCurve.SourceEditor(
-      //    board, $('.difficulty-source'));
+      var difficultyUI = new DifficultyUI($('.difficulty-ui'));
     }
 
     return initialize;

@@ -12,6 +12,11 @@
   margin: 0 auto;
 }
 
+.difficulty-ui {
+  width: 40px;
+  height: 200px;
+}
+
 .combinos {
   background-color: black;
   display: inline-block;
