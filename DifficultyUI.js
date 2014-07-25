@@ -2,11 +2,10 @@ var DifficultyUI = (function() {
 "use strict";
 
 DifficultyUI = function(target) {
+  target.attr('id', this.generateId());
   this.target = target;
   this.end = 2000;
-  this.interval = 10;
-
-  target.attr('id', this.generateId());
+  this.interval = this.end/target.width();
 
   var data = this.getData(this.end, this.interval);
   var xAxis = pv.Scale.linear(0, this.end).range(0, target.height());

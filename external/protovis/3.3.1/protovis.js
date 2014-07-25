@@ -1,3 +1,10 @@
+// Protovis v3.3.1 - Copyright 2010 Stanford Visualization Group
+// http://mbostock.github.io/protovis/
+//
+// Minor changes were made to this file by skishore - in particular,
+// the pv.parse and the onload functions were wiped out, because they
+// make use of window.eval.
+
 /**
  * @class The built-in Array class.
  * @name Array
@@ -215,53 +222,6 @@ pv.extend = function(f) {
   return new g();
 };
 
-try {
-  eval("pv.parse = function(x) x;"); // native support
-} catch (e) {
-
-/**
- * @private Parses a Protovis specification, which may use JavaScript 1.8
- * function expresses, replacing those function expressions with proper
- * functions such that the code can be run by a JavaScript 1.6 interpreter. This
- * hack only supports function expressions (using clumsy regular expressions, no
- * less), and not other JavaScript 1.8 features such as let expressions.
- *
- * @param {string} s a Protovis specification (i.e., a string of JavaScript 1.8
- * source code).
- * @returns {string} a conformant JavaScript 1.6 source code.
- */
-  pv.parse = function(js) { // hacky regex support
-    var re = new RegExp("function\\s*(\\b\\w+)?\\s*\\([^)]*\\)\\s*", "mg"), m, d, i = 0, s = "";
-    while (m = re.exec(js)) {
-      var j = m.index + m[0].length;
-      if (js.charAt(j) != '{') {
-        s += js.substring(i, j) + "{return ";
-        i = j;
-        for (var p = 0; p >= 0 && j < js.length; j++) {
-          var c = js.charAt(j);
-          switch (c) {
-            case '"': case '\'': {
-              while (++j < js.length && (d = js.charAt(j)) != c) {
-                if (d == '\\') j++;
-              }
-              break;
-            }
-            case '[': case '(': p++; break;
-            case ']': case ')': p--; break;
-            case ';':
-            case ',': if (p == 0) p--; break;
-          }
-        }
-        s += pv.parse(js.substring(i, --j)) + ";}";
-        i = j;
-      }
-      re.lastIndex = j;
-    }
-    s += js.substring(i);
-    return s;
-  };
-}
-
 /**
  * @private Computes the value of the specified CSS property <tt>p</tt> on the
  * specified element <tt>e</tt>.
@@ -344,32 +304,7 @@ pv.id = function() {
 pv.functor = function(v) {
   return typeof v == "function" ? v : function() { return v; };
 };
-/*
- * Parses the Protovis specifications on load, allowing the use of JavaScript
- * 1.8 function expressions on browsers that only support JavaScript 1.6.
- *
- * @see pv.parse
- */
-pv.listen(window, "load", function() {
-   /*
-    * Note: in Firefox any variables declared here are visible to the eval'd
-    * script below. Even worse, any global variables declared by the script
-    * could overwrite local variables here (such as the index, `i`)!  To protect
-    * against this, all variables are explicitly scoped on a pv.$ object.
-    */
-    pv.$ = {i:0, x:document.getElementsByTagName("script")};
-    for (; pv.$.i < pv.$.x.length; pv.$.i++) {
-      pv.$.s = pv.$.x[pv.$.i];
-      if (pv.$.s.type == "text/javascript+protovis") {
-        try {
-          window.eval(pv.parse(pv.$.s.text));
-        } catch (e) {
-          pv.error(e);
-        }
-      }
-    }
-    delete pv.$;
-  });
+
 /**
  * Abstract; see an implementing class.
  *
