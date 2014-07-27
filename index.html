@@ -42,9 +42,6 @@
           <div class="spacer"></div>
           <div class="combinos-options"></div>
         </div>
-        <div class="right-side">
-          <div class="difficulty-ui"></div>
-        </div>
       </div>
     </div>
   </body>
@@ -58,8 +55,6 @@
       var target = $('.combinos');
       var board = new Board(target);
       var options = new Options(board, $('.combinos-options'));
-
-      var difficultyUI = new DifficultyUI($('.difficulty-ui'));
     }
 
     return initialize;

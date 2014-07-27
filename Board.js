@@ -53,6 +53,7 @@ Board.prototype.reset = function() {
   this.frame = 0;
   this.held = false;
   this.heldBlockType = -1;
+  this.combo = 0;
   this.score = 0;
   this.state = Constants.PLAYING;
 
@@ -125,7 +126,7 @@ Board.prototype.update = function(keys) {
     this.block = this.nextBlock(this.block);
   } else if (keys.indexOf(Action.DROP) >= 0) {
     this.block.y += this.block.rowsFree;
-    this.score += Physics.placeBlock(this.block, this.data);
+    this.updateScore(Physics.placeBlock(this.block, this.data));
     this.redraw();
     this.block = this.nextBlock();
   } else {
@@ -134,6 +135,11 @@ Board.prototype.update = function(keys) {
   if (this.block.rowsFree < 0) {
     this.state = Constants.GAMEOVER;
   }
+}
+
+Board.prototype.updateScore = function(points) {
+  this.combo = (points > 0 ? this.combo + 1 : 0);
+  this.score += points;
 }
 
 Board.prototype.redraw = function() {

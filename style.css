@@ -12,11 +12,6 @@
   margin: 0 auto;
 }
 
-.difficulty-ui {
-  width: 30px;
-  height: 100px;
-}
-
 .combinos {
   background-color: black;
   display: inline-block;
@@ -46,8 +41,40 @@
   margin: 0 auto;
 }
 
-.combinos .board {
+.combinos .board,
+.combinos .scoreboard,
+.combinos .sideboard,
+.combinos .vertical-spacer {
   float: left;
+  position: relative;
+}
+
+.combinos .scoreboard {
+  color: white;
+}
+
+.combinos .scoreboard .difficulty-ui {
+  position: relative;
+}
+
+.combinos .scoreboard .difficulty-ui svg {
+  opacity: 0.6;
+}
+
+.combinos .scoreboard .difficulty-ui .mark {
+  border-top: 1px solid white;
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+}
+
+.combinos .scoreboard .score {
+  text-align: right;
+}
+
+.combinos .scoreboard .score-section.dim {
+  color: #777;
 }
 
 .combinos .board .square {
@@ -56,18 +83,17 @@
   border-width: 1px;
 }
 
-.combinos .sideboard {
-  float: left;
-  position: relative;
-}
-
 .combinos .sideboard .free-square {
   display: inline-block;
   position: absolute;
   z-index: 1;
 }
 
-.combinos .sideboard .preview-block {
+.combinos .sideboard .preview {
+  overflow: hidden;
+}
+
+.combinos .sideboard .preview .preview-block {
   overflow: hidden;
   position: relative;
 }
@@ -90,13 +116,6 @@
   right: 0;
   top: 0;
   z-index: 3;
-}
-
-.combinos .sideboard .score {
-  bottom: 0;
-  color: white;
-  position: absolute;
-  text-align: right;
 }
 
 .combinos-options {

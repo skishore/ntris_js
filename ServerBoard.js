@@ -27,6 +27,7 @@ ServerBoard.prototype.reset = function(seed) {
 
   this.held = false;
   this.heldBlockType = -1;
+  this.combo = 0;
   this.score = 0;
   this.state = Constants.PLAYING;
 

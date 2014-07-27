@@ -5,14 +5,14 @@ var Graphics = function(target) {
   this.squareWidth = Constants.SQUAREWIDTH;
   this.smallWidth = Math.ceil(this.squareWidth/2);
   this.border = this.smallWidth;
-  this.sideboard = 7*this.smallWidth;
-  this.width = Constants.COLS*this.squareWidth + this.sideboard + 2*this.border;
+  this.sideboard = 6*this.smallWidth;
+
+  var boardWidth = Constants.COLS*this.squareWidth;
+  this.width = boardWidth + 2*this.sideboard + 4*this.border;
   this.height = Constants.VISIBLEROWS*this.squareWidth + 2*this.border;
 
   this.elements = this.build(target);
   assert(this.width === target.outerWidth(), 'Error: width mismatch');
-  // HACK(skishore): In a Bootstrap environment, some kind of before/after
-  // pseudo-element screws up the height computation.
   assert(this.height === target.outerHeight(), 'Error: height mismatch');
 }
 
@@ -32,18 +32,51 @@ Graphics.prototype.build = function(target) {
   result.overlay = $('<div>').addClass('overlay');
   overlay_wrapper.append(result.overlay);
 
-  var css = {'font-size': this.squareWidth, 'width': 3*this.width/4};
+  var css = {'font-size': this.squareWidth, 'width': 5*this.width/8};
   result.line1 = $('<div>').addClass('text-box').css(css)
       .css({'padding-top': outer, 'padding-bottom': inner}).text('line1');
   result.line2 = $('<div>').addClass('text-box').css(css)
       .css({'padding-top': inner, 'padding-bottom': outer}).text('line2');
   overlay_wrapper.append(result.line1, result.line2);
 
+  var scoreboard = $('<div>').addClass('scoreboard').css({
+    'height': this.squareWidth*Constants.VISIBLEROWS,
+    'width': this.sideboard,
+  });
+  target.append(scoreboard);
+
+  var level_section = this.scoreSection(scoreboard, 'Level');
+  var difficulty_ui = $('<div>').addClass('difficulty-ui').css({
+    'height': Math.floor(this.height/3),
+    'margin-left': this.squareWidth/4,
+    'margin-right': this.squareWidth/4,
+  });
+  level_section.append(difficulty_ui);
+  result.difficulty_ui = new DifficultyUI(difficulty_ui, 2000);
+
+  var score_section = this.scoreSection(scoreboard, 'Score');
+  result.score = $('<div>').addClass('score').css({
+    'font-size': this.squareWidth,
+    'margin-left': this.squareWidth/4,
+    'margin-right': this.squareWidth/4,
+  }).text(0);
+  score_section.append(result.score);
+
+  var combo_section = this.scoreSection(scoreboard, 'Combo');
+  result.combo = $('<div>')
+      .addClass('combo')
+      .css('font-size', 1.5*this.squareWidth)
+      .text(0);
+  combo_section.append(result.combo);
+  result.combo.parent().addClass('dim');
+
+  this.fixSectionHeights(scoreboard, '.score-section');
+
   var board = $('<div>').addClass('board').css({
     'height': this.squareWidth*Constants.VISIBLEROWS,
     'width': this.squareWidth*Constants.COLS,
   });
-  target.append(board);
+  target.append(this.verticalSpacer(), board, this.verticalSpacer());
 
   result.board = [];
   var hiddenRows = Constants.ROWS - Constants.VISIBLEROWS;
@@ -63,15 +96,14 @@ Graphics.prototype.build = function(target) {
   target.append(sideboard);
 
   var padding = this.squareWidth/4;
-  result.preview = $('<div>').addClass('preview').css({
-    'height': 5*this.squareWidth/2*(Constants.PREVIEW + 2) - padding,
-    'padding-top': padding,
-  });
+  result.preview = $('<div>')
+      .addClass('preview')
+      .height(5*this.squareWidth/2*(Constants.PREVIEW + 2));
   sideboard.append(result.preview);
 
   result.hold = $('<div>').addClass('hold').css({
     'height': 4*this.squareWidth,
-    'margin-left': 3*this.squareWidth/4,
+    'margin-left': this.squareWidth/4,
     'margin-right': this.squareWidth/4,
   });
   sideboard.append(result.hold);
@@ -79,14 +111,37 @@ Graphics.prototype.build = function(target) {
   result.hold_overlay = $('<div>').addClass('hold-overlay');
   result.hold.append(result.hold_overlay);
 
-  result.score = $('<div>').addClass('score').css({
-    'font-size': this.squareWidth,
-    'bottom': 0,
-    'right': this.squareWidth/4,
-  }).text(0);
-  sideboard.append(result.score);
+  result.preview.css('margin-top',
+      (sideboard.height() - result.preview.height() - result.hold.height())/2);
 
   return result;
+}
+
+Graphics.prototype.fixSectionHeights = function(container, selector) {
+  var height = 0;
+  var sections = container.find(selector);
+  for (var i = 0; i < sections.length; i++) {
+    height += $(sections[i]).height();
+  }
+  var margin = (container.height() - height)/(2*sections.length);
+  sections.css('padding', '' + margin + ' 0');
+}
+
+Graphics.prototype.scoreSection = function(scoreboard, title) {
+  var section = $('<div>').addClass('score-section');
+  section.append($('<div>').addClass('score-label').text(title).css({
+    'font-size': this.squareWidth,
+    'margin-bottom': this.squareWidth/4,
+  }));
+  scoreboard.append(section);
+  return section;
+}
+
+Graphics.prototype.verticalSpacer = function() {
+  return $('<div>')
+      .addClass('vertical-spacer')
+      .height(this.squareWidth*Constants.VISIBLEROWS)
+      .width(this.border);
 }
 
 Graphics.prototype.resetDelta = function() {
@@ -143,7 +198,7 @@ Graphics.prototype.updatePreview = function() {
       'height': Block.prototypes[type].height*this.smallWidth,
       'margin-bottom': this.squareWidth,
     });
-    var xOffset = 2*this.smallWidth + 3*this.squareWidth/4;
+    var xOffset = 2*this.smallWidth + this.squareWidth/4;
     this.drawFreeBlock(block, type, xOffset, 0, this.smallWidth);
     this.elements.preview.append(block);
   }
@@ -173,6 +228,16 @@ Graphics.prototype.updateHeldBlockType = function() {
       this.elements.hold, this.delta.heldBlockType,
       2*this.smallWidth - 1, 3*this.smallWidth/4, this.smallWidth);
   this.state.heldBlockType = this.delta.heldBlockType;
+}
+
+Graphics.prototype.updateCombo = function() {
+  this.elements.combo.text(this.delta.combo);
+  if (this.delta.combo > 0) {
+    this.elements.combo.parent().removeClass('dim');
+  } else {
+    this.elements.combo.parent().addClass('dim');
+  }
+  this.state.combo = this.delta.combo;
 }
 
 Graphics.prototype.updateOverlay = function() {
@@ -271,6 +336,7 @@ Graphics.prototype.drawUI = function(board) {
   this.delta.preview = board.preview;
   this.delta.held = board.held;
   this.delta.heldBlockType = board.heldBlockType;
+  this.delta.combo = board.combo;
   this.delta.score = board.score;
   this.delta.state = board.state;
   this.delta.pauseReason = board.pauseReason;
@@ -288,6 +354,7 @@ Graphics.prototype.flip = function() {
   if (this.state.blockIndex !== this.delta.blockIndex ||
       this.state.preview.length !== this.delta.preview.length) {
     this.updatePreview();
+    this.elements.difficulty_ui.setBlockIndex(this.delta.blockIndex);
   }
   if (this.state.previewFrame > 0 && this.state.state === Constants.PLAYING) {
     // We only scroll the preview if the game is in motion.
@@ -302,6 +369,9 @@ Graphics.prototype.flip = function() {
   if (this.state.score !== this.delta.score) {
     this.elements.score.text(this.delta.score);
     this.state.score = this.delta.score;
+  }
+  if (this.state.combo !== this.delta.combo) {
+    this.updateCombo();
   }
   if (this.state.state !== this.delta.state) {
     this.updateOverlay();
