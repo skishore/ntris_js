@@ -52,7 +52,7 @@ Graphics.prototype.build = function(target) {
     'margin-right': this.squareWidth/4,
   });
   level_section.append(difficulty_ui);
-  result.difficulty_ui = new DifficultyUI(difficulty_ui, 2000);
+  result.difficulty_ui = new DifficultyUI(difficulty_ui);
 
   var score_section = this.scoreSection(scoreboard, 'Score');
   result.score = $('<div>').addClass('score').css({

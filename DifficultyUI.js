@@ -1,10 +1,10 @@
 var DifficultyUI = (function() {
 "use strict";
 
-DifficultyUI = function(target, width) {
+DifficultyUI = function(target) {
   target.attr('id', this.generateId());
   this.target = target;
-  this.width = width;
+  this.width = 1000;
 
   this.offset = Constants.PREVIEW + 1;
   this.interval = this.width/target.width();

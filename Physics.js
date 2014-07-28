@@ -108,15 +108,15 @@ Physics.shoveaway = function(block, data, hint) {
   return false;
 }
 
-// Places the block onto the board and removes rows from the board.
-// Returns the number of points scored by the placement.
+// Places the block onto the board and removes full rows from the board.
+// Returns the number of rows removed.
 Physics.placeBlock = function(block, data) {
   var offsets = block.getOffsets();
   for (var i = 0; i < offsets.length; i++) {
     var offset = offsets[i];
     data[offset.y][offset.x] = block.color;
   }
-  return Constants.POINTS[this.removeRows(data)];
+  return this.removeRows(data);
 }
 
 // Modifies data and returns the number of rows cleared from it.

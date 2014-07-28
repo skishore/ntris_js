@@ -1,11 +1,6 @@
 var DifficultyCurve = (function() {
 "use strict";
 
-var fixCodeMirrorHeights = function() {
-  $('.CodeMirror-gutters').height($('.CodeMirror-lines').height());
-  $('.CodeMirror').height($('.CodeMirror-lines').height() + 8);
-}
-
 var DifficultyCurve = function(rng) {
   this.rng = rng || Math;
 }
@@ -56,7 +51,7 @@ DifficultyCurve.sum = function(array) {
 }
 
 DifficultyCurve.distribution = function(index) {
-  var LEVEL_INTERVAL = 100;
+  var LEVEL_INTERVAL = 50;
   var FINAL_DISTRIBUTION = [11, 13, 12, 6, 2, 1, 1];
   var FINAL_SCORE = 20*LEVEL_INTERVAL;
 
@@ -66,7 +61,7 @@ DifficultyCurve.distribution = function(index) {
       result.push(FINAL_DISTRIBUTION[i]);
     } else {
       var start = (i - 2)*LEVEL_INTERVAL;
-      var x = 2.0*(index - start)/(FINAL_SCORE - start);
+      var x = (index - start)/(FINAL_SCORE - start);
       result.push(FINAL_DISTRIBUTION[i]*this.flatten(x));
     }
   }

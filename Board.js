@@ -137,8 +137,10 @@ Board.prototype.update = function(keys) {
   }
 }
 
-Board.prototype.updateScore = function(points) {
-  this.combo = (points > 0 ? this.combo + 1 : 0);
+Board.prototype.updateScore = function(rows) {
+  this.combo = (rows > 0 ? this.combo + 1 : 0);
+  var points = (this.combo + 1)*(rows*(rows + 1)/2);
+  //this.score += 10*points + this.block.squares.length;
   this.score += points;
 }
 
