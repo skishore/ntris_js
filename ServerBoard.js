@@ -64,6 +64,7 @@ ServerBoard.prototype.serialize = function() {
     preview: this.preview,
     held: this.held,
     heldBlockType: this.heldBlockType,
+    combo: this.combo,
     score: this.score,
     state: this.state,
     pauseReason: this.pauseReason,
