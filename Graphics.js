@@ -124,7 +124,7 @@ Graphics.prototype.fixSectionHeights = function(container, selector) {
     height += $(sections[i]).height();
   }
   var margin = (container.height() - height)/(2*sections.length);
-  sections.css('padding', '' + margin + ' 0');
+  sections.css('padding', '' + margin + 'px 0');
 }
 
 Graphics.prototype.scoreSection = function(scoreboard, title) {
