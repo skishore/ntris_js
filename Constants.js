@@ -26,7 +26,7 @@ Constants.PAUSE = 3;
 Constants.REPEAT = 0;
 
 // Block movement constants, some of which are imported by Block.
-Constants.GRAVITY = 3*Constants.FRAMERATE/4;
+Constants.GRAVITY = 2*Constants.FRAMERATE/3;
 Constants.SHOVEAWAYS = 4;
 Constants.LOCALSTICKFRAMES = Constants.FRAMERATE/2;
 Constants.GLOBALSTICKFRAMES = 2*Constants.FRAMERATE;
