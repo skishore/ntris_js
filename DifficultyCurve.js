@@ -52,17 +52,17 @@ DifficultyCurve.sum = function(array) {
 
 DifficultyCurve.distribution = function(index) {
   var LEVEL_INTERVAL = 50;
-  var FINAL_DISTRIBUTION = [11, 13, 12, 6, 2, 1, 1];
-  var FINAL_SCORE = 20*LEVEL_INTERVAL;
+  var MID_DISTRIBUTION = [11, 13, 12, 6, 2, 1, 1];
+  var MID_SCORE = 20*LEVEL_INTERVAL;
 
   var result = [];
   for (var i = 0; i < Block.LEVELS; i++) {
     if (i < 2) {
-      result.push(FINAL_DISTRIBUTION[i]);
+      result.push(MID_DISTRIBUTION[i]);
     } else {
       var start = (i - 2)*LEVEL_INTERVAL;
-      var x = (index - start)/(FINAL_SCORE - start);
-      result.push(FINAL_DISTRIBUTION[i]*this.flatten(x));
+      var x = (index - start)/(MID_SCORE - start);
+      result.push(MID_DISTRIBUTION[i]*this.flatten(x));
     }
   }
   return result;
