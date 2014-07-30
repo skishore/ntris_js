@@ -56,13 +56,15 @@ DifficultyCurve.distribution = function(index) {
   var MID_SCORE = 20*LEVEL_INTERVAL;
 
   var result = [];
+  var exponent = 0.8*(3*index/MID_SCORE - 1);
   for (var i = 0; i < Block.LEVELS; i++) {
+    var r = (exponent > 0 ? Math.pow(i - 1, exponent) : 1);
     if (i < 2) {
       result.push(MID_DISTRIBUTION[i]);
     } else {
       var start = (i - 2)*LEVEL_INTERVAL;
       var x = (index - start)/(MID_SCORE - start);
-      result.push(MID_DISTRIBUTION[i]*this.flatten(x));
+      result.push(MID_DISTRIBUTION[i]*r*2*this.flatten(x));
     }
   }
   return result;
