@@ -22,5 +22,5 @@ function extend(child, parent) {
   }
   ctor.prototype = parent.prototype;
   child.prototype = new ctor();
-  child.prototype.__super__ = parent.prototype;
+  child.__super__ = parent.prototype;
 }

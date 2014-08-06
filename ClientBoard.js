@@ -2,12 +2,12 @@ var ClientBoard = (function() {
 "use strict";
 
 var ClientBoard = function(target, view, send) {
-  this.__super__.constructor.bind(this)(target);
+  ClientBoard.__super__.constructor.bind(this)(target);
   this.resetForView(view);
   this.send = send;
 }
 
-extend(ClientBoard, Board);
+extend(ClientBoard, LocalBoard);
 
 ClientBoard.prototype.loseFocus = function(e) {
   // A client board doesn't auto-pause on losing focus.
@@ -74,7 +74,7 @@ ClientBoard.prototype.maybeSaveMove = function(keys) {
 
 ClientBoard.prototype.nextBlock = function(swap) {
   this.syncIndex += 1;
-  return this.__super__.nextBlock.bind(this)(swap);
+  return ClientBoard.__super__.nextBlock.bind(this)(swap);
 }
 
 ClientBoard.prototype.maybeAddToPreview = function() {
