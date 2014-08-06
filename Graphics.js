@@ -1,8 +1,8 @@
 var Graphics = (function() {
 "use strict";
 
-var Graphics = function(target) {
-  this.squareWidth = Constants.SQUAREWIDTH;
+var Graphics = function(squareWidth, target) {
+  this.squareWidth = squareWidth;
   this.smallWidth = Math.ceil(this.squareWidth/2);
   this.border = this.smallWidth;
   this.sideboard = 6*this.smallWidth;

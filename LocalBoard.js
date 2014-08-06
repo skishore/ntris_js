@@ -3,7 +3,7 @@ var LocalBoard = (function() {
 
 var LocalBoard = function(target) {
   this.target = target;
-  this.graphics = new Graphics(target);
+  this.graphics = new Graphics(Constants.SQUAREWIDTH, target);
   this.repeater = new KeyRepeater(Constants.PAUSE, Constants.REPEAT, target);
   this.setFocusHandlers(target);
 

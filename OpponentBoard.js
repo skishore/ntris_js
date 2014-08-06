@@ -2,7 +2,7 @@ var OpponentBoard = (function() {
 "use strict";
 
 var OpponentBoard = function(target, view) {
-  this.graphics = new Graphics(target);
+  this.graphics = new Graphics(3*Constants.SQUAREWIDTH/4, target);
   this.deserialize(view);
 }
 
