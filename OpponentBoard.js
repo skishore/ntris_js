@@ -1,8 +1,9 @@
 var OpponentBoard = (function() {
 "use strict";
 
-var OpponentBoard = function(target, view) {
-  this.graphics = new Graphics(3*Constants.SQUAREWIDTH/4, target);
+var OpponentBoard = function(scale, target, view) {
+  var squareWidth = Math.round(scale*Constants.SQUAREWIDTH);
+  this.graphics = new Graphics(squareWidth, target);
   this.deserialize(view);
 }
 
