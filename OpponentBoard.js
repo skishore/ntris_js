@@ -2,6 +2,7 @@ var OpponentBoard = (function() {
 "use strict";
 
 var OpponentBoard = function(scale, target, view) {
+  this.target = target;
   var squareWidth = Math.round(scale*Constants.SQUAREWIDTH);
   this.graphics = new Graphics(squareWidth, target);
   this.deserialize(view);
@@ -13,6 +14,13 @@ OpponentBoard.prototype.deserialize = function(view) {
   delete this.blockType;
   this.block = new Block(view.blockType);
   this.block.rowsFree = Physics.calculateRowsFree(this.block, this.data);
+  this.graphics.reset(this);
+}
+
+OpponentBoard.prototype.set_scale = function(scale) {
+  this.target.empty();
+  var squareWidth = Math.round(scale*Constants.SQUAREWIDTH);
+  this.graphics = new Graphics(squareWidth, this.target);
   this.graphics.reset(this);
 }
 
