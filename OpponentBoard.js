@@ -9,6 +9,9 @@ var OpponentBoard = function(scale, target, view) {
 }
 
 OpponentBoard.prototype.deserialize = function(view) {
+  if (this.gameIndex == view.gameIndex && this.syncIndex == view.syncIndex) {
+    return;
+  }
   $.extend(this, view);
   // Delete the blockType property and construct a block of that type instead.
   delete this.blockType;
