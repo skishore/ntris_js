@@ -249,10 +249,14 @@ Graphics.prototype.updateOverlay = function() {
     this.elements.overlay.css('opacity', 1);
     var resume = (this.delta.pauseReason === 'focus' ? 'Click' : 'Press START');
     this.drawText('-- PAUSED --', resume + ' to resume');
-  } else {
+  } else if (this.delta.state === Constants.GAMEOVER) {
     this.elements.overlay.css('background-color', 'red');
     this.elements.overlay.css('opacity', 1.2*Color.LAMBDA);
     this.drawText('-- You FAILED --', 'Press START to try again');
+  } else {
+    this.elements.overlay.css('background-color', 'black');
+    this.elements.overlay.css('opacity', 1);
+    this.drawText('WAITING FOR THE', 'NEXT ROUND');
   }
   this.state.state = this.delta.state;
   this.state.pauseReason = this.delta.pauseReason;

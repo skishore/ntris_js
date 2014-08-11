@@ -17,6 +17,8 @@ Constants.SQUAREWIDTH = 12;
 Constants.PLAYING = 0;
 Constants.PAUSED = 1;
 Constants.GAMEOVER = 2;
+// The user is waiting for the next multiplayer round to begin.
+Constants.WAITING = 3;
 
 // Game engine constants.
 Constants.FRAMERATE = 48;
