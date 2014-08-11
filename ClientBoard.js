@@ -1,8 +1,9 @@
 var ClientBoard = (function() {
 "use strict";
 
-var ClientBoard = function(target, view, send) {
+var ClientBoard = function(target, view, game_type, send) {
   ClientBoard.__super__.constructor.bind(this)(target);
+  this.singleplayer = game_type === 'singleplayer';
   this.resetForView(view);
   this.send = send;
 }
@@ -30,8 +31,13 @@ ClientBoard.prototype.resetForView = function(view) {
 ClientBoard.prototype.tick = function() {
   var keys = this.getKeys();
 
-  if (keys.indexOf(Action.START) >= 0) {
-    if (this.state == Constants.GAMEOVER) {
+  if (keys.indexOf(Action.START) >= 0 && this.singleplayer) {
+    if (this.state === Constants.PLAYING) {
+      this.state = Constants.PAUSED;
+      this.pauseReason = 'manual';
+    } else if (this.state === Constants.PAUSED) {
+      this.state = Constants.PLAYING;
+    } else if (this.state === Constants.GAMEOVER) {
       this.send({type: 'start', game_index: this.gameIndex});
     }
   }

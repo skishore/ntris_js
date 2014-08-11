@@ -1,7 +1,7 @@
 var OpponentBoard = (function() {
 "use strict";
 
-var OpponentBoard = function(scale, target, view) {
+var OpponentBoard = function(target, view, scale) {
   this.target = target;
   var squareWidth = Math.round(scale*Constants.SQUAREWIDTH);
   this.graphics = new Graphics(squareWidth, target);
