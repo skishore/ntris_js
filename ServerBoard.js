@@ -10,15 +10,17 @@ extend(ServerBoard, Board);
 
 ServerBoard.prototype.reset = function(seed) {
   ServerBoard.__super__.reset.bind(this)(new MersenneTwister(seed));
-
-  // Set up the state used to stay in sync with the client.
-  this.gameIndex += 1;
-  this.syncIndex = 0;
+  this.forceClientUpdate();
 }
 
 ServerBoard.prototype.nextBlock = function(swap) {
   this.syncIndex += 1;
   return ServerBoard.__super__.nextBlock.bind(this)(swap);
+}
+
+ServerBoard.prototype.forceClientUpdate = function() {
+  this.gameIndex += 1;
+  this.syncIndex = 0;
 }
 
 ServerBoard.prototype.serialize = function() {
