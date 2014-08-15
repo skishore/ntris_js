@@ -2,8 +2,8 @@ var ClientBoard = (function() {
 "use strict";
 
 var ClientBoard = function(target, view, game_type, send) {
-  ClientBoard.__super__.constructor.bind(this)(target);
   this.singleplayer = game_type === 'singleplayer';
+  ClientBoard.__super__.constructor.bind(this)(target, !this.singleplayer);
   this.resetForView(view);
   this.send = send;
 }

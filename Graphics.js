@@ -1,7 +1,8 @@
 var Graphics = (function() {
 "use strict";
 
-var Graphics = function(squareWidth, target) {
+var Graphics = function(squareWidth, target, multiplayer) {
+  this.multiplayer = multiplayer;
   this.squareWidth = squareWidth;
   this.smallWidth = Math.ceil(this.squareWidth/2);
   this.border = this.smallWidth;
@@ -33,10 +34,18 @@ Graphics.prototype.build = function(target) {
   overlay_wrapper.append(result.overlay);
 
   var css = {'font-size': this.squareWidth, 'width': 5*this.width/8};
-  result.line1 = $('<div>').addClass('text-box').css(css)
-      .css({'padding-top': outer, 'padding-bottom': inner}).text('line1');
-  result.line2 = $('<div>').addClass('text-box').css(css)
-      .css({'padding-top': inner, 'padding-bottom': outer}).text('line2');
+  if (this.multiplayer) {
+    result.line1 = $('<div>').addClass('big-text-box').css({
+      'font-size': 20*this.squareWidth,
+      'line-height': this.height + 'px',
+    }).text('1');
+    result.line2 = $();
+  } else {
+    result.line1 = $('<div>').addClass('text-box').css(css)
+        .css({'padding-top': outer, 'padding-bottom': inner}).text('line1');
+    result.line2 = $('<div>').addClass('text-box').css(css)
+        .css({'padding-top': inner, 'padding-bottom': outer}).text('line2');
+  }
   overlay_wrapper.append(result.line1, result.line2);
 
   var scoreboard = $('<div>').addClass('scoreboard').css({
@@ -241,7 +250,9 @@ Graphics.prototype.updateCombo = function() {
 }
 
 Graphics.prototype.updateOverlay = function() {
-  if (this.delta.state === Constants.PLAYING) {
+  if (this.multiplayer) {
+    this.updateMultiplayerOverlay();
+  } else if (this.delta.state === Constants.PLAYING) {
     this.elements.overlay.css('background-color', 'transparent');
     this.drawText();
   } else if (this.delta.state === Constants.PAUSED) {
@@ -253,22 +264,43 @@ Graphics.prototype.updateOverlay = function() {
     this.elements.overlay.css('background-color', 'red');
     this.elements.overlay.css('opacity', 1.2*Color.LAMBDA);
     this.drawText('-- You FAILED --', 'Press START to try again');
-  } else {
-    this.elements.overlay.css('background-color', 'black');
-    this.elements.overlay.css('opacity', 1);
-    this.drawText('WAITING FOR THE', 'NEXT ROUND');
   }
   this.state.state = this.delta.state;
   this.state.pauseReason = this.delta.pauseReason;
 }
 
-Graphics.prototype.drawText = function(line1, line2) {
-  if (!line1 && !line2) {
-    this.elements.line1.hide();
-    this.elements.line2.hide();
+Graphics.prototype.updateMultiplayerOverlay = function() {
+  if (this.delta.state === Constants.PLAYING) {
+    this.elements.overlay.css('background-color', 'transparent');
+    this.drawText();
   } else {
+    var pauseReason = this.delta.pauseReason;
+    var last_state = (pauseReason ? pauseReason.last_state : '');
+    var text = (pauseReason ? '' + pauseReason.text : '');
+    if (this.delta.state === Constants.GAMEOVER ||
+        last_state === Constants.GAMEOVER) {
+      this.elements.overlay.css('background-color', '#800');
+      this.elements.overlay.css('opacity', 1.8*Color.LAMBDA);
+    } else if (last_state === Constants.PLAYING) {
+      this.elements.overlay.css('background-color', '#444');
+      this.elements.overlay.css('opacity', 1.8*Color.LAMBDA);
+    } else {
+      this.elements.overlay.css('background-color', 'black');
+      this.elements.overlay.css('opacity', 1);
+    }
+    var factor = (text.length === 1 ? 24 : 1.5);
+    this.elements.line1.css('font-size', factor*this.squareWidth);
+    this.drawText(text);
+  }
+}
+
+Graphics.prototype.drawText = function(line1, line2) {
+  if (line1 || line2) {
     this.elements.line1.show().text(line1);
     this.elements.line2.show().text(line2);
+  } else {
+    this.elements.line1.hide();
+    this.elements.line2.hide();
   }
 }
 

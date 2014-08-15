@@ -4,7 +4,7 @@ var OpponentBoard = (function() {
 var OpponentBoard = function(target, view, scale) {
   this.target = target;
   var squareWidth = Math.round(scale*Constants.SQUAREWIDTH);
-  this.graphics = new Graphics(squareWidth, target);
+  this.graphics = new Graphics(squareWidth, target, true /* multiplayer */);
   this.deserialize(view);
 }
 
@@ -23,7 +23,7 @@ OpponentBoard.prototype.deserialize = function(view) {
 OpponentBoard.prototype.set_scale = function(scale) {
   this.target.empty();
   var squareWidth = Math.round(scale*Constants.SQUAREWIDTH);
-  this.graphics = new Graphics(squareWidth, this.target);
+  this.graphics = new Graphics(squareWidth, this.target, true);
   this.graphics.reset(this);
 }
 

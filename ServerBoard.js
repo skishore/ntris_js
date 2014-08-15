@@ -10,6 +10,7 @@ extend(ServerBoard, Board);
 
 ServerBoard.prototype.reset = function(seed) {
   ServerBoard.__super__.reset.bind(this)(new MersenneTwister(seed));
+  this.pauseReason = null;
   this.forceClientUpdate();
 }
 
