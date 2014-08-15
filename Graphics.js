@@ -420,6 +420,19 @@ Graphics.prototype.flip = function() {
   // At this point, this.delta should equal this.state, except for board,
   // which this.delta stores sparsely, and previewFrame / previewOffset,
   // which are only maintained on this.state.
+  {
+    // Test the above assertions about board equality.
+    var delta = $.extend({}, this.delta);
+    var state = $.extend({}, this.state);
+    delete delta.board;
+    delete state.board;
+    delete state.previewFrame;
+    delete state.previewOffset;
+    if (!_.isEqual(state, delta)) {
+      console.log(state, delta);
+      throw new Error;
+    }
+  }
   this.delta.board = {};
 }
 
