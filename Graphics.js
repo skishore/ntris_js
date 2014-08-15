@@ -153,11 +153,6 @@ Graphics.prototype.verticalSpacer = function() {
       .width(this.border);
 }
 
-Graphics.prototype.resetDelta = function() {
-  this.drawUI(this.state);
-  this.delta.board = {};
-}
-
 Graphics.prototype.getSquareIndex = function(i, j) {
   assert(i >= 0 && i < Constants.ROWS && j >= 0 && j < Constants.COLS,
       'Invalid board square: (' + i + ', ' + j + ')');
@@ -376,6 +371,10 @@ Graphics.prototype.drawUI = function(board) {
   this.delta.score = board.score;
   this.delta.state = board.state;
   this.delta.pauseReason = board.pauseReason;
+  // Multiplayer-only values that are set to defaults for singleplayer games,
+  // plus the level, which is affected by the multiplayer attackIndex.
+  this.delta.attackIndex = board.attackIndex || 0;
+  this.delta.level = this.delta.attackIndex + this.delta.blockIndex;
 }
 
 Graphics.prototype.flip = function() {
@@ -390,7 +389,6 @@ Graphics.prototype.flip = function() {
   if (this.state.blockIndex !== this.delta.blockIndex ||
       this.state.preview.length !== this.delta.preview.length) {
     this.updatePreview();
-    this.elements.difficulty_ui.setBlockIndex(this.delta.blockIndex);
   }
   if (this.state.previewFrame > 0 && this.state.state === Constants.PLAYING) {
     // We only scroll the preview if the game is in motion.
@@ -412,7 +410,17 @@ Graphics.prototype.flip = function() {
   if (this.state.state !== this.delta.state) {
     this.updateOverlay();
   }
-  this.resetDelta();
+  if (this.state.attackIndex !== this.delta.attackIndex) {
+    this.state.attackIndex = this.delta.attackIndex;
+  }
+  if (this.state.level !== this.delta.level) {
+    this.elements.difficulty_ui.setBlockIndex(this.delta.level);
+    this.state.level = this.delta.level;
+  }
+  // At this point, this.delta should equal this.state, except for board,
+  // which this.delta stores sparsely, and previewFrame / previewOffset,
+  // which are only maintained on this.state.
+  this.delta.board = {};
 }
 
 return Graphics;
