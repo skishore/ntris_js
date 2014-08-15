@@ -54,9 +54,12 @@ Board.prototype.update = function(keys) {
 }
 
 Board.prototype.updateScore = function(rows) {
-  this.combo = (rows > 0 ? this.combo + 1 : 0);
-  var points = (this.combo + 1)*(rows*(rows + 1)/2);
-  this.score += points;
+  if (rows > 0) {
+    this.combo += 1;
+    this.score += rows*rows + (this.combo - 1);
+  } else {
+    this.combo = 0;
+  }
 }
 
 Board.prototype.maybeRedraw = function() {
