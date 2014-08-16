@@ -34,6 +34,9 @@ DifficultyUI.prototype.render = function(start) {
 
   this.mark = $('<div>').addClass('mark');
   this.target.append(this.mark);
+  // State variables used to move the mark.
+  this.height = this.target.height();
+  this.mark_top = null;
 }
 
 DifficultyUI.counter = 0;
@@ -65,7 +68,11 @@ DifficultyUI.prototype.setBlockIndex = function(index) {
     this.render(best_start);
   }
   var fraction = (index - this.start)/this.width;
-  this.mark.css('top', fraction*(this.target.height() - 1));
+  var mark_top = Math.floor(fraction*this.height - 1);
+  if (mark_top !== this.mark_top) {
+    this.mark.css('top', mark_top);
+    this.mark_top = mark_top;
+  }
 }
 
 return DifficultyUI;
