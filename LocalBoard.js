@@ -18,7 +18,7 @@ extend(LocalBoard, Board);
 
 LocalBoard.prototype.setFocusHandlers = function(target) {
   target.focus(this.gainFocus.bind(this));
-  $(window).blur(this.loseFocus.bind(this));
+  //$(window).blur(this.loseFocus.bind(this));
   target.focus();
 }
 
