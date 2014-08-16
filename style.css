@@ -163,3 +163,13 @@
 .combinos-options .restore-defaults-button {
   float: left;
 }
+
+.points-scored {
+  color: white;
+  font-family: sans-serif;
+  font-size: 14px;
+  font-weight: bold;
+  position: absolute;
+  text-align: center;
+  text-shadow: 2px 2px 0 black;
+}

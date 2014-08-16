@@ -57,6 +57,26 @@
       var target = $('.combinos');
       var board = new LocalBoard(target);
       var options = new Options(board, $('.combinos-options'));
+
+      window.points_scored = $('<div>').addClass('points-scored');
+      $('body').append(points_scored);
+      window.show_points_scored = function(square, points) {
+        var duration = 400;
+        var drop = 0;
+        var rise = 36;
+
+        var offset = square.offset();
+        points_scored.stop().text('+' + points).css({
+          'display': 'block',
+          'margin-top': (drop + rise) + 'px',
+          'left': offset.left - 4,
+          'top': offset.top - rise - 4,
+        }).animate(
+          {'margin-top': '0px'},
+          duration,
+          'linear',
+          function() { $(this).hide(); });
+      };
     }
 
     return initialize;

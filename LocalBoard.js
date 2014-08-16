@@ -84,6 +84,18 @@ LocalBoard.prototype.tick = function() {
   }
 }
 
+LocalBoard.prototype.updateScore = function(rows) {
+  var old_score = this.score;
+  LocalBoard.__super__.updateScore.bind(this)(rows);
+  if (this.score > old_score) {
+    var index = this.graphics.getSquareIndex(this.block.y, this.block.x);
+    if (index >= 0) {
+      var points = this.score - old_score;
+      show_points_scored(this.graphics.elements.board[index], points);
+    }
+  }
+}
+
 LocalBoard.prototype.getKeys = function() {
   var keys = this.repeater.query();
   if (this.block.localStickFrames <= 0 || this.block.globalStickFrames <= 0) {
