@@ -34,6 +34,7 @@ var Color = {
     }
     for (var i = 2*this.MAX + 1; i <= 3*this.MAX; i++) {
       var color = this.body_colors[i - Color.MAX];
+      color = this.mix(color, this.BLACK, Color.LAMBDA/4);
       rules.push(
         '.combinos .square-' + i + ' {\n' +
         '  background: repeating-linear-gradient(45deg, black, black 1.4px, ' +
