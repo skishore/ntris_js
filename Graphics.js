@@ -316,9 +316,12 @@ Graphics.prototype.reset = function(board) {
   this.delta = {board: {}};
 
   // We set each cell in the board to -1 so that they will all be marked dirty
-  // and redrawn during the call to flip().
+  // and redrawn during the call to flip(). Additionally, we have to clear any
+  // square class on the board already, since cell colors are changed by
+  // removing the old class and adding the new one.
   for (var i = 0; i < Constants.VISIBLEROWS*Constants.COLS; i++) {
     this.state.board.push(-1);
+    this.elements.board[i].attr('class', 'square');
     var x = Math.floor(i/Constants.COLS) + Constants.HIDDENROWS;
     var y = i % Constants.COLS;
     this.delta.board[i] = board.data[x][y];
@@ -380,9 +383,10 @@ Graphics.prototype.drawUI = function(board) {
 Graphics.prototype.flip = function() {
   for (var k in this.delta.board) {
     var color = this.delta.board[k];
-    if (this.state.board[k] !== color) {
+    var last = this.state.board[k];
+    if (last !== color) {
       var square = this.elements.board[k];
-      square.attr('class', 'square square-' + color);
+      square.removeClass('square-' + last).addClass('square-' + color);
       this.state.board[k] = color;
     }
   }
