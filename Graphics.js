@@ -415,7 +415,7 @@ Graphics.prototype.drawFloatingScore = function(block, score) {
     var duration = 400;
     var rise = 36;
 
-    this.elements.floating_score.stop().text('+' + score).css({
+    this.elements.floating_score.stop(true).text('+' + score).css({
       'opacity': 1,
       'margin-top': rise + 'px',
       'left': position.left - offset.left - padding,
