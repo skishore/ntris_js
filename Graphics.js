@@ -124,7 +124,9 @@ Graphics.prototype.build = function(target) {
   result.preview.css('margin-top',
       (sideboard.height() - result.preview.height() - result.hold.height())/2);
 
-  result.floating_score = $('<div>').addClass('floating-score');
+  result.floating_score =
+      $('<div>').addClass('floating-score')
+                .css('font-size', 7*this.squareWidth/6);
   target.append(result.floating_score);
 
   return result;
@@ -374,14 +376,16 @@ Graphics.prototype.drawFloatingScore = function(block, score) {
   if (index >= 0) {
     var offset = this.target.offset();
     var position = this.elements.board[index].offset();
+    var padding = this.squareWidth/6;
+
     var duration = 400;
     var rise = 36;
 
     this.elements.floating_score.stop().text('+' + score).css({
       'opacity': 1,
       'margin-top': rise + 'px',
-      'left': position.left - offset.left - 2,
-      'top': position.top - offset.top - rise - 2,
+      'left': position.left - offset.left - padding,
+      'top': position.top - offset.top - rise - padding,
     }).animate({'margin-top': '0px'}, duration, 'linear')
       .animate({'opacity': 0}, 20*score, 'linear');
   }
