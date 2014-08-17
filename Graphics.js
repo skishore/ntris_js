@@ -378,16 +378,12 @@ Graphics.prototype.drawFloatingScore = function(block, score) {
     var rise = 36;
 
     this.elements.floating_score.stop().text('+' + score).css({
-      'display': 'block',
-      'left': position.left - offset.left - 2,
+      'opacity': 1,
       'margin-top': rise + 'px',
+      'left': position.left - offset.left - 2,
       'top': position.top - offset.top - rise - 2,
-    }).animate(
-      {'margin-top': '0px'},
-      duration,
-      'linear',
-      function() { $(this).hide(); }
-    );
+    }).animate({'margin-top': '0px'}, duration, 'linear')
+      .animate({'opacity': 0}, 20*score, 'linear');
   }
 }
 
