@@ -11,7 +11,7 @@ extend(ServerBoard, Board);
 
 ServerBoard.prototype.reset = function(seed) {
   ServerBoard.__super__.reset.bind(this)(new MersenneTwister(seed));
-  this.pauseReason = null;
+  this.pauseReason = undefined;
   if (this.game_type === 'battle') {
     this.attacks = [];
     this.attackIndex = 0;
@@ -51,6 +51,13 @@ ServerBoard.prototype.serialize = function() {
   }
 }
 
+ServerBoard.prototype.updateScore = function(rows) {
+  // Only used in battle mode to determine what kind of attack to hit the
+  // opponent with. Cleared by the code that uses this state.
+  this.last_rows_cleared = rows;
+  ServerBoard.__super__.updateScore.bind(this)(rows);
+}
+
 ServerBoard.prototype.maybeAddToPreview = function() {
   this.blockIndex += 1;
   var attackIndex = this.attackIndex || 0;
@@ -62,17 +69,14 @@ ServerBoard.prototype.maybeAddToPreview = function() {
   this.preview.push(this.curve.generateBlockType(level));
 }
 
-ServerBoard.prototype.handleRawAttack = function(score, combo) {
-  // Hack: Reverse-engineer the scoring function to recover the number
-  // of rows that were just cleared.
-  var row_score = score - combo + 1;
-  var rows = Math.min(Math.round(Math.sqrt(row_score)), 1);
-  this.handleAttack(rows, combo);
-}
-
-ServerBoard.prototype.handleAttack = function(rows, combo) {
-  this.attacks.push(rows - 1);
-  var poison_damage = 40*combo - 1;
+ServerBoard.prototype.handleAttack = function(opponent) {
+  // Handle an attack coming from the opponent.
+  if (!opponent.last_rows_cleared) {
+    return;
+  }
+  this.attacks.push(opponent.last_rows_cleared - 1);
+  var poison_damage = 2*(opponent.combo - 1);
+  // Apply poison damage, which permanently affects the opponent's difficulty.
   this.attackIndex += poison_damage;
   for (var i = 0; i < poison_damage; i++) {
     // Use up randomness so we stay in sync with the opponent's board.
@@ -80,6 +84,7 @@ ServerBoard.prototype.handleAttack = function(rows, combo) {
     // attack block, which is why we subtract one.
     this.curve.rng.random();
   }
+  opponent.last_rows_cleared = undefined;
 }
 
 return ServerBoard;
