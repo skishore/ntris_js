@@ -75,7 +75,7 @@ ServerBoard.prototype.handleAttack = function(opponent) {
     return;
   }
   this.attacks.push(opponent.last_rows_cleared - 1);
-  var poison_damage = 2*(opponent.combo - 1);
+  var poison_damage = opponent.combo + 1;
   // Apply poison damage, which permanently affects the opponent's difficulty.
   this.attackIndex += poison_damage;
   for (var i = 0; i < poison_damage; i++) {
