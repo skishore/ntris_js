@@ -2,12 +2,13 @@ var Graphics = (function() {
 "use strict";
 
 var Graphics = function(squareWidth, target, multiplayer) {
-  this.multiplayer = multiplayer;
   this.squareWidth = squareWidth;
+  this.target = target;
+  this.multiplayer = multiplayer;
+
   this.smallWidth = Math.ceil(this.squareWidth/2);
   this.border = this.smallWidth;
   this.sideboard = 6*this.smallWidth;
-
   var boardWidth = Constants.COLS*this.squareWidth;
   this.width = boardWidth + 2*this.sideboard + 4*this.border;
   this.height = Constants.VISIBLEROWS*this.squareWidth + 2*this.border;
@@ -122,6 +123,9 @@ Graphics.prototype.build = function(target) {
 
   result.preview.css('margin-top',
       (sideboard.height() - result.preview.height() - result.hold.height())/2);
+
+  result.floating_score = $('<div>').addClass('floating-score');
+  target.append(result.floating_score);
 
   return result;
 }
@@ -362,6 +366,28 @@ Graphics.prototype.eraseBlock = function(block) {
   for (var i = 0; i < offsets.length; i++) {
     var offset = offsets[i];
     this.drawBoardSquare(offset.y, offset.x, 0);
+  }
+}
+
+Graphics.prototype.drawFloatingScore = function(block, score) {
+  var index = this.getSquareIndex(block.y, block.x);
+  if (index >= 0) {
+    var offset = this.target.offset();
+    var position = this.elements.board[index].offset();
+    var duration = 400;
+    var rise = 36;
+
+    this.elements.floating_score.stop().text('+' + score).css({
+      'display': 'block',
+      'left': position.left - offset.left - 2,
+      'margin-top': rise + 'px',
+      'top': position.top - offset.top - rise - 2,
+    }).animate(
+      {'margin-top': '0px'},
+      duration,
+      'linear',
+      function() { $(this).hide(); }
+    );
   }
 }
 
