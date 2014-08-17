@@ -10,12 +10,12 @@ var ServerBoard = function(game_type, seed) {
 extend(ServerBoard, Board);
 
 ServerBoard.prototype.reset = function(seed) {
-  ServerBoard.__super__.reset.bind(this)(new MersenneTwister(seed));
-  this.pauseReason = undefined;
   if (this.game_type === 'battle') {
     this.attacks = [];
     this.attackIndex = 0;
   }
+  ServerBoard.__super__.reset.bind(this)(new MersenneTwister(seed));
+  this.pauseReason = undefined;
   this.forceClientUpdate();
 }
 
@@ -62,7 +62,7 @@ ServerBoard.prototype.maybeAddToPreview = function() {
   this.blockIndex += 1;
   var attackIndex = this.attackIndex || 0;
   var level = DifficultyCurve.getLevel(attackIndex + this.blockIndex);
-  if (this.attacks && this.attacks.length > 0) {
+  if (this.game_type === 'battle' && this.attacks.length > 0) {
     // Pop from the attack queue if it is available.
     level = Math.min(level + this.attacks.shift() + 1, Block.LEVELS - 1);
   }
