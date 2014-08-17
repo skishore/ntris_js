@@ -87,7 +87,7 @@ LocalBoard.prototype.tick = function() {
 LocalBoard.prototype.updateScore = function(rows) {
   var old_score = this.score;
   LocalBoard.__super__.updateScore.bind(this)(rows);
-  if (this.score > old_score) {
+  if (this.score >= old_score) {
     this.graphics.drawFloatingScore(this.block, this.score - old_score);
   }
 }

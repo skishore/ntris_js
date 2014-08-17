@@ -123,13 +123,16 @@ Graphics.prototype.build = function(target) {
   result.hold_overlay = $('<div>').addClass('hold-overlay');
   result.hold.append(result.hold_overlay);
 
-  result.preview.css('padding-top',
+  preview_wrapper.css('padding-top',
       (sideboard.height() - preview_wrapper.height() - result.hold.height())/2);
 
   result.floating_score =
       $('<div>').addClass('floating-score')
                 .css('font-size', 7*this.squareWidth/6);
   target.append(result.floating_score);
+
+  result.preview.proparty = pp(result.preview);
+  result.floating_score.proparty = pp(result.floating_score);
 
   return result;
 }
@@ -196,10 +199,8 @@ Graphics.prototype.updatePreview = function() {
     var type = this.state.preview.shift();
     this.elements.preview.children().eq('0').remove();
     if (type !== undefined) {
-      // Add the block's missing height to the preview offset and scroll it.
-      this.state.previewFrame = Constants.PREVIEWFRAMES;
-      this.state.previewOffset +=
-          Block.prototypes[type].height*this.smallWidth + this.squareWidth;
+      this.animatePreview(
+          Block.prototypes[type].height*this.smallWidth + this.squareWidth);
     }
   }
   // Push new blocks in the preview queue to state and to the UI.
@@ -219,11 +220,21 @@ Graphics.prototype.updatePreview = function() {
       "Previews mismatched!");
 }
 
-Graphics.prototype.updatePreviewFrame = function() {
-  this.state.previewOffset *=
-      (this.state.previewFrame - 1)/this.state.previewFrame;
-  this.elements.preview.css('margin-top', this.state.previewOffset);
-  this.state.previewFrame -= 1;
+Graphics.prototype.animatePreview = function(height) {
+  var preview = this.elements.preview;
+  var transform = 'translateY(' + height + 'px)';
+  preview[0].removeAttribute('style');
+  preview.css({
+    'transform': transform,
+    '-webkit-transform': transform,
+  });
+  // Kill any existing animation and reset the proparty object.
+  preview.proparty.destroy()
+  preview.proparty = pp(preview, {
+    'duration': 1000*Constants.PREVIEWFRAMES/Constants.FRAMERATE,
+    'ease': 'linear',
+  });
+  preview.proparty.transform('translateY', ['0px']).start();
 }
 
 Graphics.prototype.updateHeld = function() {
@@ -346,8 +357,6 @@ Graphics.prototype.reset = function(board) {
     board: [],
     blockIndex: 0,
     preview: [],
-    previewFrame: 0,
-    previewOffset: 0,
   };
   this.delta = {board: {}};
 
@@ -408,20 +417,41 @@ Graphics.prototype.eraseBlock = function(block) {
 Graphics.prototype.drawFloatingScore = function(block, score) {
   var index = this.getSquareIndex(block.y, block.x);
   if (index >= 0) {
+    var floating_score = this.elements.floating_score;
     var offset = this.target.offset();
     var position = this.elements.board[index].offset();
-    var padding = this.squareWidth/6;
+    var padding = this.squareWidth/3;
 
-    var duration = 400;
-    var rise = 36;
+    var x = position.left - offset.left - padding;
+    var y = position.top - offset.top - padding;
 
-    this.elements.floating_score.stop(true).text('+' + score).css({
-      'opacity': 1,
-      'margin-top': rise + 'px',
-      'left': position.left - offset.left - padding,
-      'top': position.top - offset.top - rise - padding,
-    }).animate({'margin-top': '0px'}, duration, 'linear')
-      .animate({'opacity': 0}, 20*score, 'linear');
+    floating_score[0].removeAttribute('style');
+    floating_score.text('+' + score).css({
+      'left': x,
+      'top': y,
+    });
+    floating_score[0].offsetHeight;
+
+    floating_score.proparty.destroy()
+    floating_score.proparty = pp(floating_score, {
+      'duration': 400,
+      'ease': 'linear',
+    });
+    floating_score.proparty
+      .set('top', y - 36)
+      .chain(function() {
+        floating_score.css({
+          'transition': '',
+          '-webkit-transition': '',
+        });
+        floating_score.proparty.destroy();
+        floating_score.proparty = pp(floating_score, {
+          'duration': 20*score,
+          'ease': 'linear',
+        });
+        return floating_score.proparty.set('opacity', 0);
+      })
+      .start();
   }
 }
 
@@ -455,10 +485,6 @@ Graphics.prototype.flip = function() {
       this.state.preview.length !== this.delta.preview.length) {
     this.updatePreview();
   }
-  if (this.state.previewFrame > 0 && this.state.state === Constants.PLAYING) {
-    // We only scroll the preview if the game is in motion.
-    this.updatePreviewFrame();
-  }
   if (this.state.held !== this.delta.held) {
     this.updateHeld();
   }
@@ -488,8 +514,7 @@ Graphics.prototype.flip = function() {
     }
   }
   // At this point, this.delta should equal this.state, except for board,
-  // which this.delta stores sparsely, and previewFrame / previewOffset,
-  // which are only maintained on this.state.
+  // which is stored sparsely in this.delta but densely in this.state.
   this.delta.board = {};
 }
 
