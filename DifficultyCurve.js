@@ -5,8 +5,7 @@ var DifficultyCurve = function(rng) {
   this.rng = rng || Math;
 }
 
-DifficultyCurve.prototype.generateBlockType = function(index) {
-  var level = DifficultyCurve.getLevel(index);
+DifficultyCurve.prototype.generateBlockType = function(level) {
   var last = level && Block.TYPES[level - 1];
   return Math.floor((Block.TYPES[level] - last)*this.rng.random()) + last;
 }

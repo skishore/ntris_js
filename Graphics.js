@@ -480,8 +480,7 @@ Graphics.prototype.flip = function() {
     this.state.level = this.delta.level;
   }
   if (this.multiplayer) {
-    if ((!this.state.attacks !== !this.delta.attacks) ||
-        !arraysEqual(this.state.attacks, this.delta.attacks)) {
+    if (!maybeArraysEqual(this.state.attacks, this.delta.attacks)) {
       this.updateAttacks();
     }
     if (this.state.attackIndex !== this.delta.attackIndex) {

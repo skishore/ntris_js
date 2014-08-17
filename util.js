@@ -11,6 +11,15 @@ arraysEqual = function(first, second) {
   return !(first < second) && !(second < first);
 }
 
+// Returns true if this maybe-array equals the other maybe-array, where
+// a maybe-array is either an array or undefined.
+maybeArraysEqual = function(first, second) {
+  if (!first !== !second) {
+    return false;
+  }
+  return arraysEqual(first, second);
+}
+
 function extend(child, parent) {
   for (var key in parent) {
     if (parent.hasOwnProperty(key)) {

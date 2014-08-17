@@ -105,6 +105,9 @@ ClientBoard.prototype.deserialize = function(view) {
       this.serverSyncIndex += 1;
       this.moveQueue.pop();
     }
+    // Pull attack data out of the view and update the current state.
+    this.attacks = view.attacks;
+    this.attackIndex = view.attackIndex;
   }
 }
 

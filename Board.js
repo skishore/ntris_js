@@ -85,7 +85,8 @@ Board.prototype.nextBlock = function(swap) {
 
 Board.prototype.maybeAddToPreview = function() {
   this.blockIndex += 1;
-  this.preview.push(this.curve.generateBlockType(this.blockIndex));
+  var level = DifficultyCurve.getLevel(this.blockIndex);
+  this.preview.push(this.curve.generateBlockType(level));
 }
 
 return Board;

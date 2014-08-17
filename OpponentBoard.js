@@ -9,7 +9,15 @@ var OpponentBoard = function(target, view, scale) {
 }
 
 OpponentBoard.prototype.deserialize = function(view) {
-  if (this.gameIndex == view.gameIndex && this.syncIndex == view.syncIndex) {
+  if (this.gameIndex === view.gameIndex && this.syncIndex === view.syncIndex) {
+    // Even if the opponent has made a move, if they've been attacked, we have
+    // to update their UI. We check the two conditions that can occur:
+    if (!maybeArraysEqual(this.attacks, view.attacks) ||
+        this.attackIndex !== view.attackIndex) {
+      $.extend(this, view);
+      this.graphics.drawUI(this);
+      this.graphics.flip();
+    }
     return;
   }
   $.extend(this, view);
