@@ -54,5 +54,8 @@ Constants.HALFRSCORE = 480;
 // Points given for each number of rows cleared.
 Constants.POINTS = [0, 1, 3, 7, 15, 31, 63, 79, 87, 91, 93];
 
+// The maximum attack size in battle mode.
+Constants.ATTACKS = 6;
+
 return Constants;
 })();

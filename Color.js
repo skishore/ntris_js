@@ -43,6 +43,12 @@ var Color = {
         '}');
     }
     this.addStyle(rules.join('\n'));
+    // Add colors that encode attacks for battle mode.
+    this.attack_colors = [];
+    for (var i = 0; i < Constants.ATTACKS; i++) {
+      var lambda = i/Constants.ATTACKS;
+      this.attack_colors.push(this.mix('#cc00cc', '#ff0000', lambda));
+    }
   },
 
   pushColor: function(color) {

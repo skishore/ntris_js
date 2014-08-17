@@ -106,10 +106,12 @@ Graphics.prototype.build = function(target) {
   target.append(sideboard);
 
   var padding = this.squareWidth/4;
-  result.preview = $('<div>')
-      .addClass('preview')
-      .height(5*this.squareWidth/2*(Constants.PREVIEW + 2));
-  sideboard.append(result.preview);
+  var preview_wrapper =
+      $('<div>').addClass('preview-wrapper')
+                .height(3*this.squareWidth*(Constants.PREVIEW + 1));
+  result.preview = $('<div>').addClass('preview');
+  result.attacks = $('<div>').addClass('attacks');
+  sideboard.append(preview_wrapper.append(result.preview, result.attacks));
 
   result.hold = $('<div>').addClass('hold').css({
     'height': 4*this.squareWidth,
@@ -121,8 +123,8 @@ Graphics.prototype.build = function(target) {
   result.hold_overlay = $('<div>').addClass('hold-overlay');
   result.hold.append(result.hold_overlay);
 
-  result.preview.css('margin-top',
-      (sideboard.height() - result.preview.height() - result.hold.height())/2);
+  result.preview.css('padding-top',
+      (sideboard.height() - preview_wrapper.height() - result.hold.height())/2);
 
   result.floating_score =
       $('<div>').addClass('floating-score')
@@ -220,8 +222,7 @@ Graphics.prototype.updatePreview = function() {
 Graphics.prototype.updatePreviewFrame = function() {
   this.state.previewOffset *=
       (this.state.previewFrame - 1)/this.state.previewFrame;
-  this.elements.preview.children().eq('0').css(
-      'margin-top', this.state.previewOffset);
+  this.elements.preview.css('margin-top', this.state.previewOffset);
   this.state.previewFrame -= 1;
 }
 
@@ -305,16 +306,45 @@ Graphics.prototype.drawText = function(line1, line2) {
   }
 }
 
+Graphics.prototype.updateAttacks = function() {
+  assert(this.delta.attacks, 'Updating attacks when attacks is undefined');
+  this.state.attacks = this.state.attacks || [];
+  while (!this.isPrefix(this.state.attacks, this.delta.attacks)) {
+    this.state.attacks.shift();
+    this.elements.attacks.children().eq('0').remove();
+  }
+  while (this.state.attacks.length < this.delta.attacks.length) {
+    var type = this.delta.attacks[this.state.attacks.length];
+    this.state.attacks.push(type);
+    var symbol = '&#' + (9843 + type);
+    var block = $('<div>').addClass('preview-block').html(symbol).css({
+      'color': Color.attack_colors[type],
+      'margin-bottom': this.squareWidth,
+    });
+    this.elements.attacks.append(block);
+  }
+  assert(
+      arraysEqual(this.state.preview, this.delta.preview),
+      "Previews mismatched!");
+}
+
+Graphics.prototype.isPrefix = function(list1, list2) {
+  for (var i = 0; i < list1.length; i++) {
+    if (list1[i] !== list2[i]) {
+      return false;
+    }
+  }
+  return true;
+}
+
 //////////////////////////////////////////////////////////////////////////////
 // Public interface begins here!
 //////////////////////////////////////////////////////////////////////////////
 
 Graphics.prototype.reset = function(board) {
-  // We set blockIndex to -Constants.PREVIEW so that we delete all blocks that
-  // are currently queued up in the preview.
   this.state = {
     board: [],
-    blockIndex: -Constants.PREVIEW,
+    blockIndex: 0,
     preview: [],
     previewFrame: 0,
     previewOffset: 0,
@@ -332,6 +362,10 @@ Graphics.prototype.reset = function(board) {
     var y = i % Constants.COLS;
     this.delta.board[i] = board.data[x][y];
   }
+
+  // Empty the preview, shift it back to the top, and empty the attacks.
+  this.elements.preview.empty().css('margin-top', 0);
+  this.elements.attacks.empty();
 
   this.drawBlock(board.block);
   this.drawUI(board);
@@ -402,6 +436,7 @@ Graphics.prototype.drawUI = function(board) {
   this.delta.pauseReason = board.pauseReason;
   // Multiplayer-only values that are set to defaults for singleplayer games,
   // plus the level, which is affected by the multiplayer attackIndex.
+  this.delta.attacks = board.attacks;
   this.delta.attackIndex = board.attackIndex || 0;
   this.delta.level = this.delta.attackIndex + this.delta.blockIndex;
 }
@@ -440,12 +475,18 @@ Graphics.prototype.flip = function() {
   if (this.state.state !== this.delta.state) {
     this.updateOverlay();
   }
-  if (this.state.attackIndex !== this.delta.attackIndex) {
-    this.state.attackIndex = this.delta.attackIndex;
-  }
   if (this.state.level !== this.delta.level) {
     this.elements.difficulty_ui.setBlockIndex(this.delta.level);
     this.state.level = this.delta.level;
+  }
+  if (this.multiplayer) {
+    if ((!this.state.attacks !== !this.delta.attacks) ||
+        !arraysEqual(this.state.attacks, this.delta.attacks)) {
+      this.updateAttacks();
+    }
+    if (this.state.attackIndex !== this.delta.attackIndex) {
+      this.state.attackIndex = this.delta.attackIndex;
+    }
   }
   // At this point, this.delta should equal this.state, except for board,
   // which this.delta stores sparsely, and previewFrame / previewOffset,
