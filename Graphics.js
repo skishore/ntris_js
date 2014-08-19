@@ -131,9 +131,6 @@ Graphics.prototype.build = function(target) {
                 .css('font-size', 7*this.squareWidth/6);
   target.append(result.floating_score);
 
-  result.preview.proparty = pp(result.preview);
-  result.floating_score.proparty = pp(result.floating_score);
-
   return result;
 }
 
@@ -199,8 +196,10 @@ Graphics.prototype.updatePreview = function() {
     var type = this.state.preview.shift();
     this.elements.preview.children().eq('0').remove();
     if (type !== undefined) {
-      this.animatePreview(
-          Block.prototypes[type].height*this.smallWidth + this.squareWidth);
+      // Animate the preview, accounting for both the block's height and the
+      // margin that comes after it.
+      var height = Block.prototypes[type].height*this.smallWidth;
+      this.animatePreview(height + this.squareWidth);
     }
   }
   // Push new blocks in the preview queue to state and to the UI.
@@ -221,20 +220,10 @@ Graphics.prototype.updatePreview = function() {
 }
 
 Graphics.prototype.animatePreview = function(height) {
-  var preview = this.elements.preview;
-  var transform = 'translateY(' + height + 'px)';
-  preview[0].removeAttribute('style');
-  preview.css({
-    'transform': transform,
-    '-webkit-transform': transform,
-  });
-  // Kill any existing animation and reset the proparty object.
-  preview.proparty.destroy()
-  preview.proparty = pp(preview, {
-    'duration': 1000*Constants.PREVIEWFRAMES/Constants.FRAMERATE,
-    'ease': 'linear',
-  });
-  preview.proparty.transform('translateY', ['0px']).start();
+  var duration = 1000*Constants.PREVIEWFRAMES/Constants.FRAMERATE;
+  var preview = this.elements.preview.get(0);
+  move(preview).y(height).duration(0).end(
+      move(preview).y(0).duration(duration).ease('linear').end());
 }
 
 Graphics.prototype.updateHeld = function() {
@@ -372,8 +361,8 @@ Graphics.prototype.reset = function(board) {
     this.delta.board[i] = board.data[x][y];
   }
 
-  // Empty the preview, shift it back to the top, and empty the attacks.
-  this.elements.preview.empty().css('margin-top', 0);
+  // Empty the preview and the attacks.
+  this.elements.preview.empty();
   this.elements.attacks.empty();
 
   this.drawBlock(board.block);
@@ -417,41 +406,25 @@ Graphics.prototype.eraseBlock = function(block) {
 Graphics.prototype.drawFloatingScore = function(block, score) {
   var index = this.getSquareIndex(block.y, block.x);
   if (index >= 0) {
-    var floating_score = this.elements.floating_score;
     var offset = this.target.offset();
     var position = this.elements.board[index].offset();
     var padding = this.squareWidth/3;
 
     var x = position.left - offset.left - padding;
     var y = position.top - offset.top - padding;
+    var rise = 36;
 
-    floating_score[0].removeAttribute('style');
-    floating_score.text('+' + score).css({
-      'left': x,
-      'top': y,
-    });
-    floating_score[0].offsetHeight;
-
-    floating_score.proparty.destroy()
-    floating_score.proparty = pp(floating_score, {
-      'duration': 400,
-      'ease': 'linear',
-    });
-    floating_score.proparty
-      .set('top', y - 36)
-      .chain(function() {
-        floating_score.css({
-          'transition': '',
-          '-webkit-transition': '',
-        });
-        floating_score.proparty.destroy();
-        floating_score.proparty = pp(floating_score, {
-          'duration': 20*score,
-          'ease': 'linear',
-        });
-        return floating_score.proparty.set('opacity', 0);
-      })
-      .start();
+    this.elements.floating_score.text('+' + score);
+    var floating_score = this.elements.floating_score.get(0);
+    move(floating_score)
+      .x(x).y(y).set('opacity', 1).duration(0)
+      .end(
+        move(floating_score)
+          .x(x).y(y - rise).duration(400).ease('linear')
+          .end(
+            move(floating_score)
+              .set('opacity', 0).duration(20*score).ease('linear')
+              .end()));
   }
 }
 

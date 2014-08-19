@@ -5,9 +5,9 @@
     <script type="text/javascript" src="external/jquery-cookie/1.4.1/jquery.cookie.js"></script>
     <link rel="stylesheet" href="external/bootstrap/3.1.1/bootstrap.min.css">
     <script type="text/javascript" src="external/bootstrap/3.1.1/bootstrap.min.js"></script>
+    <script type="text/javascript" src="external/move/0.3.3/move.min.js"></script>
     <script type="text/javascript" src="external/protovis/3.3.1/protovis.min.js"></script>
     <script type="text/javascript" src="external/underscore/1.6.0/underscore.min.js"></script>
-    <script type="text/javascript" src="proparty.min.js"></script>
 
     <!-- Base CSS and Javascript. -->
     <link rel="stylesheet" type="text/css" href="style.css">
@@ -54,6 +54,7 @@
     "use strict";
 
     function initialize() {
+      initialize_move_library();
       Color.initialize(Color.colorCode);
       var target = $('.combinos');
       var board = new LocalBoard(target);
