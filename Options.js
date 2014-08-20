@@ -25,6 +25,18 @@ var Options = function(target, options) {
   target.addClass('combinos-options').attr('tabindex', 2).append(form);
 }
 
+Options.validate_options = function(options) {
+  for (var key in options.key_bindings) {
+    assert(key in Key.keyNames, 'Unexpected key: ' + key);
+    var action = options.key_bindings[key];
+    assert(parseInt(action) === action &&
+           0 <= action && action < Action.NUMACTIONS,
+           'Unexpected action: ' + action);
+  }
+  assert(options.animate_preview === !!options.animate_preview);
+  assert(options.animate_scores === !!options.animate_scores);
+}
+
 Options.prototype.get_current_options = function() {
   return {
     'key_bindings': this.key_bindings,
