@@ -1,185 +1,161 @@
 var Options = function() {
 "use strict";
 
-var Options = function(board, target) {
-  this.board = board;
-  this.elements = this.build(target);
-}
+var Options = function(target, options) {
+  this.target = target;
 
-Options.prototype.build = function(target) {
-  var that = this;
-  var result = {target: target};
+  options = options || {};
+  options.key_bindings = options.key_bindings || Key.defaultKeyBindings;
+  this.key_bindings = $.extend({}, options.key_bindings);
+  this.key_elements = {};
 
-  target.attr('tabindex', 2);
-
-  // Construct a modal structure within the target.
-  target.addClass('modal fade');
-  var dialog = $('<div>').addClass('modal-dialog');
-  var content = $('<div>').addClass('modal-content');
-  var header = $('<div>').addClass('modal-header')
-    .append($('<h4>').text('Edit key bindings'));
-  var body = $('<div>').addClass('modal-body');
-  var footer = $('<div>').addClass('modal-footer');
-
-  // Create the key-bindings form with a tag input for each action.
-  result.form = $('<form>').addClass('form-horizontal');
-  body.append(result.form);
-
-  // Create buttons required to hide the modal.
-  footer.append(
-    $('<a>').addClass('btn btn-danger btn-sm restore-defaults-button')
-        .text('Restore defaults')
-        .click(function(e) { that.show(true); }),
-    $('<a>').addClass('btn btn-primary btn-sm').text('Apply')
-        .click(function(e) { that.hide(true); }),
-    $('<a>').addClass('btn btn-default btn-sm').text('Cancel')
-        .click(function(e) { that.hide(false); })
-  );
-  target.append(dialog.append(content.append(header, body, footer)));
-
-  // Add in the button required to show the form.
-  target.after(
-    $('<a>').addClass('btn btn-primary btn-sm').text('Edit key bindings')
-        .click(function(e) { that.show(false); })
-  );
-
-  target.on('hidden.bs.modal', function () { that.board.target.focus(); });
-  return result;
-}
-
-Options.prototype.show = function(restore) {
-  if (this.board.state === Constants.PLAYING) {
-    this.board.state = Constants.PAUSED;
-    this.board.pauseReason = 'focus';
-  }
-
-  if (restore) {
-    this.keyBindings = $.extend({}, Key.defaultKeyBindings);
-  } else {
-    this.keyBindings = $.extend({}, this.board.repeater.keyBindings);
-  }
-  this.keyElements = {};
-
-  this.elements.form.empty();
+  var form = $('<form>').addClass('form-horizontal');
   for (var i = 0; i < Action.NUMACTIONS; i++) {
-    this.elements.form.append(this.buildAction(i));
+    form.append(this.build_action(i));
   }
+  form.append($('<div>').addClass('divider'));
 
-  if (!restore) {
-    this.elements.target.modal('show');
-  }
+  var animation_group = $('<div>').addClass('form-group');
+  animation_group.append(this.build_bool_option(
+      'Animate preview:', 'animate_preview', options.animate_preview));
+  animation_group.append(this.build_bool_option(
+      'Animate scores:', 'animate_scores', options.animate_scores));
+  form.append(animation_group);
+
+  target.addClass('combinos-options').attr('tabindex', 2).append(form);
 }
 
-Options.prototype.hide = function(save) {
-  if (save) {
-    Key.saveKeyBindings(this.keyBindings);
-    this.board.repeater.setKeyBindings(this.keyBindings);
-  }
-  this.elements.target.modal('hide');
+Options.prototype.get_current_options = function() {
+  return {
+    'key_bindings': this.key_bindings,
+    'animate_preview': this.get_bool_option('animate_preview'),
+    'animate_scores': this.get_bool_option('animate_scores'),
+  };
 }
 
-Options.prototype.buildAction = function(action) {
-  var that = this;
+Options.prototype.get_bool_option = function(option) {
+  var selector = '.bool-option.' + option + '>.active>input';
+  return !!(parseInt(this.target.find(selector).val()));
+}
 
+Options.prototype.build_bool_option = function(label, option, value) {
+  var cls = 'btn btn-default btn-white';
+  return $('<div>').addClass('bool-option-group').append(
+    $('<label>').addClass('col-sm-4 control-label').text(label),
+    $('<div>').addClass('bool-option ' + option + ' btn-group btn-group-sm')
+        .attr('data-toggle', 'buttons').append(
+      $('<label>').addClass(cls + (value ? ' active' : '')).text('On')
+          .append($('<input type="radio" value="1">')),
+      $('<label>').addClass(cls + (value ? '' : ' active')).text('Off')
+          .append($('<input type="radio" value="0">'))
+    )
+  )
+}
+
+Options.prototype.build_action = function(action) {
   var result = $('<div>').addClass('form-group');
   var label = $('<label>')
     .addClass('col-sm-4 control-label')
     .text(Action.labels[action] + ':');
+
   // Create the keys tag input element.
-  var tagInput = $('<div>').addClass('col-sm-8 keys-list');
+  var tag_input = $('<div>').addClass('col-sm-8 keys-list');
   var button = $('<a>')
     .addClass('btn btn-primary btn-sm')
     .data('action', action)
     .text('+');
-  button.click(function(e) { that.waitForKey(e, button); });
-  tagInput.append(button);
+  button.click(this.wait_for_key.bind(this, button));
+  tag_input.append(button);
+
   // Build a tag box for each key assigned to this action.
   var keys = [];
-  for (var key in this.keyBindings) {
-    if (this.keyBindings[key] === action) {
+  for (var key in this.key_bindings) {
+    if (this.key_bindings[key] === action) {
       keys.push(key);
     }
   }
   keys.sort();
   for (var i = 0; i < keys.length; i++) {
-    tagInput.append(this.buildKey(action, keys[i]));
+    tag_input.append(this.build_key(action, keys[i]));
   }
+
   // Return the final action input.
-  result.append(label, tagInput);
+  result.append(label, tag_input);
   return result;
 }
 
-Options.prototype.buildKey = function(action, key) {
-  if (this.keyElements.hasOwnProperty(key)) {
-    this.keyElements[key].remove();
-  }
+Options.prototype.build_key = function(action, key) {
   var that = this;
+
+  if (this.key_elements.hasOwnProperty(key)) {
+    this.key_elements[key].remove();
+  }
   var result = $('<a>')
     .addClass('btn btn-default btn-sm')
     .data('key', key)
     .click(function() {
-      delete that.keyBindings[key];
+      delete that.key_bindings[key];
       this.remove();
     })
     .text(Key.keyNames[key] || 'Keycode ' + key)
     .append($('<span>').addClass('close-button').html('&times;'));
-  this.keyBindings[key] = action;
-  this.keyElements[key] = result;
+  this.key_bindings[key] = action;
+  this.key_elements[key] = result;
   return result;
 }
 
-Options.prototype.signalReady = function(button) {
+Options.prototype.signal_ready = function(button) {
   button.removeClass('btn-info').addClass('btn-default').text('+');
-  this.waitingButton = undefined;
-  this.elements.target.unbind('keydown');
+  this.waiting_button = undefined;
+  this.target.unbind('keydown');
 }
 
-Options.prototype.signalWait = function(button) {
-  var that = this;
+Options.prototype.signal_wait = function(button) {
   button.removeClass('btn-default').addClass('btn-info').text('Press a key...');
   this.waitingButton = button;
-  this.elements.target.keydown(function(e) { that.getKey(e, button); });
+  this.target.keydown(this.get_key.bind(this, button));
 }
 
-Options.prototype.waitForKey = function(e, button) {
-  var repeat = button === this.waitingButton;
-  if (this.waitingButton) {
-    this.signalReady(this.waitingButton);
+Options.prototype.wait_for_key = function(button, e) {
+  var repeat = button === this.waiting_button;
+  if (this.waiting_button) {
+    this.signal_ready(this.waiting_button);
   }
   if (!repeat) {
-    this.signalWait(button);
+    this.signal_wait(button);
   }
 }
 
-Options.prototype.getKey = function(e, button) {
-  this.signalReady(button);
-  var key = this.keyCode(e);
+Options.prototype.get_key = function(button, e) {
+  this.signal_ready(button);
+
+  // Extract the key code from the event. Note that this behavior is slighlty
+  // browser-dependent, so we have to check a few cases.
+  e = e || window.event;
+  e.bubbles = false;
+  var key = e.keyCode;
+
+  // We don't allow the user to assign escape to a button.
   if (key !== 27) {
-    // We don't allow the user to assign escape to a button.
-    this.addKey(button, key);
+    this.add_key(button, key);
   }
   e.preventDefault();
 }
 
-Options.prototype.keyCode = function(e) {
-  e = e || window.event;
-  e.bubbles = false;
-  return e.keyCode;
-}
-
-Options.prototype.addKey = function(button, key) {
+Options.prototype.add_key = function(button, key) {
   var children = button.parent().children();
+  // Insert the new key into the tag input in the correct place.
   for (var i = 1; i < children.length; i++) {
-    var existingKey = parseInt($(children[i]).data('key'), 10);
-    if (existingKey === key) {
-      // TODO(skishore): Flash this element.
+    var existing_key = parseInt($(children[i]).data('key'), 10);
+    if (existing_key === key) {
+      // TODO(skishore): Flash this tag to show that it's already assigned.
       return;
-    } else if (existingKey > key) {
+    } else if (existing_key > key) {
       break;
     }
   }
   var action = parseInt(button.data('action'), 10);
-  $(children[i - 1]).after(this.buildKey(action, key));
+  $(children[i - 1]).after(this.build_key(action, key));
 }
 
 return Options;
