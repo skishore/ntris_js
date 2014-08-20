@@ -95,7 +95,7 @@ ClientBoard.prototype.updateSettings = function(settings) {
 }
 
 ClientBoard.prototype.deserialize = function(view) {
-  if (this.gameIndex !== view.gameIndex) {
+  if (this.gameIndex !== view.gameIndex || this.syncIndex < view.syncIndex) {
     this.resetForView(view);
   } else {
     // Pull preview data out of the view and update the current state. Note
