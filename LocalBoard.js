@@ -2,6 +2,7 @@ var LocalBoard = (function() {
 "use strict";
 
 var LocalBoard = function(target, settings) {
+  settings = settings || {singleplayer: true, options: {}};
   this.target = target;
   this.graphics = new Graphics(Constants.SQUAREWIDTH, target, settings);
   this.repeater = new KeyRepeater(
