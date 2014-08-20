@@ -1,11 +1,10 @@
 var ClientBoard = (function() {
 "use strict";
 
-var ClientBoard = function(target, view, game_type, send) {
-  this.singleplayer = game_type === 'singleplayer';
-  ClientBoard.__super__.constructor.bind(this)(target, !this.singleplayer);
+var ClientBoard = function(target, view, settings) {
+  ClientBoard.__super__.constructor.bind(this)(target, settings);
   this.resetForView(view);
-  this.send = send;
+  this.settings = settings;
 }
 
 extend(ClientBoard, LocalBoard);
@@ -31,14 +30,14 @@ ClientBoard.prototype.resetForView = function(view) {
 ClientBoard.prototype.tick = function() {
   var keys = this.getKeys();
 
-  if (keys.indexOf(Action.START) >= 0 && this.singleplayer) {
+  if (keys.indexOf(Action.START) >= 0 && this.settings.singleplayer) {
     if (this.state === Constants.PLAYING) {
       this.state = Constants.PAUSED;
       this.pauseReason = 'manual';
     } else if (this.state === Constants.PAUSED) {
       this.state = Constants.PLAYING;
     } else if (this.state === Constants.GAMEOVER) {
-      this.send({type: 'start', game_index: this.gameIndex});
+      this.settings.send({type: 'start', game_index: this.gameIndex});
     }
   }
 
@@ -56,7 +55,7 @@ ClientBoard.prototype.tick = function() {
     if (this.syncIndex > syncIndex) {
       assert(this.syncIndex === syncIndex + 1, 'Skipped a sync index!');
       this.moveQueue.push({syncIndex: this.syncIndex, move: this.move});
-      this.send({
+      this.settings.send({
         type: 'move',
         game_index: this.gameIndex,
         move_queue: this.moveQueue,
@@ -88,6 +87,11 @@ ClientBoard.prototype.maybeAddToPreview = function() {
   // Instead, the server sends a state update with a new preview that replaces
   // the old one.
   this.blockIndex += 1;
+}
+
+ClientBoard.prototype.updateSettings = function(settings) {
+  this.settings = this.graphics.settings = settings;
+  this.repeater.setKeyBindings(settings.options.key_bindings);
 }
 
 ClientBoard.prototype.deserialize = function(view) {

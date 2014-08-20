@@ -1,11 +1,10 @@
 var KeyRepeater = (function() {
 "use strict";
 
-var KeyRepeater = function(pause, repeat, target) {
+var KeyRepeater = function(pause, repeat, target, keyBindings) {
   this.pause = pause;
   this.repeat = repeat;
-
-  this.setKeyBindings(Key.loadKeyBindings());
+  this.setKeyBindings(keyBindings);
 
   target.attr('tabIndex', 1);
   target.keydown(this.keydown_handler());
@@ -13,6 +12,7 @@ var KeyRepeater = function(pause, repeat, target) {
 }
 
 KeyRepeater.prototype.setKeyBindings = function(keyBindings) {
+  keyBindings = keyBindings || Key.loadKeyBindings();
   this.keyBindings = keyBindings;
   this.isKeyDown = {};
   this.keyFireFrames = {};

@@ -1,10 +1,11 @@
 var Graphics = (function() {
 "use strict";
 
-var Graphics = function(squareWidth, target, multiplayer) {
+var Graphics = function(squareWidth, target, settings) {
   this.squareWidth = squareWidth;
   this.target = target;
-  this.multiplayer = multiplayer;
+  this.settings = settings;
+  this.multiplayer = !settings.singleplayer;
 
   this.smallWidth = Math.ceil(this.squareWidth/2);
   this.border = this.smallWidth;
@@ -220,6 +221,9 @@ Graphics.prototype.updatePreview = function() {
 }
 
 Graphics.prototype.animatePreview = function(height) {
+  if (!this.settings.options.animate_preview) {
+    return;
+  }
   var duration = 1000*Constants.PREVIEWFRAMES/Constants.FRAMERATE;
   var preview = this.elements.preview.get(0);
   move(preview).y(height).duration(0).end(
@@ -404,6 +408,9 @@ Graphics.prototype.eraseBlock = function(block) {
 }
 
 Graphics.prototype.drawFloatingScore = function(block, score) {
+  if (!this.settings.options.animate_scores) {
+    return;
+  }
   var index = this.getSquareIndex(block.y, block.x);
   if (index >= 0) {
     var offset = this.target.offset();

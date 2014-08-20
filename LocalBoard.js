@@ -1,10 +1,11 @@
 var LocalBoard = (function() {
 "use strict";
 
-var LocalBoard = function(target, multiplayer) {
+var LocalBoard = function(target, settings) {
   this.target = target;
-  this.graphics = new Graphics(Constants.SQUAREWIDTH, target, multiplayer);
-  this.repeater = new KeyRepeater(Constants.PAUSE, Constants.REPEAT, target);
+  this.graphics = new Graphics(Constants.SQUAREWIDTH, target, settings);
+  this.repeater = new KeyRepeater(
+      Constants.PAUSE, Constants.REPEAT, target, settings.options.key_bindings);
   this.setFocusHandlers(target);
 
   LocalBoard.__super__.constructor.bind(this)();
