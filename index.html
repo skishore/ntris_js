@@ -17,7 +17,7 @@
     <!-- Configuration classes. -->
     <script type="text/javascript" src="Action.js"></script>
     <script type="text/javascript" src="Key.js"></script>
-    <script type="text/javascript" src="Options.js"></script>
+    <script type="text/javascript" src="LocalOptions.js"></script>
 
     <!-- Block and its dependencies. -->
     <script type="text/javascript" src="Color.js"></script>
@@ -58,7 +58,7 @@
       Color.initialize(Color.colorCode);
       var target = $('.combinos');
       var board = new LocalBoard(target);
-      var options = new Options(board, $('.combinos-options'));
+      var options = new LocalOptions(board, $('.combinos-options'));
     }
 
     return initialize;
