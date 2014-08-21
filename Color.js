@@ -7,12 +7,11 @@ var Color = {
   BORDER: '#44FF44',
   LAMBDA: 0.36,
   MAX_PER_LEVEL: 29,
+  MAX: (6 + 2)*29,
 
   HEXREGEX: /\#([0-9a-f][0-9a-f])([0-9a-f][0-9a-f])([0-9a-f][0-9a-f])/i,
 
   initialize: function(colorCode) {
-    this.MAX = (Constants.ATTACKS + 2)*this.MAX_PER_LEVEL;
-
     // Add colors that encode attacks for battle mode.
     this.attack_colors = [];
     for (var i = 0; i <= Constants.ATTACKS; i++) {

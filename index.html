@@ -10,8 +10,8 @@
     <script type="text/javascript" src="external/underscore/1.6.0/underscore.min.js"></script>
 
     <!-- Base CSS and Javascript. -->
+    <link rel="stylesheet" type="text/css" href="color.css">
     <link rel="stylesheet" type="text/css" href="style.css">
-    <link rel="stylesheet" type="text/css" href="eval.css">
     <script type="text/javascript" src="util.js"></script>
 
     <!-- Configuration classes. -->
@@ -55,7 +55,6 @@
 
     function initialize() {
       initialize_move_library();
-      Color.initialize(Color.colorCode);
       var target = $('.combinos');
       var board = new LocalBoard(target);
       var options = new LocalOptions(board, $('.combinos-options'));
