@@ -171,14 +171,12 @@ Graphics.prototype.getSquareIndex = function(i, j) {
 Graphics.prototype.drawFreeBlock = function(target, type, x, y, w) {
   if (type >= 0) {
     var block = Block.prototypes[type];
-    var light = Color.body_colors[block.color + Color.MAX];
-    var dark = Color.mix(light, Color.BLACK, 0.4*Color.LAMBDA);
-
     var offsets = block.getOffsets();
     for (var i = 0; i < offsets.length; i++) {
       var offset = offsets[i];
-      target.append($('<div>').addClass('free-square').css({
-        'background-color': ((offset.x + offset.y) % 2 ? dark : light),
+      var color = block.color + ((offset.x + offset.y) % 2 ? 0 : Color.MAX);
+      var cls = 'free-square free-square-' + color;
+      target.append($('<div>').addClass(cls).css({
         'left': x + w*offset.x,
         'top': y + w*offset.y,
         'height': w,
@@ -321,10 +319,9 @@ Graphics.prototype.updateAttacks = function() {
     var type = this.delta.attacks[this.state.attacks.length];
     this.state.attacks.push(type);
     var symbol = '&#' + (9843 + type);
-    var block = $('<div>').addClass('preview-block').html(symbol).css({
-      'color': Color.attack_colors[type],
-      'margin-bottom': this.squareWidth,
-    });
+    var cls = 'preview-block attack-' + type;
+    var block = $('<div>').addClass(cls).html(symbol).css(
+      'margin-bottom', this.squareWidth);
     this.elements.attacks.append(block);
   }
   assert(

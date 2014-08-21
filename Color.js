@@ -6,30 +6,68 @@ var Color = {
   WHITE: '#FFFFFF',
   BORDER: '#44FF44',
   LAMBDA: 0.36,
-  MAX: 29,
+  MAX_PER_LEVEL: 29,
 
   HEXREGEX: /\#([0-9a-f][0-9a-f])([0-9a-f][0-9a-f])([0-9a-f][0-9a-f])/i,
 
   initialize: function(colorCode) {
+    this.MAX = (Constants.ATTACKS + 2)*this.MAX_PER_LEVEL;
+
+    // Add colors that encode attacks for battle mode.
+    this.attack_colors = [];
+    for (var i = 0; i <= Constants.ATTACKS; i++) {
+      var lambda = (i + (i ? 1 : 0))/(Constants.ATTACKS + 1);
+      this.attack_colors.push(this.mix('#2266ff', '#ff0000', lambda));
+    }
+
+    // Initialize the body and edge colors lists. There will 29 body and edge
+    // colors to start with, plus a version of these at each of the attack
+    // levels for multiplayer.
     this.body_colors = [];
     this.edge_colors = [];
-    // Push color 0, which is always black.
     this.pushColor(this.BLACK);
-    // Push colors for squares that are on the board.
-    for (var i = 0; i < this.MAX; i++) {
+    for (var i = 0; i < this.MAX_PER_LEVEL; i++) {
       this.pushColor(colorCode(i));
     }
-    // Push lighter colors for squares in currently active blocks.
-    for (var i = 0; i < this.MAX; i++) {
-      this.pushColor(this.mix(colorCode(i), this.WHITE, Color.LAMBDA));
+    for (var j = 0; j <= Constants.ATTACKS; j++) {
+      for (var i = 0; i < this.MAX_PER_LEVEL; i++) {
+        this.pushColor(Color.mix(
+            this.attack_colors[j], this.body_colors[i], this.LAMBDA));
+      }
     }
-    // Create a CSS stylesheet with rules for combinos-square-i for each i.
+    // We now add a lighter version of each of these colors for active blocks.
+    assert(this.body_colors.length === this.MAX + 1);
+    for (var i = 0; i < this.MAX; i++) {
+      var color = this.body_colors[i + 1];
+      this.pushColor(this.mix(color, this.WHITE, Color.LAMBDA));
+    }
+
+    // Create a CSS stylesheet with rules for the following classes:
+    //    .combinos .attack-i, 0 <= i < ATTACKS
+    //    .combinos .square-i, 0 <= i <= 3*Color.MAX
+    //    .combinos .free-square-i, 0 <= i <= 2*Color.MAX
+    // Here, Color.MAX is always the maximum color that could appear as the
+    // color of a block.
     var rules = [];
+    for (var i = 0; i < Constants.ATTACKS; i++) {
+      rules.push(
+        '.combinos .attack-' + i + ' {\n' +
+        '  color: ' + this.attack_colors[i + 1] + ';\n' +
+        '}');
+    }
     for (var i = 0; i <= 2*this.MAX; i++) {
       rules.push(
         '.combinos .square-' + i + ' {\n' +
         '  background-color: ' + this.body_colors[i] + ';\n' +
         '  border-color: ' + this.edge_colors[i] + ';\n' +
+        '}');
+      var free_color = this.body_colors[i + this.MAX];
+      if (i > this.MAX) {
+        free_color = this.mix(this.body_colors[i], this.BLACK, 0.4*this.LAMBDA);
+      }
+      rules.push(
+        '.combinos .free-square-' + i + ' {\n' +
+        '  background-color: ' + free_color + ';\n' +
         '}');
     }
     for (var i = 2*this.MAX + 1; i <= 3*this.MAX; i++) {
@@ -43,12 +81,6 @@ var Color = {
         '}');
     }
     this.addStyle(rules.join('\n'));
-    // Add colors that encode attacks for battle mode.
-    this.attack_colors = [];
-    for (var i = 0; i < Constants.ATTACKS; i++) {
-      var lambda = i/Constants.ATTACKS;
-      this.attack_colors.push(this.mix('#cc00cc', '#ff0000', lambda));
-    }
   },
 
   pushColor: function(color) {

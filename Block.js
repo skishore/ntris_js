@@ -19,6 +19,7 @@ var Block = function(type) {
   // These properties should be immutable.
   this.squares = Block.prototypes[type].squares;
   this.color = Block.prototypes[type].color;
+  this.battle_color = Block.prototypes[type].battle_color;
   this.rotates = Block.prototypes[type].rotates;
   this.height = Block.prototypes[type].height;
   this.type = type;
@@ -105,6 +106,8 @@ Block.loaded = function() {
     }
     // The color 0 is reserved for empty (black) squares.
     block.color = data[2*numSquares + 3] + 1;
+    block.battle_color =
+        block.color + Color.MAX_PER_LEVEL*Math.min(numSquares - 3, 1);
     block.height = block.calculateHeight();
     block.rotates = block.checkIfRotates();
     Block.prototypes.push(block);
