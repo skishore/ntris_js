@@ -51,7 +51,7 @@ DifficultyCurve.sum = function(array) {
 
 DifficultyCurve.distribution = function(index) {
   var LEVEL_INTERVAL = 50;
-  var MID_DISTRIBUTION = [11, 13, 12, 6, 2, 1, 1];
+  var MID_DISTRIBUTION = [11, 18, 12, 6, 2, 1, 1];
   var MID_SCORE = 20*LEVEL_INTERVAL;
 
   var result = [];
