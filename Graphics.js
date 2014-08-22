@@ -6,6 +6,8 @@ var Graphics = function(squareWidth, target, settings) {
   this.target = target;
   this.settings = settings;
   this.multiplayer = !settings.singleplayer;
+  this.color_attribute = (
+      settings.game_type === 'battle' ? 'battle_color' : 'color');
 
   this.smallWidth = Math.ceil(this.squareWidth/2);
   this.border = this.smallWidth;
@@ -174,7 +176,8 @@ Graphics.prototype.drawFreeBlock = function(target, type, x, y, w) {
     var offsets = block.getOffsets();
     for (var i = 0; i < offsets.length; i++) {
       var offset = offsets[i];
-      var color = block.color + ((offset.x + offset.y) % 2 ? 0 : Color.MAX);
+      var color = block[this.color_attribute]
+      color += ((offset.x + offset.y) % 2 ? 0 : Color.MAX);
       var cls = 'free-square free-square-' + color;
       target.append($('<div>').addClass(cls).css({
         'left': x + w*offset.x,

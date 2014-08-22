@@ -29,9 +29,10 @@ var Color = {
       this.pushColor(colorCode(i));
     }
     for (var j = 0; j <= Constants.ATTACKS; j++) {
+      var lambda = 0.6 - 0.4*j/Constants.ATTACKS;
       for (var i = 0; i < this.MAX_PER_LEVEL; i++) {
         this.pushColor(Color.mix(
-            this.attack_colors[j], this.body_colors[i], this.LAMBDA));
+            this.attack_colors[j], this.body_colors[i + 1], lambda));
       }
     }
     // We now add a lighter version of each of these colors for active blocks.

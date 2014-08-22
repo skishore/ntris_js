@@ -90,6 +90,7 @@ Block.prototype.checkIfRotates = function() {
 
 Block.loaded = function() {
   Block.prototypes = [];
+  var max_color = 0;
 
   for (var i = 0; i < Block.TYPES[Block.LEVELS - 1]; i++) {
     var data = RawBlockData.DATA[i];
@@ -107,12 +108,14 @@ Block.loaded = function() {
     // The color 0 is reserved for empty (black) squares.
     block.color = data[2*numSquares + 3] + 1;
     block.battle_color =
-        block.color + Color.MAX_PER_LEVEL*Math.min(numSquares - 3, 1);
+        block.color + Color.MAX_PER_LEVEL*Math.max(numSquares - 3, 1);
     block.height = block.calculateHeight();
     block.rotates = block.checkIfRotates();
     Block.prototypes.push(block);
+    max_color = Math.max(max_color, block.battle_color);
   }
 
+  assert(max_color === Color.MAX, 'Unexpected maximum color: ' + max_color);
   assert(Block.prototypes.length === Block.TYPES[Block.LEVELS - 1],
       'Unexpected number of blocks');
   return true;

@@ -2,11 +2,13 @@ var LocalBoard = (function() {
 "use strict";
 
 var LocalBoard = function(target, settings) {
-  settings = settings || {singleplayer: true, options: {}};
   this.target = target;
-  this.graphics = new Graphics(Constants.SQUAREWIDTH, target, settings);
+  this.settings = settings || {singleplayer: true, options: {}};
+  var key_bindings = this.settings.options.key_bindings;
+
+  this.graphics = new Graphics(Constants.SQUAREWIDTH, target, this.settings);
   this.repeater = new KeyRepeater(
-      Constants.PAUSE, Constants.REPEAT, target, settings.options.key_bindings);
+      Constants.PAUSE, Constants.REPEAT, target, key_bindings);
   this.setFocusHandlers(target);
 
   LocalBoard.__super__.constructor.bind(this)();

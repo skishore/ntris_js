@@ -80,6 +80,9 @@ Board.prototype.nextBlock = function(swap) {
   this.held = (swap ? true : false);
   var result = new Block(type);
   result.rowsFree = Physics.calculateRowsFree(result, this.data);
+  if (this.settings && this.settings.game_type === 'battle') {
+    result.color = result.battle_color;
+  }
   return result;
 }
 

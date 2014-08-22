@@ -1,8 +1,8 @@
 var ServerBoard = (function() {
 "use strict";
 
-var ServerBoard = function(game_type, seed) {
-  this.game_type = game_type;
+var ServerBoard = function(settings, seed) {
+  this.settings = settings;
   this.gameIndex = -1;
   ServerBoard.__super__.constructor.bind(this)(seed);
 }
@@ -10,7 +10,7 @@ var ServerBoard = function(game_type, seed) {
 extend(ServerBoard, Board);
 
 ServerBoard.prototype.reset = function(seed) {
-  if (this.game_type === 'battle') {
+  if (this.settings.game_type === 'battle') {
     this.attacks = [];
     this.attackIndex = 0;
   }
@@ -62,7 +62,7 @@ ServerBoard.prototype.maybeAddToPreview = function() {
   this.blockIndex += 1;
   var attackIndex = this.attackIndex || 0;
   var level = DifficultyCurve.getLevel(attackIndex + this.blockIndex);
-  if (this.game_type === 'battle' && this.attacks.length > 0) {
+  if (this.settings.game_type === 'battle' && this.attacks.length > 0) {
     // Pop from the attack queue if it is available.
     level = Math.min(level + this.attacks.shift() + 1, Block.LEVELS - 1);
   }
