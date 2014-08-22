@@ -16,7 +16,7 @@ var Color = {
     this.attack_colors = [];
     for (var i = 0; i <= Constants.ATTACKS; i++) {
       var lambda = (i + (i ? 1 : 0))/(Constants.ATTACKS + 1);
-      this.attack_colors.push(this.mix('#2266ff', '#ff0000', lambda));
+      this.attack_colors.push(this.mix('#8888ff', '#ff4444', lambda));
     }
 
     // Initialize the body and edge colors lists. There will 29 body and edge
@@ -29,7 +29,7 @@ var Color = {
       this.pushColor(colorCode(i));
     }
     for (var j = 0; j <= Constants.ATTACKS; j++) {
-      var lambda = 0.6 - 0.4*j/Constants.ATTACKS;
+      var lambda = 0.8 - 0.4*j/Constants.ATTACKS;
       for (var i = 0; i < this.MAX_PER_LEVEL; i++) {
         this.pushColor(Color.mix(
             this.attack_colors[j], this.body_colors[i + 1], lambda));
