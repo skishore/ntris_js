@@ -14,12 +14,17 @@
 
 .combinos {
   background-color: black;
+  cursor: default;
   display: inline-block;
   font-family: Times;
   line-height: 1;
   margin: 0 auto;
   outline: none;
   position: relative;
+  user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  -webkit-user-select: none;
 }
 
 .combinos .overlay-wrapper, .combinos .overlay {
@@ -45,6 +50,11 @@
   -moz-transform: translate(-50%, -50%);
   -ms-transform: translate(-50%, -50%);
   -webkit-transform: translate(-50%, -50%);
+  width: 100%;
+}
+
+.combinos .overlay-wrapper .text-box .btn {
+  margin-top: 8px;
 }
 
 .combinos .overlay-wrapper .text-box.small-text-box {

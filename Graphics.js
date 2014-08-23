@@ -285,6 +285,12 @@ Graphics.prototype.updateMultiplayerOverlay = function() {
     var factor = (text.length === 1 ? 24 : 1.5);
     this.elements.line.css('font-size', factor*this.squareWidth);
     this.drawText(text);
+    if (this.settings.me && pauseReason && pauseReason.start_game_text) {
+      this.elements.line.append(
+        $('<a>').addClass('btn btn-default btn-sm')
+                .click(this.startGame.bind(this))
+                .text(pauseReason.start_game_text));
+    }
   }
 }
 
@@ -292,8 +298,12 @@ Graphics.prototype.drawText = function(text) {
   if (text) {
     this.elements.line.html(text.replace('\n', '<br>')).show();
   } else {
-    this.elements.line.hide();
+    this.elements.line.empty().hide();
   }
+}
+
+Graphics.prototype.startGame = function() {
+  this.settings.send({type: 'start_late'});
 }
 
 Graphics.prototype.updateAttacks = function() {
