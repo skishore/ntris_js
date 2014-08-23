@@ -26,31 +26,18 @@ Graphics.prototype.build = function(target) {
   var result = {};
   target.css('padding', this.border);
 
-  var outer = this.squareWidth/4;
-  var inner = this.squareWidth/8;
-  var buffer = outer + inner - this.border;
-  var overlay_wrapper = $('<div>').addClass('overlay-wrapper').css({
-    'padding-top': this.squareWidth*(Constants.VISIBLEROWS/2 - 1) - buffer,
-  });
-  target.append(overlay_wrapper);
-
+  var overlay_wrapper = $('<div>').addClass('overlay-wrapper');
   result.overlay = $('<div>').addClass('overlay');
-  overlay_wrapper.append(result.overlay);
-
-  var css = {'font-size': this.squareWidth, 'width': 5*this.width/8};
   if (this.multiplayer) {
-    result.line1 = $('<div>').addClass('big-text-box').css({
-      'font-size': 20*this.squareWidth,
-      'line-height': this.height + 'px',
-    }).text('1');
-    result.line2 = $();
+    result.line = $('<div>').addClass('text-box');
   } else {
-    result.line1 = $('<div>').addClass('text-box').css(css)
-        .css({'padding-top': outer, 'padding-bottom': inner}).text('line1');
-    result.line2 = $('<div>').addClass('text-box').css(css)
-        .css({'padding-top': inner, 'padding-bottom': outer}).text('line2');
+    result.line = $('<div>').addClass('text-box small-text-box').css({
+      'font-size': this.squareWidth,
+      'line-height': '' + Math.round(4*this.squareWidth/3) + 'px',
+      'padding': '' + Math.round(this.squareWidth/6) + 'px 0',
+    });
   }
-  overlay_wrapper.append(result.line1, result.line2);
+  target.append(overlay_wrapper.append(result.overlay, result.line));
 
   var scoreboard = $('<div>').addClass('scoreboard').css({
     'height': this.squareWidth*Constants.VISIBLEROWS,
@@ -266,11 +253,11 @@ Graphics.prototype.updateOverlay = function() {
     this.elements.overlay.css('background-color', 'black');
     this.elements.overlay.css('opacity', 1);
     var resume = (this.delta.pauseReason === 'focus' ? 'Click' : 'Press START');
-    this.drawText('-- PAUSED --', resume + ' to resume');
+    this.drawText('-- PAUSED --\n' + resume + ' to resume');
   } else if (this.delta.state === Constants.GAMEOVER) {
     this.elements.overlay.css('background-color', 'red');
     this.elements.overlay.css('opacity', 1.2*Color.LAMBDA);
-    this.drawText('-- You FAILED --', 'Press START to try again');
+    this.drawText('-- You FAILED --\nPress START to try again');
   }
   this.state.state = this.delta.state;
   this.state.pauseReason = this.delta.pauseReason;
@@ -296,18 +283,16 @@ Graphics.prototype.updateMultiplayerOverlay = function() {
       this.elements.overlay.css('opacity', 1);
     }
     var factor = (text.length === 1 ? 24 : 1.5);
-    this.elements.line1.css('font-size', factor*this.squareWidth);
+    this.elements.line.css('font-size', factor*this.squareWidth);
     this.drawText(text);
   }
 }
 
-Graphics.prototype.drawText = function(line1, line2) {
-  if (line1 || line2) {
-    this.elements.line1.show().text(line1);
-    this.elements.line2.show().text(line2);
+Graphics.prototype.drawText = function(text) {
+  if (text) {
+    this.elements.line.html(text.replace('\n', '<br>')).show();
   } else {
-    this.elements.line1.hide();
-    this.elements.line2.hide();
+    this.elements.line.hide();
   }
 }
 

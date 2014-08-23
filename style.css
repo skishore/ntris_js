@@ -22,7 +22,7 @@
   position: relative;
 }
 
-.combinos .overlay-wrapper, .combinos .overlay, .combinos .big-text-box {
+.combinos .overlay-wrapper, .combinos .overlay {
   position: absolute;
   left: 0;
   bottom: 0;
@@ -31,19 +31,25 @@
   z-index: 5;
 }
 
-.combinos .big-text-box {
-  background-color: none;
-  color: white;
-}
-
 .combinos .overlay {
   z-index: -1;
 }
 
 .combinos .overlay-wrapper .text-box {
-  background-color: black;
+  background-color: none;
   color: white;
-  margin: 0 auto;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  -moz-transform: translate(-50%, -50%);
+  -ms-transform: translate(-50%, -50%);
+  -webkit-transform: translate(-50%, -50%);
+}
+
+.combinos .overlay-wrapper .text-box.small-text-box {
+  background-color: black;
+  width: 67.5%;
 }
 
 .combinos .board,
