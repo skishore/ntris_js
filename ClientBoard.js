@@ -9,10 +9,6 @@ var ClientBoard = function(target, view, settings) {
 
 extend(ClientBoard, LocalBoard);
 
-ClientBoard.prototype.loseFocus = function(e) {
-  // A client board doesn't auto-pause on losing focus.
-}
-
 ClientBoard.prototype.reset = function() {
   this.frame = 0;
 }

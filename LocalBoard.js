@@ -9,7 +9,6 @@ var LocalBoard = function(target, settings) {
   this.graphics = new Graphics(Constants.SQUAREWIDTH, target, this.settings);
   this.repeater = new KeyRepeater(
       Constants.PAUSE, Constants.REPEAT, target, key_bindings);
-  this.setFocusHandlers(target);
 
   LocalBoard.__super__.constructor.bind(this)();
 
@@ -19,25 +18,6 @@ var LocalBoard = function(target, settings) {
 }
 
 extend(LocalBoard, Board);
-
-LocalBoard.prototype.setFocusHandlers = function(target) {
-  target.focus(this.gainFocus.bind(this));
-  //$(window).blur(this.loseFocus.bind(this));
-  target.focus();
-}
-
-LocalBoard.prototype.loseFocus = function(e) {
-  if (this.state === Constants.PLAYING) {
-    this.state = Constants.PAUSED;
-    this.pauseReason = 'focus';
-  }
-}
-
-LocalBoard.prototype.gainFocus = function(e) {
-  if (this.state === Constants.PAUSED && this.pauseReason === 'focus') {
-    this.state = Constants.PLAYING;
-  }
-}
 
 LocalBoard.prototype.reset = function() {
   LocalBoard.__super__.reset.bind(this)();
