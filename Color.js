@@ -75,8 +75,8 @@ var Color = {
       color = this.mix(color, this.BLACK, Color.LAMBDA/4);
       rules.push(
         '.combinos .square-' + i + ' {\n' +
-        '  background: repeating-linear-gradient(45deg, black, black 1.4px, ' +
-        color + ' 1.4px, ' + color + ' 2.8px, black 2.8px, black 4.2px);\n' +
+        '  background: repeating-linear-gradient(45deg, black, black 2.8px, ' +
+        color + ' 2.8px, ' + color + ' 5.6px, black 5.6px, black 8.4px);\n' +
         '  border-color: ' + this.edge_colors[0] + ';\n' +
         '}');
     }

@@ -11,7 +11,7 @@ Constants.ROWS = Constants.HIDDENROWS + Constants.VISIBLEROWS;
 Constants.COLS = 12;
 
 // Screen size constants.
-Constants.SQUAREWIDTH = 12;
+Constants.SQUAREWIDTH = 24;
 
 // Game states.
 Constants.PLAYING = 0;
